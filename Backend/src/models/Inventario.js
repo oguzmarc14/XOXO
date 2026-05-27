@@ -1,20 +1,22 @@
 import mongoose from "mongoose"
 
-const productoSchema = new mongoose.Schema({
-    storeId: {
-        type: moongose.Schema.Types.ObjectId,
+const inventarioSchema = new mongoose.Schema({
+    tiendaId: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Store",
         required: true
     },
 
-    productId: {
-        type: moongose.Schema.Types.ObjectId,
+    productoId: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Productos",
         required: true
     },
 
-    stock: {
+    piezas: {
         type: Number,
         default: 0
     }
 })
+
+export const Inventario = mongoose.model("Inventario", inventarioSchema);

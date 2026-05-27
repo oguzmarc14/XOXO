@@ -1,14 +1,19 @@
 import express from "express";
 import dotenv from "dotenv"
 import { connectDB } from "./config/db.js";
-import storesRoutes from "./routes/stores.routes.js"
+import tiendasRoutes from "./routes/tiendas.routes.js"
+import productosRoutes from "./routes/productos.routes.js"
+import inventarioRoutes from "./routes/inventario.routes.js"
 
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
-app.use("/stores", storesRoutes);
+
+app.use("/tiendas", tiendasRoutes);
+app.use("/productos", productosRoutes);
+app.use("/inventario", inventarioRoutes )
 
 connectDB();
 

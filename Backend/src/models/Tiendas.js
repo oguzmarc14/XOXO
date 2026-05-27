@@ -1,10 +1,10 @@
 import mongoose from "mongoose"
 
-const storeSchema = new mongoose.Schema({
+const tiendasSchema = new mongoose.Schema({
     nombre: String,
     direccion: String,
     ciudad: String,
     telefono: String,
 });
 
-export const Tiendas = mongoose.model("Tiendas", storeSchema);
+export const Tiendas = mongoose.model("Tiendas", tiendasSchema);

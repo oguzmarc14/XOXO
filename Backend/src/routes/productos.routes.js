@@ -1,5 +1,5 @@
 import express from "express"
-import Productos from "../models/Productos"
+import { Productos } from "../models/Productos.js"
 
 const router = express.Router();
 
@@ -98,6 +98,8 @@ router.delete("/:id", async (req, res) =>{
         });
     }
 });
+
+export default router;
 
 
 
