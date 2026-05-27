@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 const inventarioSchema = new mongoose.Schema({
     tiendaId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Store",
+        ref: "Tiendas",
         required: true
     },
 
