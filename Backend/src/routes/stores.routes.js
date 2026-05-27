@@ -1,13 +1,13 @@
 import express from "express";
-import { Store } from "../models/Store.js";
+import { Tiendas } from "../models/Tiendas.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
     try {
-        const stores = await Store.find();
+        const tiendas = await Tiendas.find();
 
-        res.json(stores);
+        res.json(tiendas);
     } catch (error) {
         res.status(500).json({
             message: "Error al obtener tiendas",
@@ -18,9 +18,9 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
     try {
-        const store = await Store.create(req.body);
+        const tiendas = await Tiendas.create(req.body);
 
-        res.status(201).json(store);
+        res.status(201).json(tiendas);
     } catch (error) {
         res.status(500).json({
             message: "Error al crear tienda",
@@ -31,13 +31,13 @@ router.post("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
     try{
-        const store = await Store.findById(req.params.id);
+        const tiendas = await Tiendas.findById(req.params.id);
 
-        if (!store){
+        if (!tiendas){
             return res.status(404).json({ message: "Tienda no encontrada" });
         }
 
-         res.json(store);
+         res.json(tiendas);
     }
     catch (error) {
         res.status(500).json({
@@ -49,17 +49,17 @@ router.get("/:id", async (req, res) => {
 
 router.put("/:id", async (req, res) =>{
     try{
-        const store = await Store.findByIdAndUpdate(
+        const tiendas = await Tiendas.findByIdAndUpdate(
             req.params.id,
             req.body,
             { new: true }
         );
 
-        if(!store) {
+        if(!tiendas) {
             return res.status(404).json({ message: "Tienda no encontrada"});
         }
 
-        res.json(store);
+        res.json(tiendas);
     }
     catch (error) {
         res.status(500).json({
@@ -71,9 +71,9 @@ router.put("/:id", async (req, res) =>{
 
 router.delete("/:id", async (req, res) =>{
     try{
-        const store = await Store.findByIdAndDelete(req.params.id);
+        const tiendas = await Tiendas.findByIdAndDelete(req.params.id);
 
-        if(!store){
+        if(!tiendas){
             return res.status(404).json({ message: "Tienda no encontrada" });
         }
 
