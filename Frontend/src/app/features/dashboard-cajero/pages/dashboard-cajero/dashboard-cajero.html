@@ -1,1 +1,183 @@
-<p>dashboard-cajero works!</p>
+<div class="cajero-layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="/XoXO.png" alt="Logo XoXO" />
+      <div>
+        <h2>XoXO</h2>
+        <span>Panel General</span>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <button class="menu-item active" type="button">
+        <span>🏠</span>
+        Dashboard
+      </button>
+
+      <button class="menu-item" type="button" (click)="irANuevaVenta()">
+        <span>🛒</span>
+        Nueva venta
+      </button>
+
+      <button class="menu-item" type="button" (click)="irADevoluciones()">
+        <span>↩️</span>
+        Devoluciones
+      </button>
+
+      <button class="menu-item" type="button" (click)="irAInventario()">
+        <span>📦</span>
+        Inventario
+      </button>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div>
+        <h1>Bienvenido al sistema de ventas de XoXO</h1>
+        <p>Turno @ {{ usuario.sucursal }}</p>
+      </div>
+
+      <div class="user-menu">
+        <button class="user-trigger" type="button" (click)="abrirMenuUsuario()">
+          <img src="/Cajeros.png" alt="Avatar cajero" class="avatar-img" />
+
+          <div class="user-trigger-info">
+            <strong>{{ usuario.nombre }}</strong>
+            <span>{{ usuario.rol }}</span>
+          </div>
+
+          <span class="chevron" [class.open]="menuUsuarioAbierto">⌄</span>
+        </button>
+
+        <div class="user-dropdown" *ngIf="menuUsuarioAbierto">
+          <div class="dropdown-header">
+            <img src="/Cajeros.png" alt="Avatar cajero" class="avatar-img large" />
+
+            <div>
+              <h3>{{ usuario.nombre }}</h3>
+              <p>{{ usuario.correo }}</p>
+            </div>
+          </div>
+
+          <div class="dropdown-info">
+            <div class="info-row">
+              <span>Rol</span>
+              <strong>{{ usuario.rol }}</strong>
+            </div>
+
+            <div class="info-row">
+              <span>Sucursal</span>
+              <strong>{{ usuario.sucursal }}</strong>
+            </div>
+          </div>
+
+          <button class="dropdown-logout" type="button" (click)="cerrarSesion()">
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="quick-actions">
+      <div class="action-card primary" (click)="irANuevaVenta()">
+        <div class="icon">🛒</div>
+        <h3>Nueva venta</h3>
+        <p>Registrar una venta nueva para el cliente.</p>
+      </div>
+
+      <div class="action-card" (click)="irADevoluciones()">
+        <div class="icon">↩️</div>
+        <h3>Devoluciones</h3>
+        <p>Buscar una venta y gestionar una devolución.</p>
+      </div>
+
+      <div class="action-card" (click)="irAInventario()">
+        <div class="icon">📦</div>
+        <h3>Ver inventario</h3>
+        <p>Consultar productos disponibles sin editar datos.</p>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <div class="summary-card">
+        <span>Ventas del día</span>
+        <h2>18</h2>
+        <p>Ventas registradas</p>
+      </div>
+
+      <div class="summary-card">
+        <span>Total vendido</span>
+        <h2>$4,820</h2>
+        <p>Durante el turno actual</p>
+      </div>
+
+      <div class="summary-card">
+        <span>Productos vendidos</span>
+        <h2>56</h2>
+        <p>Unidades registradas</p>
+      </div>
+
+      <div class="summary-card">
+        <span>Cancelaciones</span>
+        <h2>2</h2>
+        <p>Ventas canceladas</p>
+      </div>
+    </section>
+
+    <section class="table-section">
+      <div class="section-header">
+        <div>
+          <h2>Últimas ventas</h2>
+          <p>Movimientos recientes del cajero</p>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Hora</th>
+              <th>Productos</th>
+              <th>Total</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>#V-0018</td>
+              <td>14:35</td>
+              <td>5 productos</td>
+              <td>$345.00</td>
+              <td>
+                <span class="badge success">Completada</span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>#V-0017</td>
+              <td>14:12</td>
+              <td>2 productos</td>
+              <td>$128.00</td>
+              <td>
+                <span class="badge success">Completada</span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>#V-0016</td>
+              <td>13:58</td>
+              <td>1 producto</td>
+              <td>$79.00</td>
+              <td>
+                <span class="badge danger">Cancelada</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
