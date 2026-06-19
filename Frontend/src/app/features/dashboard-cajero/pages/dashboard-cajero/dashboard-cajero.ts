@@ -1,45 +1,21 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
+
+import { Sidebar } from '../../../../shared/components/sidebar/sidebar';
+import { Topbar } from '../../../../shared/components/topbar/topbar';
 
 @Component({
   selector: 'app-dashboard-cajero',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    RouterLink,
+    Sidebar,
+    Topbar
+  ],
   templateUrl: './dashboard-cajero.html',
   styleUrl: './dashboard-cajero.css'
 })
 export class DashboardCajero {
-  menuUsuarioAbierto: boolean = false;
-
-  usuario = {
-    nombre: 'María López',
-    correo: localStorage.getItem('correo') || 'cajero@xoxo.com',
-    rol: 'Cajero',
-    sucursal: 'Sucursal #027 - Centro'
-  };
-
-  constructor(private router: Router) {}
-
-  abrirMenuUsuario() {
-    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
-  }
-
-  irANuevaVenta() {
-    this.router.navigate(['/nueva-venta']);
-  }
-
-  irADevoluciones() {
-    this.router.navigate(['/historial-ventas']);
-  }
-
-  irAInventario() {
-    this.router.navigate(['/lista-inventario']);
-  }
-
-  cerrarSesion() {
-    localStorage.removeItem('correo');
-    localStorage.removeItem('rol');
-    this.router.navigate(['/']);
-  }
+  sucursal: string =
+    localStorage.getItem('sucursal') || 'Sucursal #027 - Centro';
 }

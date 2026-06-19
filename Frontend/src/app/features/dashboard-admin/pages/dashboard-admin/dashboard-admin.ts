@@ -1,9 +1,23 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+import { Sidebar } from '../../../../shared/components/sidebar/sidebar';
+import { Topbar } from '../../../../shared/components/topbar/topbar';
 
 @Component({
   selector: 'app-dashboard-admin',
-  imports: [],
+  standalone: true,
+  imports: [
+    RouterLink,
+    Sidebar,
+    Topbar
+  ],
   templateUrl: './dashboard-admin.html',
-  styleUrl: './dashboard-admin.css',
+  styleUrl: './dashboard-admin.css'
 })
-export class DashboardAdmin {}
+export class DashboardAdmin {
+  totalSucursales = 200;
+  usuariosActivos = 864;
+  ventasDelDia = 1284;
+  totalVendido = 286450;
+}

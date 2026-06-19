@@ -8,12 +8,13 @@ import { UserRole } from '../models/usuario.model';
 export class PermissionService {
   private readonly rolePermissions: Record<UserRole, Permission[]> = {
     cajero: [
-      'DASHBOARD_VER',
+     'DASHBOARD_VER',
 
-      'VENTAS_CREAR',
-      'VENTAS_DEVOLVER',
+     'VENTAS_CREAR',
+     'VENTAS_DEVOLVER',
+     'VENTAS_HISTORIAL_VER',
 
-      'INVENTARIO_VER'
+     'INVENTARIO_VER'
     ],
 
     gerente: [

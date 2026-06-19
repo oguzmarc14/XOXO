@@ -1,1 +1,271 @@
-<p>dashboard-gerente works!</p>
+<div class="dashboard-shell">
+  <app-sidebar></app-sidebar>
+
+  <div class="dashboard-page">
+    <app-topbar
+      titulo="Panel de gestión de la sucursal"
+      [subtitulo]="'Sucursal asignada: ' + sucursal"
+    ></app-topbar>
+
+    <main class="dashboard-content">
+      <section class="turno-banner">
+        <div>
+          <span class="turno-label">Estado del turno</span>
+
+          <h2>
+            {{ turnoActivo ? 'Turno abierto' : 'Turno cerrado' }}
+          </h2>
+
+          <p>
+            {{
+              turnoActivo
+                ? 'La sucursal se encuentra operando actualmente.'
+                : 'Debe abrirse un turno para comenzar las operaciones.'
+            }}
+          </p>
+        </div>
+
+        <div class="turno-actions">
+          <a
+            class="turno-button open"
+            routerLink="/abrir-turno"
+          >
+            Abrir turno
+          </a>
+
+          <a
+            class="turno-button close"
+            routerLink="/cerrar-turno"
+          >
+            Cerrar turno
+          </a>
+        </div>
+      </section>
+
+      <section class="quick-actions">
+        <a
+          class="action-card primary"
+          routerLink="/nueva-venta"
+        >
+          <div class="action-icon">🛒</div>
+
+          <div>
+            <h3>Nueva venta</h3>
+            <p>
+              Registrar una nueva venta desde la sucursal.
+            </p>
+          </div>
+        </a>
+
+        <a
+          class="action-card"
+          routerLink="/historial-ventas"
+        >
+          <div class="action-icon">🧾</div>
+
+          <div>
+            <h3>Historial de ventas</h3>
+            <p>
+              Consultar ventas, estados y devoluciones.
+            </p>
+          </div>
+        </a>
+
+        <a
+          class="action-card"
+          routerLink="/lista-inventario"
+        >
+          <div class="action-icon">📦</div>
+
+          <div>
+            <h3>Inventario</h3>
+            <p>
+              Consultar existencias disponibles en la sucursal.
+            </p>
+          </div>
+        </a>
+
+        <a
+          class="action-card"
+          routerLink="/movimientos-inventario"
+        >
+          <div class="action-icon">🔄</div>
+
+          <div>
+            <h3>Movimientos</h3>
+            <p>
+              Revisar entradas, salidas y ajustes de inventario.
+            </p>
+          </div>
+        </a>
+      </section>
+
+      <section class="summary-grid">
+        <article class="summary-card">
+          <div class="summary-header">
+            <span>Ventas del día</span>
+            <span class="summary-icon">🧾</span>
+          </div>
+
+          <h2>46</h2>
+          <p>Operaciones registradas</p>
+        </article>
+
+        <article class="summary-card">
+          <div class="summary-header">
+            <span>Total vendido</span>
+            <span class="summary-icon">💰</span>
+          </div>
+
+          <h2>$12,840</h2>
+          <p>Acumulado del turno</p>
+        </article>
+
+        <article class="summary-card">
+          <div class="summary-header">
+            <span>Productos vendidos</span>
+            <span class="summary-icon">🛍️</span>
+          </div>
+
+          <h2>128</h2>
+          <p>Unidades registradas</p>
+        </article>
+
+        <article class="summary-card">
+          <div class="summary-header">
+            <span>Devoluciones</span>
+            <span class="summary-icon">↩️</span>
+          </div>
+
+          <h2>4</h2>
+          <p>Operaciones procesadas</p>
+        </article>
+
+        <article class="summary-card">
+          <div class="summary-header">
+            <span>Stock bajo</span>
+            <span class="summary-icon">⚠️</span>
+          </div>
+
+          <h2>7</h2>
+          <p>Productos por revisar</p>
+        </article>
+      </section>
+
+      <section class="dashboard-grid">
+        <section class="table-section">
+          <div class="section-header">
+            <div>
+              <h2>Ventas recientes</h2>
+              <p>Últimos movimientos registrados en la sucursal</p>
+            </div>
+
+            <a
+              class="section-link"
+              routerLink="/historial-ventas"
+            >
+              Ver historial
+            </a>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Folio</th>
+                  <th>Cajero</th>
+                  <th>Hora</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>#V-0046</td>
+                  <td>María López</td>
+                  <td>16:42</td>
+                  <td>$520.00</td>
+                  <td>
+                    <span class="status-badge success">
+                      Completada
+                    </span>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>#V-0045</td>
+                  <td>José Ramírez</td>
+                  <td>16:31</td>
+                  <td>$218.00</td>
+                  <td>
+                    <span class="status-badge success">
+                      Completada
+                    </span>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>#V-0044</td>
+                  <td>María López</td>
+                  <td>16:18</td>
+                  <td>$96.00</td>
+                  <td>
+                    <span class="status-badge danger">
+                      Devuelta
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="alerts-section">
+          <div class="section-header">
+            <div>
+              <h2>Alertas de inventario</h2>
+              <p>Productos que requieren atención</p>
+            </div>
+          </div>
+
+          <div class="alert-list">
+            <div class="alert-item">
+              <div class="alert-icon">⚠️</div>
+
+              <div>
+                <strong>Playera negra mediana</strong>
+                <span>Quedan 3 unidades</span>
+              </div>
+            </div>
+
+            <div class="alert-item">
+              <div class="alert-icon">⚠️</div>
+
+              <div>
+                <strong>Sudadera vino grande</strong>
+                <span>Quedan 2 unidades</span>
+              </div>
+            </div>
+
+            <div class="alert-item">
+              <div class="alert-icon">⚠️</div>
+
+              <div>
+                <strong>Bolsa XoXO edición especial</strong>
+                <span>Queda 1 unidad</span>
+              </div>
+            </div>
+          </div>
+
+          <a
+            class="inventory-link"
+            routerLink="/lista-inventario"
+          >
+            Revisar inventario
+          </a>
+        </aside>
+      </section>
+    </main>
+  </div>
+</div>

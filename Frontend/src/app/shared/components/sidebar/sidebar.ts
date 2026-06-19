@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { HasPermissionDirective } from '../../directives/has-permission';
-import { UserRole } from '../../../core/models/usuario.model';
+
+type UserRole = 'cajero' | 'gerente' | 'admin';
 
 @Component({
   selector: 'app-sidebar',
