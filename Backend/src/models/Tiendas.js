@@ -7,4 +7,4 @@ const tiendasSchema = new mongoose.Schema({
     telefono: String,
 });
 
-export const Tiendas = mongoose.model("Tiendas", tiendasSchema);
+export default mongoose.model("Tiendas", tiendasSchema);
