@@ -1,40 +1,26 @@
 export type Permission =
-  // Inicio
   | 'DASHBOARD_VER'
 
-  // Ventas
   | 'VENTAS_CREAR'
-  | 'VENTAS_DEVOLVER'
   | 'VENTAS_HISTORIAL_VER'
+  | 'VENTAS_DEVOLVER'
   | 'VENTAS_CANCELAR'
 
-  // Inventario
   | 'INVENTARIO_VER'
-  | 'INVENTARIO_MOVIMIENTOS_VER'
   | 'INVENTARIO_EDITAR'
+  | 'INVENTARIO_MOVIMIENTOS_VER'
 
-  // Productos
-  | 'PRODUCTOS_VER'
-  | 'PRODUCTOS_CREAR'
-  | 'PRODUCTOS_EDITAR'
-  | 'PRODUCTOS_ELIMINAR'
-
-  // Turnos
   | 'TURNOS_VER'
   | 'TURNOS_ABRIR'
   | 'TURNOS_CERRAR'
 
-  // Usuarios
+  | 'PRODUCTOS_VER'
+  | 'PRODUCTOS_GESTIONAR'
+
   | 'USUARIOS_VER'
-  | 'USUARIOS_CREAR'
-  | 'USUARIOS_EDITAR'
-  | 'USUARIOS_ELIMINAR'
+  | 'USUARIOS_GESTIONAR'
 
-  // Tiendas o sucursales
   | 'TIENDAS_VER'
-  | 'TIENDAS_CREAR'
-  | 'TIENDAS_EDITAR'
-  | 'TIENDAS_ELIMINAR'
+  | 'TIENDAS_GESTIONAR'
 
-  // Reportes
   | 'REPORTES_VER';

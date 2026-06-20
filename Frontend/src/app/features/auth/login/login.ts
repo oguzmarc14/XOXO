@@ -3,14 +3,15 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
-type RolUsuario = 'cajero' | 'gerente' | 'admin';
+import { UserRole } from '../../../core/models/usuario.model';
 
-interface UsuarioLocal {
+interface UsuarioPrueba {
   nombre: string;
   correo: string;
-  password: string;
-  rol: RolUsuario;
+  contrasena: string;
+  rol: UserRole;
   sucursal: string;
+  dashboard: string;
 }
 
 @Component({
@@ -25,30 +26,36 @@ interface UsuarioLocal {
 })
 export class Login {
   correo = '';
-  password = '';
-  error = '';
+  contrasena = '';
 
-  private readonly usuarios: UsuarioLocal[] = [
+  error = '';
+  cargando = false;
+  mostrarContrasena = false;
+
+  private readonly usuarios: UsuarioPrueba[] = [
     {
-      nombre: 'Carlos Ramírez',
-      correo: 'admin@xoxo.com',
-      password: '1234',
-      rol: 'admin',
-      sucursal: 'Administración general'
+      nombre: 'María López',
+      correo: 'cajero@xoxo.com',
+      contrasena: '1234',
+      rol: 'cajero',
+      sucursal: 'Sucursal #027 - Centro',
+      dashboard: '/dashboard-cajero'
     },
     {
       nombre: 'Laura Hernández',
       correo: 'gerente@xoxo.com',
-      password: '1234',
+      contrasena: '1234',
       rol: 'gerente',
-      sucursal: 'Sucursal #027 - Centro'
+      sucursal: 'Sucursal #027 - Centro',
+      dashboard: '/dashboard-gerente'
     },
     {
-      nombre: 'María López',
-      correo: 'cajero@xoxo.com',
-      password: '1234',
-      rol: 'cajero',
-      sucursal: 'Sucursal #027 - Centro'
+      nombre: 'Carlos Ramírez',
+      correo: 'admin@xoxo.com',
+      contrasena: '1234',
+      rol: 'admin',
+      sucursal: 'Administración general',
+      dashboard: '/dashboard-admin'
     }
   ];
 
@@ -57,34 +64,71 @@ export class Login {
   iniciarSesion(): void {
     this.error = '';
 
-    const correoNormalizado = this.correo.trim().toLowerCase();
+    const correoNormalizado = this.correo
+      .trim()
+      .toLowerCase();
+
+    const contrasenaNormalizada = this.contrasena.trim();
+
+    if (!correoNormalizado || !contrasenaNormalizada) {
+      this.error =
+        'Ingresa el correo electrónico y la contraseña.';
+      return;
+    }
 
     const usuarioEncontrado = this.usuarios.find(
       (usuario) =>
-        usuario.correo === correoNormalizado &&
-        usuario.password === this.password
+        usuario.correo.toLowerCase() === correoNormalizado &&
+        usuario.contrasena === contrasenaNormalizada
     );
 
     if (!usuarioEncontrado) {
-      this.error = 'Correo o contraseña incorrectos.';
+      this.error =
+        'El correo electrónico o la contraseña son incorrectos.';
       return;
     }
 
-    localStorage.setItem('nombre', usuarioEncontrado.nombre);
-    localStorage.setItem('correo', usuarioEncontrado.correo);
-    localStorage.setItem('rol', usuarioEncontrado.rol);
-    localStorage.setItem('sucursal', usuarioEncontrado.sucursal);
+    this.cargando = true;
 
-    if (usuarioEncontrado.rol === 'admin') {
-      this.router.navigate(['/dashboard-admin']);
-      return;
+    this.guardarSesion(usuarioEncontrado);
+
+    this.router
+      .navigate([usuarioEncontrado.dashboard])
+      .catch(() => {
+        this.error =
+          'No fue posible abrir el panel del usuario.';
+      })
+      .finally(() => {
+        this.cargando = false;
+      });
+  }
+
+  alternarContrasena(): void {
+    this.mostrarContrasena = !this.mostrarContrasena;
+  }
+
+  limpiarError(): void {
+    if (this.error) {
+      this.error = '';
     }
+  }
 
-    if (usuarioEncontrado.rol === 'gerente') {
-      this.router.navigate(['/dashboard-gerente']);
-      return;
-    }
+  private guardarSesion(usuario: UsuarioPrueba): void {
+    localStorage.setItem('nombre', usuario.nombre);
+    localStorage.setItem('correo', usuario.correo);
+    localStorage.setItem('rol', usuario.rol);
+    localStorage.setItem('sucursal', usuario.sucursal);
 
-    this.router.navigate(['/dashboard-cajero']);
+    localStorage.setItem('sesionActiva', 'true');
+
+    localStorage.setItem(
+      'usuarioActual',
+      JSON.stringify({
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        rol: usuario.rol,
+        sucursal: usuario.sucursal
+      })
+    );
   }
 }

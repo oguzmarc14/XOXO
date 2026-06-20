@@ -1,1 +1,694 @@
-<p>nueva-venta works!</p>
+<div class="page-shell">
+  <app-sidebar></app-sidebar>
+
+  <div class="page-container">
+    <app-topbar
+      titulo="Gestión de ventas"
+      [subtitulo]="
+        turnoActivo
+          ? 'Turno activo · ' + sucursal
+          : 'Turno inactivo · ' + sucursal
+      "
+    ></app-topbar>
+
+    <main class="page-content">
+      <!-- Estado del turno -->
+      <section
+        class="turno-alert"
+        [class.inactive]="!turnoActivo"
+      >
+        <div class="turno-status">
+          <span
+            class="status-dot"
+            [class.active]="turnoActivo"
+          ></span>
+
+          <div>
+            <strong>
+              {{ turnoActivo ? 'Turno activo' : 'Turno inactivo' }}
+            </strong>
+
+            <p>
+              {{
+                turnoActivo
+                  ? 'La sucursal puede registrar nuevas ventas.'
+                  : 'Debes abrir un turno antes de registrar una venta.'
+              }}
+            </p>
+          </div>
+        </div>
+
+        <a
+          *ngIf="!turnoActivo"
+          class="open-shift-button"
+          routerLink="/abrir-turno"
+        >
+          Abrir turno
+        </a>
+      </section>
+
+      <!-- Pestañas -->
+      <nav class="sales-tabs">
+        <button
+          *ngIf="puedeRegistrar"
+          type="button"
+          class="tab-button"
+          [class.active]="modoActivo === 'registrar'"
+          (click)="cambiarModo('registrar')"
+        >
+          <span>🛒</span>
+          Registrar venta
+        </button>
+
+        <button
+          *ngIf="puedeCancelar"
+          type="button"
+          class="tab-button"
+          [class.active]="modoActivo === 'cancelar'"
+          (click)="cambiarModo('cancelar')"
+        >
+          <span>✖</span>
+          Cancelar venta
+        </button>
+      </nav>
+
+      <!-- Registro de venta -->
+      <section
+        class="sale-layout"
+        *ngIf="
+          modoActivo === 'registrar' &&
+          puedeRegistrar
+        "
+      >
+        <!-- Catálogo -->
+        <section class="catalog-section">
+          <div class="section-heading">
+            <div>
+              <h2>Productos disponibles</h2>
+              <p>Selecciona los artículos para la venta actual.</p>
+            </div>
+
+            <span class="product-count">
+              {{ productosFiltrados.length }} productos
+            </span>
+          </div>
+
+          <div class="catalog-filters">
+            <div class="search-control">
+              <span>🔍</span>
+
+              <input
+                type="search"
+                placeholder="Buscar por nombre, código o categoría"
+                [(ngModel)]="busquedaProducto"
+              />
+            </div>
+
+            <select [(ngModel)]="categoriaSeleccionada">
+              <option
+                *ngFor="let categoria of categorias"
+                [value]="categoria"
+              >
+                {{
+                  categoria === 'todas'
+                    ? 'Todas las categorías'
+                    : categoria
+                }}
+              </option>
+            </select>
+          </div>
+
+          <div
+            class="products-grid"
+            *ngIf="
+              productosFiltrados.length > 0;
+              else sinProductos
+            "
+          >
+            <article
+              class="product-card"
+              *ngFor="let producto of productosFiltrados"
+              [class.out-of-stock]="producto.stock === 0"
+            >
+              <div class="product-top">
+                <div class="product-icon">
+                  {{ producto.icono }}
+                </div>
+
+                <span
+                  class="stock-badge"
+                  [class.low-stock]="
+                    producto.stock > 0 &&
+                    producto.stock <= 5
+                  "
+                  [class.no-stock]="producto.stock === 0"
+                >
+                  {{
+                    producto.stock === 0
+                      ? 'Sin stock'
+                      : 'Stock: ' + producto.stock
+                  }}
+                </span>
+              </div>
+
+              <div class="product-information">
+                <span class="product-code">
+                  {{ producto.codigo }}
+                </span>
+
+                <h3>{{ producto.nombre }}</h3>
+
+                <p>{{ producto.categoria }}</p>
+              </div>
+
+              <div class="product-footer">
+                <strong>
+                  {{
+                    producto.precio
+                      | currency:'MXN':'symbol':'1.2-2'
+                  }}
+                </strong>
+
+                <button
+                  type="button"
+                  (click)="agregarProducto(producto)"
+                  [disabled]="
+                    producto.stock === 0 ||
+                    !turnoActivo ||
+                    !puedeRegistrar
+                  "
+                >
+                  Agregar
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <ng-template #sinProductos>
+            <div class="empty-state">
+              <span>🔍</span>
+              <h3>No se encontraron productos</h3>
+              <p>
+                Modifica el texto de búsqueda o selecciona otra categoría.
+              </p>
+            </div>
+          </ng-template>
+        </section>
+
+        <!-- Carrito -->
+        <aside class="cart-section">
+          <div class="section-heading">
+            <div>
+              <h2>Venta actual</h2>
+
+              <p>
+                {{ cantidadArticulos }}
+                artículo(s) agregado(s)
+              </p>
+            </div>
+
+            <button
+              *ngIf="carrito.length > 0"
+              class="clear-cart"
+              type="button"
+              (click)="vaciarCarrito()"
+            >
+              Vaciar
+            </button>
+          </div>
+
+          <div
+            class="cart-products"
+            *ngIf="carrito.length > 0; else carritoVacio"
+          >
+            <article
+              class="cart-item"
+              *ngFor="let producto of carrito"
+            >
+              <div class="cart-item-icon">
+                {{ producto.icono }}
+              </div>
+
+              <div class="cart-item-information">
+                <strong>{{ producto.nombre }}</strong>
+
+                <span>
+                  {{
+                    producto.precio
+                      | currency:'MXN':'symbol':'1.2-2'
+                  }}
+                  por unidad
+                </span>
+
+                <div class="quantity-control">
+                  <button
+                    type="button"
+                    aria-label="Disminuir cantidad"
+                    (click)="disminuirCantidad(producto)"
+                  >
+                    −
+                  </button>
+
+                  <span>{{ producto.cantidad }}</span>
+
+                  <button
+                    type="button"
+                    aria-label="Aumentar cantidad"
+                    (click)="aumentarCantidad(producto)"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div class="cart-item-total">
+                <strong>
+                  {{
+                    producto.subtotal
+                      | currency:'MXN':'symbol':'1.2-2'
+                  }}
+                </strong>
+
+                <button
+                  type="button"
+                  aria-label="Eliminar producto"
+                  (click)="eliminarProducto(producto.id)"
+                >
+                  ×
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <ng-template #carritoVacio>
+            <div class="empty-state compact">
+              <span>🛒</span>
+              <h3>La venta está vacía</h3>
+              <p>
+                Agrega productos desde el catálogo para comenzar.
+              </p>
+            </div>
+          </ng-template>
+
+          <!-- Resumen -->
+          <div class="sale-summary">
+            <div>
+              <span>Artículos</span>
+              <strong>{{ cantidadArticulos }}</strong>
+            </div>
+
+            <div>
+              <span>Subtotal</span>
+              <strong>
+                {{
+                  subtotalVenta
+                    | currency:'MXN':'symbol':'1.2-2'
+                }}
+              </strong>
+            </div>
+
+            <div class="total-row">
+              <span>Total</span>
+
+              <strong>
+                {{
+                  totalVenta
+                    | currency:'MXN':'symbol':'1.2-2'
+                }}
+              </strong>
+            </div>
+          </div>
+
+          <!-- Método de pago -->
+          <section class="payment-section">
+            <label>Método de pago</label>
+
+            <div class="payment-options">
+              <button
+                type="button"
+                [class.active]="metodoPago === 'efectivo'"
+                (click)="seleccionarMetodoPago('efectivo')"
+              >
+                <span>💵</span>
+                Efectivo
+              </button>
+
+              <button
+                type="button"
+                [class.active]="metodoPago === 'tarjeta'"
+                (click)="seleccionarMetodoPago('tarjeta')"
+              >
+                <span>💳</span>
+                Tarjeta
+              </button>
+            </div>
+
+            <div
+              class="cash-payment"
+              *ngIf="metodoPago === 'efectivo'"
+            >
+              <label for="montoRecibido">
+                Monto recibido
+              </label>
+
+              <div class="money-input">
+                <span>$</span>
+
+                <input
+                  id="montoRecibido"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  [(ngModel)]="montoRecibido"
+                />
+              </div>
+
+              <div class="change-row">
+                <span>Cambio</span>
+
+                <strong>
+                  {{
+                    cambio
+                      | currency:'MXN':'symbol':'1.2-2'
+                  }}
+                </strong>
+              </div>
+            </div>
+
+            <div
+              class="card-information"
+              *ngIf="metodoPago === 'tarjeta'"
+            >
+              <span>💳</span>
+
+              <p>
+                Confirma el pago en la terminal antes de registrar la venta.
+              </p>
+            </div>
+          </section>
+
+          <!-- Mensajes -->
+          <p
+            class="message error"
+            *ngIf="mensajeErrorVenta"
+          >
+            {{ mensajeErrorVenta }}
+          </p>
+
+          <p
+            class="message success"
+            *ngIf="mensajeExitoVenta"
+          >
+            {{ mensajeExitoVenta }}
+          </p>
+
+          <div
+            class="last-sale"
+            *ngIf="ultimaVenta"
+          >
+            <div>
+              <span>Folio generado</span>
+              <strong>{{ ultimaVenta.folio }}</strong>
+            </div>
+
+            <a
+              *ngIf="puedeVerHistorial"
+              routerLink="/historial-ventas"
+            >
+              Ver en historial
+            </a>
+          </div>
+
+          <button
+            class="register-sale-button"
+            type="button"
+            [disabled]="
+              carrito.length === 0 ||
+              !turnoActivo ||
+              !puedeRegistrar
+            "
+            (click)="registrarVenta()"
+          >
+            Registrar venta
+          </button>
+        </aside>
+      </section>
+
+      <!-- Cancelación de venta -->
+      <section
+        class="cancel-section"
+        *ngIf="
+          modoActivo === 'cancelar' &&
+          puedeCancelar
+        "
+      >
+        <div class="cancel-heading">
+          <div class="cancel-icon">✖</div>
+
+          <div>
+            <span class="eyebrow">
+              Gestión de operaciones
+            </span>
+
+            <h2>Cancelar una venta</h2>
+
+            <p>
+              Busca una venta por folio y registra el motivo de la
+              cancelación.
+            </p>
+          </div>
+        </div>
+
+        <div class="sale-search">
+          <div class="form-group">
+            <label for="folioBusqueda">
+              Folio de venta
+            </label>
+
+            <input
+              id="folioBusqueda"
+              type="text"
+              placeholder="Ejemplo: V-0018"
+              [(ngModel)]="folioBusqueda"
+              (keyup.enter)="buscarVentaParaCancelar()"
+            />
+          </div>
+
+          <button
+            type="button"
+            (click)="buscarVentaParaCancelar()"
+          >
+            Buscar venta
+          </button>
+        </div>
+
+        <p
+          class="message error"
+          *ngIf="
+            mensajeErrorCancelacion &&
+            !ventaEncontrada
+          "
+        >
+          {{ mensajeErrorCancelacion }}
+        </p>
+
+        <p
+          class="message success"
+          *ngIf="
+            mensajeExitoCancelacion &&
+            !ventaEncontrada
+          "
+        >
+          {{ mensajeExitoCancelacion }}
+        </p>
+
+        <article
+          class="found-sale"
+          *ngIf="ventaEncontrada"
+        >
+          <div class="found-sale-header">
+            <div>
+              <span>Venta localizada</span>
+              <h3>{{ ventaEncontrada.folio }}</h3>
+            </div>
+
+            <span
+              class="status-badge"
+              [ngClass]="ventaEncontrada.estado"
+            >
+              {{ obtenerTextoEstado(ventaEncontrada.estado) }}
+            </span>
+          </div>
+
+          <div class="sale-data-grid">
+            <div>
+              <span>Fecha y hora</span>
+
+              <strong>
+                {{
+                  ventaEncontrada.fecha
+                    | date:'dd/MM/yyyy'
+                }}
+                · {{ ventaEncontrada.hora }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Cajero</span>
+              <strong>{{ ventaEncontrada.cajero }}</strong>
+            </div>
+
+            <div>
+              <span>Sucursal</span>
+              <strong>{{ ventaEncontrada.sucursal }}</strong>
+            </div>
+
+            <div>
+              <span>Productos</span>
+
+              <strong>
+                {{ ventaEncontrada.cantidadProductos }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Método de pago</span>
+
+              <strong>
+                {{
+                  ventaEncontrada.metodoPago === 'efectivo'
+                    ? 'Efectivo'
+                    : 'Tarjeta'
+                }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Total</span>
+
+              <strong>
+                {{
+                  ventaEncontrada.total
+                    | currency:'MXN':'symbol':'1.2-2'
+                }}
+              </strong>
+            </div>
+          </div>
+
+          <section class="sale-products">
+            <h4>Productos de la venta</h4>
+
+            <article
+              class="sale-product-row"
+              *ngFor="let producto of ventaEncontrada.productos"
+            >
+              <div>
+                <strong>{{ producto.nombre }}</strong>
+
+                <span>
+                  {{ producto.cantidad }} ×
+                  {{
+                    producto.precio
+                      | currency:'MXN':'symbol':'1.2-2'
+                  }}
+                </span>
+              </div>
+
+              <strong>
+                {{
+                  producto.subtotal
+                    | currency:'MXN':'symbol':'1.2-2'
+                }}
+              </strong>
+            </article>
+          </section>
+
+          <div class="cancel-form">
+            <div
+              class="form-group"
+              *ngIf="ventaEncontrada.estado === 'completada'"
+            >
+              <label for="motivoCancelacion">
+                Motivo de la cancelación
+              </label>
+
+              <textarea
+                id="motivoCancelacion"
+                rows="4"
+                placeholder="Describe el motivo de la cancelación..."
+                [(ngModel)]="motivoCancelacion"
+              ></textarea>
+            </div>
+
+            <div
+              class="previous-cancellation"
+              *ngIf="ventaEncontrada.estado === 'cancelada'"
+            >
+              <span>Motivo registrado</span>
+
+              <p>
+                {{
+                  ventaEncontrada.motivoCancelacion ||
+                  'No se registró un motivo.'
+                }}
+              </p>
+
+              <small *ngIf="ventaEncontrada.canceladaPor">
+                Cancelada por:
+                {{ ventaEncontrada.canceladaPor }}
+              </small>
+            </div>
+
+            <div
+              class="previous-cancellation warning"
+              *ngIf="ventaEncontrada.estado === 'devuelta'"
+            >
+              <span>Venta devuelta</span>
+
+              <p>
+                Esta operación ya fue procesada como devolución y no puede
+                cancelarse.
+              </p>
+            </div>
+
+            <p
+              class="message error"
+              *ngIf="mensajeErrorCancelacion"
+            >
+              {{ mensajeErrorCancelacion }}
+            </p>
+
+            <p
+              class="message success"
+              *ngIf="mensajeExitoCancelacion"
+            >
+              {{ mensajeExitoCancelacion }}
+            </p>
+
+            <div class="cancel-actions">
+              <button
+                class="secondary-button"
+                type="button"
+                (click)="limpiarCancelacion()"
+              >
+                Limpiar
+              </button>
+
+              <button
+                *ngIf="
+                  ventaEncontrada.estado === 'completada'
+                "
+                class="cancel-sale-button"
+                type="button"
+                (click)="cancelarVenta()"
+              >
+                Confirmar cancelación
+              </button>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+</div>

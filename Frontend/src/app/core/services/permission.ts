@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { Permission } from '../models/permission.model';
 import { UserRole } from '../models/usuario.model';
 
@@ -6,102 +7,115 @@ import { UserRole } from '../models/usuario.model';
   providedIn: 'root'
 })
 export class PermissionService {
-  private readonly rolePermissions: Record<UserRole, Permission[]> = {
-    cajero: [
-     'DASHBOARD_VER',
+  private readonly rolePermissions:
+    Record<UserRole, Permission[]> = {
+      cajero: [
+        'DASHBOARD_VER',
 
-     'VENTAS_CREAR',
-     'VENTAS_DEVOLVER',
-     'VENTAS_HISTORIAL_VER',
+        'VENTAS_CREAR',
+        'VENTAS_HISTORIAL_VER',
+        'VENTAS_DEVOLVER',
+        'VENTAS_CANCELAR',
 
-     'INVENTARIO_VER'
-    ],
+        'INVENTARIO_VER'
+      ],
 
-    gerente: [
-      'DASHBOARD_VER',
+      gerente: [
+        'DASHBOARD_VER',
 
-      'VENTAS_CREAR',
-      'VENTAS_DEVOLVER',
-      'VENTAS_HISTORIAL_VER',
-      'VENTAS_CANCELAR',
+        'VENTAS_CREAR',
+        'VENTAS_HISTORIAL_VER',
+        'VENTAS_DEVOLVER',
+        'VENTAS_CANCELAR',
 
-      'INVENTARIO_VER',
-      'INVENTARIO_MOVIMIENTOS_VER',
-      'INVENTARIO_EDITAR',
+        'INVENTARIO_VER',
+        'INVENTARIO_EDITAR',
+        'INVENTARIO_MOVIMIENTOS_VER',
 
-      'PRODUCTOS_VER',
+        'TURNOS_VER',
+        'TURNOS_ABRIR',
+        'TURNOS_CERRAR',
 
-      'TURNOS_VER',
-      'TURNOS_ABRIR',
-      'TURNOS_CERRAR'
-    ],
+        'PRODUCTOS_VER',
+        'PRODUCTOS_GESTIONAR'
+      ],
 
-    admin: [
-      'DASHBOARD_VER',
+      admin: [
+        'DASHBOARD_VER',
 
-      'VENTAS_CREAR',
-      'VENTAS_DEVOLVER',
-      'VENTAS_HISTORIAL_VER',
-      'VENTAS_CANCELAR',
+        'VENTAS_CREAR',
+        'VENTAS_HISTORIAL_VER',
+        'VENTAS_DEVOLVER',
+        'VENTAS_CANCELAR',
 
-      'INVENTARIO_VER',
-      'INVENTARIO_MOVIMIENTOS_VER',
-      'INVENTARIO_EDITAR',
+        'INVENTARIO_VER',
+        'INVENTARIO_EDITAR',
+        'INVENTARIO_MOVIMIENTOS_VER',
 
-      'PRODUCTOS_VER',
-      'PRODUCTOS_CREAR',
-      'PRODUCTOS_EDITAR',
-      'PRODUCTOS_ELIMINAR',
+        'TURNOS_VER',
+        'TURNOS_ABRIR',
+        'TURNOS_CERRAR',
 
-      'TURNOS_VER',
-      'TURNOS_ABRIR',
-      'TURNOS_CERRAR',
+        'PRODUCTOS_VER',
+        'PRODUCTOS_GESTIONAR',
 
-      'USUARIOS_VER',
-      'USUARIOS_CREAR',
-      'USUARIOS_EDITAR',
-      'USUARIOS_ELIMINAR',
+        'USUARIOS_VER',
+        'USUARIOS_GESTIONAR',
 
-      'TIENDAS_VER',
-      'TIENDAS_CREAR',
-      'TIENDAS_EDITAR',
-      'TIENDAS_ELIMINAR',
+        'TIENDAS_VER',
+        'TIENDAS_GESTIONAR',
 
-      'REPORTES_VER'
-    ]
-  };
+        'REPORTES_VER'
+      ]
+    };
 
   obtenerRolActual(): UserRole {
-    const rol = localStorage.getItem('rol');
+    const rolGuardado = localStorage.getItem('rol');
 
-    if (rol === 'gerente' || rol === 'admin') {
-      return rol;
+    if (
+      rolGuardado === 'cajero' ||
+      rolGuardado === 'gerente' ||
+      rolGuardado === 'admin'
+    ) {
+      return rolGuardado;
     }
 
     return 'cajero';
   }
 
-  tienePermiso(permission: Permission): boolean {
-    const rol = this.obtenerRolActual();
-
-    return this.rolePermissions[rol].includes(permission);
+  obtenerPermisosDelRol(
+    rol: UserRole
+  ): Permission[] {
+    return this.rolePermissions[rol];
   }
 
-  tieneAlgunPermiso(permissions: Permission[]): boolean {
+  obtenerPermisosActuales(): Permission[] {
+    return this.obtenerPermisosDelRol(
+      this.obtenerRolActual()
+    );
+  }
+
+  tienePermiso(
+    permission: Permission
+  ): boolean {
+    return this.obtenerPermisosActuales().includes(
+      permission
+    );
+  }
+
+  tieneAlgunPermiso(
+    permissions: Permission[]
+  ): boolean {
     return permissions.some((permission) =>
       this.tienePermiso(permission)
     );
   }
 
-  tieneTodosLosPermisos(permissions: Permission[]): boolean {
+  tieneTodosLosPermisos(
+    permissions: Permission[]
+  ): boolean {
     return permissions.every((permission) =>
       this.tienePermiso(permission)
     );
-  }
-
-  obtenerPermisosActuales(): Permission[] {
-    const rol = this.obtenerRolActual();
-
-    return [...this.rolePermissions[rol]];
   }
 }

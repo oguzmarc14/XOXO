@@ -1,1 +1,451 @@
-<p>historial-ventas works!</p>
+<div class="page-shell">
+  <app-sidebar></app-sidebar>
+
+  <div class="page-container">
+    <app-topbar
+      titulo="Historial de ventas"
+      [subtitulo]="'Consulta de operaciones · ' + sucursal"
+    ></app-topbar>
+
+    <main class="page-content">
+      <!-- Resumen -->
+      <section class="summary-grid">
+        <article class="summary-card featured">
+          <span>Total de ventas</span>
+          <strong>{{ totalVentas }}</strong>
+          <small>Operaciones registradas</small>
+        </article>
+
+        <article class="summary-card">
+          <span>Total vendido</span>
+          <strong>
+            {{ totalVendido | currency:'MXN':'symbol':'1.2-2' }}
+          </strong>
+          <small>Ventas completadas</small>
+        </article>
+
+        <article class="summary-card success">
+          <span>Completadas</span>
+          <strong>{{ ventasCompletadas }}</strong>
+          <small>Operaciones exitosas</small>
+        </article>
+
+        <article class="summary-card warning">
+          <span>Devueltas</span>
+          <strong>{{ ventasDevueltas }}</strong>
+          <small>Devoluciones procesadas</small>
+        </article>
+
+        <article class="summary-card danger">
+          <span>Canceladas</span>
+          <strong>{{ ventasCanceladas }}</strong>
+          <small>Operaciones anuladas</small>
+        </article>
+      </section>
+
+      <!-- Filtros -->
+      <section class="filters-section">
+        <div class="filters-heading">
+          <div>
+            <h2>Buscar ventas</h2>
+            <p>
+              Filtra por folio, cajero, producto, fecha o estado.
+            </p>
+          </div>
+
+          <a
+            class="new-sale-button"
+            routerLink="/nueva-venta"
+          >
+            + Nueva venta
+          </a>
+        </div>
+
+        <div class="filters-grid">
+          <div class="form-group search-group">
+            <label for="busqueda">
+              Buscar
+            </label>
+
+            <input
+              id="busqueda"
+              type="search"
+              placeholder="Folio, cajero, producto o sucursal"
+              [(ngModel)]="busqueda"
+              (ngModelChange)="aplicarFiltros()"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="estado">
+              Estado
+            </label>
+
+            <select
+              id="estado"
+              [(ngModel)]="estadoSeleccionado"
+              (ngModelChange)="aplicarFiltros()"
+            >
+              <option value="todos">
+                Todos
+              </option>
+
+              <option value="completada">
+                Completadas
+              </option>
+
+              <option value="devuelta">
+                Devueltas
+              </option>
+
+              <option value="cancelada">
+                Canceladas
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="fecha">
+              Fecha
+            </label>
+
+            <input
+              id="fecha"
+              type="date"
+              [(ngModel)]="fechaSeleccionada"
+              (ngModelChange)="aplicarFiltros()"
+            />
+          </div>
+
+          <button
+            class="clear-button"
+            type="button"
+            (click)="limpiarFiltros()"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+      </section>
+
+      <!-- Tabla -->
+      <section class="table-section">
+        <div class="table-header">
+          <div>
+            <h2>Ventas registradas</h2>
+
+            <p>
+              {{ ventasFiltradas.length }}
+              resultado(s) encontrado(s)
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="table-container"
+          *ngIf="
+            ventasFiltradas.length > 0;
+            else sinResultados
+          "
+        >
+          <table>
+            <thead>
+              <tr>
+                <th>Folio</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Cajero</th>
+                <th>Productos</th>
+                <th>Método</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let venta of ventasFiltradas">
+                <td>
+                  <strong>{{ venta.folio }}</strong>
+                </td>
+
+                <td>
+                  {{ venta.fecha | date:'dd/MM/yyyy' }}
+                </td>
+
+                <td>{{ venta.hora }}</td>
+
+                <td>
+                  <div class="cashier-cell">
+                    <strong>{{ venta.cajero }}</strong>
+                    <span>{{ venta.sucursal }}</span>
+                  </div>
+                </td>
+
+                <td>
+                  {{ venta.cantidadProductos }}
+                </td>
+
+                <td class="payment-cell">
+                  {{
+                    venta.metodoPago === 'efectivo'
+                      ? 'Efectivo'
+                      : 'Tarjeta'
+                  }}
+                </td>
+
+                <td>
+                  <strong>
+                    {{
+                      venta.total
+                        | currency:'MXN':'symbol':'1.2-2'
+                    }}
+                  </strong>
+                </td>
+
+                <td>
+                  <span
+                    class="status-badge"
+                    [ngClass]="
+                      obtenerClaseEstado(venta.estado)
+                    "
+                  >
+                    {{ obtenerTextoEstado(venta.estado) }}
+                  </span>
+                </td>
+
+                <td>
+                  <div class="actions">
+                    <button
+                      class="action-button detail"
+                      type="button"
+                      (click)="abrirDetalle(venta)"
+                    >
+                      Ver
+                    </button>
+
+                    <button
+                      *ngIf="
+                        puedeDevolver &&
+                        venta.estado === 'completada'
+                      "
+                      class="action-button return"
+                      type="button"
+                      (click)="devolverVenta(venta)"
+                    >
+                      Devolver
+                    </button>
+
+                    <button
+                      *ngIf="
+                        puedeCancelar &&
+                        venta.estado === 'completada'
+                      "
+                      class="action-button cancel"
+                      type="button"
+                      (click)="abrirCancelacion(venta)"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #sinResultados>
+          <div class="empty-state">
+            <div>🔍</div>
+            <h3>No se encontraron ventas</h3>
+            <p>
+              Modifica los filtros o registra una nueva venta.
+            </p>
+          </div>
+        </ng-template>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Modal de detalle -->
+<div
+  class="modal-backdrop"
+  *ngIf="modalDetalleAbierto && ventaSeleccionada"
+  (click)="cerrarDetalle()"
+>
+  <section
+    class="modal-card"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <div>
+        <span>Detalle de venta</span>
+        <h2>{{ ventaSeleccionada.folio }}</h2>
+      </div>
+
+      <button
+        class="close-modal"
+        type="button"
+        (click)="cerrarDetalle()"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="sale-information">
+      <div>
+        <span>Fecha</span>
+        <strong>
+          {{
+            ventaSeleccionada.fecha
+              | date:'dd/MM/yyyy'
+          }}
+          · {{ ventaSeleccionada.hora }}
+        </strong>
+      </div>
+
+      <div>
+        <span>Cajero</span>
+        <strong>
+          {{ ventaSeleccionada.cajero }}
+        </strong>
+      </div>
+
+      <div>
+        <span>Sucursal</span>
+        <strong>
+          {{ ventaSeleccionada.sucursal }}
+        </strong>
+      </div>
+
+      <div>
+        <span>Método de pago</span>
+        <strong>
+          {{
+            ventaSeleccionada.metodoPago === 'efectivo'
+              ? 'Efectivo'
+              : 'Tarjeta'
+          }}
+        </strong>
+      </div>
+    </div>
+
+    <div class="products-list">
+      <h3>Productos</h3>
+
+      <article
+        class="product-row"
+        *ngFor="
+          let producto of ventaSeleccionada.productos
+        "
+      >
+        <div>
+          <strong>{{ producto.nombre }}</strong>
+          <span>
+            {{ producto.cantidad }} ×
+            {{
+              producto.precio
+                | currency:'MXN':'symbol':'1.2-2'
+            }}
+          </span>
+        </div>
+
+        <strong>
+          {{
+            producto.subtotal
+              | currency:'MXN':'symbol':'1.2-2'
+          }}
+        </strong>
+      </article>
+    </div>
+
+    <div class="modal-total">
+      <span>Total</span>
+
+      <strong>
+        {{
+          ventaSeleccionada.total
+            | currency:'MXN':'symbol':'1.2-2'
+        }}
+      </strong>
+    </div>
+
+    <button
+      class="modal-main-button"
+      type="button"
+      (click)="cerrarDetalle()"
+    >
+      Cerrar
+    </button>
+  </section>
+</div>
+
+<!-- Modal de cancelación -->
+<div
+  class="modal-backdrop"
+  *ngIf="modalCancelacionAbierto && ventaSeleccionada"
+  (click)="cerrarCancelacion()"
+>
+  <section
+    class="modal-card cancel-modal"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <div>
+        <span>Cancelar venta</span>
+        <h2>{{ ventaSeleccionada.folio }}</h2>
+      </div>
+
+      <button
+        class="close-modal"
+        type="button"
+        (click)="cerrarCancelacion()"
+      >
+        ×
+      </button>
+    </div>
+
+    <p class="cancel-warning">
+      La venta permanecerá en el historial, pero su estado
+      cambiará a cancelada.
+    </p>
+
+    <div class="form-group">
+      <label for="motivoCancelacion">
+        Motivo de la cancelación
+      </label>
+
+      <textarea
+        id="motivoCancelacion"
+        rows="4"
+        placeholder="Describe el motivo..."
+        [(ngModel)]="motivoCancelacion"
+      ></textarea>
+    </div>
+
+    <p
+      class="error-message"
+      *ngIf="mensajeError"
+    >
+      {{ mensajeError }}
+    </p>
+
+    <div class="modal-actions">
+      <button
+        class="secondary-modal-button"
+        type="button"
+        (click)="cerrarCancelacion()"
+      >
+        Volver
+      </button>
+
+      <button
+        class="danger-modal-button"
+        type="button"
+        (click)="confirmarCancelacion()"
+      >
+        Confirmar cancelación
+      </button>
+    </div>
+  </section>
+</div>
