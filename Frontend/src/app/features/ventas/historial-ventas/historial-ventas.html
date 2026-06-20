@@ -1,271 +1,308 @@
-<div class="page-shell">
-  <app-sidebar></app-sidebar>
+<main class="page-content">
+  <!-- Resumen -->
+  <section class="summary-grid">
+    <article class="summary-card featured">
+      <span>Total de ventas</span>
 
-  <div class="page-container">
-    <app-topbar
-      titulo="Historial de ventas"
-      [subtitulo]="'Consulta de operaciones · ' + sucursal"
-    ></app-topbar>
+      <strong>
+        {{ totalVentas }}
+      </strong>
 
-    <main class="page-content">
-      <!-- Resumen -->
-      <section class="summary-grid">
-        <article class="summary-card featured">
-          <span>Total de ventas</span>
-          <strong>{{ totalVentas }}</strong>
-          <small>Operaciones registradas</small>
-        </article>
+      <small>
+        Operaciones registradas
+      </small>
+    </article>
 
-        <article class="summary-card">
-          <span>Total vendido</span>
-          <strong>
-            {{ totalVendido | currency:'MXN':'symbol':'1.2-2' }}
-          </strong>
-          <small>Ventas completadas</small>
-        </article>
+    <article class="summary-card">
+      <span>Total vendido</span>
 
-        <article class="summary-card success">
-          <span>Completadas</span>
-          <strong>{{ ventasCompletadas }}</strong>
-          <small>Operaciones exitosas</small>
-        </article>
+      <strong>
+        {{
+          totalVendido
+            | currency:'MXN':'symbol':'1.2-2'
+        }}
+      </strong>
 
-        <article class="summary-card warning">
-          <span>Devueltas</span>
-          <strong>{{ ventasDevueltas }}</strong>
-          <small>Devoluciones procesadas</small>
-        </article>
+      <small>
+        Ventas completadas
+      </small>
+    </article>
 
-        <article class="summary-card danger">
-          <span>Canceladas</span>
-          <strong>{{ ventasCanceladas }}</strong>
-          <small>Operaciones anuladas</small>
-        </article>
-      </section>
+    <article class="summary-card success">
+      <span>Completadas</span>
 
-      <!-- Filtros -->
-      <section class="filters-section">
-        <div class="filters-heading">
-          <div>
-            <h2>Buscar ventas</h2>
-            <p>
-              Filtra por folio, cajero, producto, fecha o estado.
-            </p>
-          </div>
+      <strong>
+        {{ ventasCompletadas }}
+      </strong>
 
-          <a
-            class="new-sale-button"
-            routerLink="/nueva-venta"
-          >
-            + Nueva venta
-          </a>
-        </div>
+      <small>
+        Operaciones exitosas
+      </small>
+    </article>
 
-        <div class="filters-grid">
-          <div class="form-group search-group">
-            <label for="busqueda">
-              Buscar
-            </label>
+    <article class="summary-card warning">
+      <span>Devueltas</span>
 
-            <input
-              id="busqueda"
-              type="search"
-              placeholder="Folio, cajero, producto o sucursal"
-              [(ngModel)]="busqueda"
-              (ngModelChange)="aplicarFiltros()"
-            />
-          </div>
+      <strong>
+        {{ ventasDevueltas }}
+      </strong>
 
-          <div class="form-group">
-            <label for="estado">
-              Estado
-            </label>
+      <small>
+        Devoluciones procesadas
+      </small>
+    </article>
 
-            <select
-              id="estado"
-              [(ngModel)]="estadoSeleccionado"
-              (ngModelChange)="aplicarFiltros()"
-            >
-              <option value="todos">
-                Todos
-              </option>
+    <article class="summary-card danger">
+      <span>Canceladas</span>
 
-              <option value="completada">
-                Completadas
-              </option>
+      <strong>
+        {{ ventasCanceladas }}
+      </strong>
 
-              <option value="devuelta">
-                Devueltas
-              </option>
+      <small>
+        Operaciones anuladas
+      </small>
+    </article>
+  </section>
 
-              <option value="cancelada">
-                Canceladas
-              </option>
-            </select>
-          </div>
+  <!-- Filtros -->
+  <section class="filters-section">
+    <div class="filters-heading">
+      <div>
+        <h2>Buscar ventas</h2>
 
-          <div class="form-group">
-            <label for="fecha">
-              Fecha
-            </label>
+        <p>
+          Filtra por folio, cajero, producto, fecha o estado.
+        </p>
+      </div>
 
-            <input
-              id="fecha"
-              type="date"
-              [(ngModel)]="fechaSeleccionada"
-              (ngModelChange)="aplicarFiltros()"
-            />
-          </div>
+      <a
+        class="new-sale-button"
+        routerLink="/nueva-venta"
+      >
+        + Nueva venta
+      </a>
+    </div>
 
-          <button
-            class="clear-button"
-            type="button"
-            (click)="limpiarFiltros()"
-          >
-            Limpiar filtros
-          </button>
-        </div>
-      </section>
+    <div class="filters-grid">
+      <div class="form-group search-group">
+        <label for="busqueda">
+          Buscar
+        </label>
 
-      <!-- Tabla -->
-      <section class="table-section">
-        <div class="table-header">
-          <div>
-            <h2>Ventas registradas</h2>
+        <input
+          id="busqueda"
+          type="search"
+          placeholder="Folio, cajero, producto o sucursal"
+          [(ngModel)]="busqueda"
+          (ngModelChange)="aplicarFiltros()"
+        />
+      </div>
 
-            <p>
-              {{ ventasFiltradas.length }}
-              resultado(s) encontrado(s)
-            </p>
-          </div>
-        </div>
+      <div class="form-group">
+        <label for="estado">
+          Estado
+        </label>
 
-        <div
-          class="table-container"
-          *ngIf="
-            ventasFiltradas.length > 0;
-            else sinResultados
-          "
+        <select
+          id="estado"
+          [(ngModel)]="estadoSeleccionado"
+          (ngModelChange)="aplicarFiltros()"
         >
-          <table>
-            <thead>
-              <tr>
-                <th>Folio</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Cajero</th>
-                <th>Productos</th>
-                <th>Método</th>
-                <th>Total</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
+          <option value="todos">
+            Todos
+          </option>
 
-            <tbody>
-              <tr *ngFor="let venta of ventasFiltradas">
-                <td>
-                  <strong>{{ venta.folio }}</strong>
-                </td>
+          <option value="completada">
+            Completadas
+          </option>
 
-                <td>
-                  {{ venta.fecha | date:'dd/MM/yyyy' }}
-                </td>
+          <option value="devuelta">
+            Devueltas
+          </option>
 
-                <td>{{ venta.hora }}</td>
+          <option value="cancelada">
+            Canceladas
+          </option>
+        </select>
+      </div>
 
-                <td>
-                  <div class="cashier-cell">
-                    <strong>{{ venta.cajero }}</strong>
-                    <span>{{ venta.sucursal }}</span>
-                  </div>
-                </td>
+      <div class="form-group">
+        <label for="fecha">
+          Fecha
+        </label>
 
-                <td>
-                  {{ venta.cantidadProductos }}
-                </td>
+        <input
+          id="fecha"
+          type="date"
+          [(ngModel)]="fechaSeleccionada"
+          (ngModelChange)="aplicarFiltros()"
+        />
+      </div>
 
-                <td class="payment-cell">
-                  {{
-                    venta.metodoPago === 'efectivo'
-                      ? 'Efectivo'
-                      : 'Tarjeta'
-                  }}
-                </td>
+      <button
+        class="clear-button"
+        type="button"
+        (click)="limpiarFiltros()"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
 
-                <td>
-                  <strong>
-                    {{
-                      venta.total
-                        | currency:'MXN':'symbol':'1.2-2'
-                    }}
-                  </strong>
-                </td>
+  <!-- Tabla -->
+  <section class="table-section">
+    <div class="table-header">
+      <div>
+        <h2>Ventas registradas</h2>
 
-                <td>
-                  <span
-                    class="status-badge"
-                    [ngClass]="
-                      obtenerClaseEstado(venta.estado)
-                    "
-                  >
-                    {{ obtenerTextoEstado(venta.estado) }}
-                  </span>
-                </td>
+        <p>
+          {{ ventasFiltradas.length }}
+          resultado(s) encontrado(s)
+        </p>
+      </div>
+    </div>
 
-                <td>
-                  <div class="actions">
-                    <button
-                      class="action-button detail"
-                      type="button"
-                      (click)="abrirDetalle(venta)"
-                    >
-                      Ver
-                    </button>
+    <div
+      class="table-container"
+      *ngIf="
+        ventasFiltradas.length > 0;
+        else sinResultados
+      "
+    >
+      <table>
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Cajero</th>
+            <th>Productos</th>
+            <th>Método</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
 
-                    <button
-                      *ngIf="
-                        puedeDevolver &&
-                        venta.estado === 'completada'
-                      "
-                      class="action-button return"
-                      type="button"
-                      (click)="devolverVenta(venta)"
-                    >
-                      Devolver
-                    </button>
+        <tbody>
+          <tr *ngFor="let venta of ventasFiltradas">
+            <td>
+              <strong>
+                {{ venta.folio }}
+              </strong>
+            </td>
 
-                    <button
-                      *ngIf="
-                        puedeCancelar &&
-                        venta.estado === 'completada'
-                      "
-                      class="action-button cancel"
-                      type="button"
-                      (click)="abrirCancelacion(venta)"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <td>
+              {{
+                venta.fecha
+                  | date:'dd/MM/yyyy'
+              }}
+            </td>
+
+            <td>
+              {{ venta.hora }}
+            </td>
+
+            <td>
+              <div class="cashier-cell">
+                <strong>
+                  {{ venta.cajero }}
+                </strong>
+
+                <span>
+                  {{ venta.sucursal }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              {{ venta.cantidadProductos }}
+            </td>
+
+            <td class="payment-cell">
+              {{
+                venta.metodoPago === 'efectivo'
+                  ? 'Efectivo'
+                  : 'Tarjeta'
+              }}
+            </td>
+
+            <td>
+              <strong>
+                {{
+                  venta.total
+                    | currency:'MXN':'symbol':'1.2-2'
+                }}
+              </strong>
+            </td>
+
+            <td>
+              <span
+                class="status-badge"
+                [ngClass]="obtenerClaseEstado(venta.estado)"
+              >
+                {{ obtenerTextoEstado(venta.estado) }}
+              </span>
+            </td>
+
+            <td>
+              <div class="actions">
+                <button
+                  class="action-button detail"
+                  type="button"
+                  (click)="abrirDetalle(venta)"
+                >
+                  Ver
+                </button>
+
+                <button
+                  *ngIf="
+                    puedeDevolver &&
+                    venta.estado === 'completada'
+                  "
+                  class="action-button return"
+                  type="button"
+                  (click)="devolverVenta(venta)"
+                >
+                  Devolver
+                </button>
+
+                <button
+                  *ngIf="
+                    puedeCancelar &&
+                    venta.estado === 'completada'
+                  "
+                  class="action-button cancel"
+                  type="button"
+                  (click)="abrirCancelacion(venta)"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #sinResultados>
+      <div class="empty-state">
+        <div>
+          🔍
         </div>
 
-        <ng-template #sinResultados>
-          <div class="empty-state">
-            <div>🔍</div>
-            <h3>No se encontraron ventas</h3>
-            <p>
-              Modifica los filtros o registra una nueva venta.
-            </p>
-          </div>
-        </ng-template>
-      </section>
-    </main>
-  </div>
-</div>
+        <h3>
+          No se encontraron ventas
+        </h3>
+
+        <p>
+          Modifica los filtros o registra una nueva venta.
+        </p>
+      </div>
+    </ng-template>
+  </section>
+</main>
 
 <!-- Modal de detalle -->
 <div
@@ -279,13 +316,19 @@
   >
     <div class="modal-header">
       <div>
-        <span>Detalle de venta</span>
-        <h2>{{ ventaSeleccionada.folio }}</h2>
+        <span>
+          Detalle de venta
+        </span>
+
+        <h2>
+          {{ ventaSeleccionada.folio }}
+        </h2>
       </div>
 
       <button
         class="close-modal"
         type="button"
+        aria-label="Cerrar detalle"
         (click)="cerrarDetalle()"
       >
         ×
@@ -295,17 +338,20 @@
     <div class="sale-information">
       <div>
         <span>Fecha</span>
+
         <strong>
           {{
             ventaSeleccionada.fecha
               | date:'dd/MM/yyyy'
           }}
-          · {{ ventaSeleccionada.hora }}
+          ·
+          {{ ventaSeleccionada.hora }}
         </strong>
       </div>
 
       <div>
         <span>Cajero</span>
+
         <strong>
           {{ ventaSeleccionada.cajero }}
         </strong>
@@ -313,6 +359,7 @@
 
       <div>
         <span>Sucursal</span>
+
         <strong>
           {{ ventaSeleccionada.sucursal }}
         </strong>
@@ -320,6 +367,7 @@
 
       <div>
         <span>Método de pago</span>
+
         <strong>
           {{
             ventaSeleccionada.metodoPago === 'efectivo'
@@ -331,18 +379,22 @@
     </div>
 
     <div class="products-list">
-      <h3>Productos</h3>
+      <h3>
+        Productos
+      </h3>
 
       <article
         class="product-row"
-        *ngFor="
-          let producto of ventaSeleccionada.productos
-        "
+        *ngFor="let producto of ventaSeleccionada.productos"
       >
         <div>
-          <strong>{{ producto.nombre }}</strong>
+          <strong>
+            {{ producto.nombre }}
+          </strong>
+
           <span>
-            {{ producto.cantidad }} ×
+            {{ producto.cantidad }}
+            ×
             {{
               producto.precio
                 | currency:'MXN':'symbol':'1.2-2'
@@ -360,7 +412,9 @@
     </div>
 
     <div class="modal-total">
-      <span>Total</span>
+      <span>
+        Total
+      </span>
 
       <strong>
         {{
@@ -392,13 +446,19 @@
   >
     <div class="modal-header">
       <div>
-        <span>Cancelar venta</span>
-        <h2>{{ ventaSeleccionada.folio }}</h2>
+        <span>
+          Cancelar venta
+        </span>
+
+        <h2>
+          {{ ventaSeleccionada.folio }}
+        </h2>
       </div>
 
       <button
         class="close-modal"
         type="button"
+        aria-label="Cerrar cancelación"
         (click)="cerrarCancelacion()"
       >
         ×

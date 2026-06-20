@@ -1,1 +1,658 @@
-<p>movimientos-inventario works!</p>
+<main class="movements-page">
+  <!-- Resumen -->
+  <section class="summary-grid">
+    <article class="summary-card featured">
+      <div class="summary-icon">
+        🔄
+      </div>
+
+      <div>
+        <span>Total de movimientos</span>
+
+        <strong>
+          {{ totalMovimientos }}
+        </strong>
+
+        <small>
+          Registros realizados
+        </small>
+      </div>
+    </article>
+
+    <article class="summary-card entry">
+      <div class="summary-icon">
+        ↓
+      </div>
+
+      <div>
+        <span>Unidades de entrada</span>
+
+        <strong>
+          {{ totalEntradas }}
+        </strong>
+
+        <small>
+          Mercancía recibida
+        </small>
+      </div>
+    </article>
+
+    <article class="summary-card exit">
+      <div class="summary-icon">
+        ↑
+      </div>
+
+      <div>
+        <span>Unidades de salida</span>
+
+        <strong>
+          {{ totalSalidas }}
+        </strong>
+
+        <small>
+          Mercancía descontada
+        </small>
+      </div>
+    </article>
+
+    <article class="summary-card adjustment">
+      <div class="summary-icon">
+        ⚙️
+      </div>
+
+      <div>
+        <span>Unidades ajustadas</span>
+
+        <strong>
+          {{ totalAjustes }}
+        </strong>
+
+        <small>
+          Correcciones manuales
+        </small>
+      </div>
+    </article>
+
+    <article class="summary-card total">
+      <div class="summary-icon">
+        📦
+      </div>
+
+      <div>
+        <span>Unidades movidas</span>
+
+        <strong>
+          {{ unidadesMovidas }}
+        </strong>
+
+        <small>
+          Suma de operaciones
+        </small>
+      </div>
+    </article>
+  </section>
+
+  <!-- Filtros -->
+  <section class="filters-section">
+    <div class="section-heading">
+      <div>
+        <h2>
+          Consultar movimientos
+        </h2>
+
+        <p>
+          Revisa entradas, salidas y ajustes registrados
+          en las sucursales.
+        </p>
+      </div>
+
+      <div class="heading-actions">
+        <a
+          class="secondary-link"
+          routerLink="/lista-inventario"
+        >
+          📦 Ver inventario
+        </a>
+
+        <button
+          *ngIf="puedeRegistrarMovimiento"
+          class="primary-button"
+          type="button"
+          (click)="abrirModalMovimiento()"
+        >
+          + Registrar movimiento
+        </button>
+      </div>
+    </div>
+
+    <div class="filters-grid">
+      <div class="form-group search-group">
+        <label for="busqueda">
+          Buscar
+        </label>
+
+        <div class="search-control">
+          <span aria-hidden="true">
+            🔍
+          </span>
+
+          <input
+            id="busqueda"
+            type="search"
+            placeholder="Folio, producto, código, responsable o motivo"
+            [(ngModel)]="busqueda"
+            (ngModelChange)="aplicarFiltros()"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="tipo">
+          Tipo
+        </label>
+
+        <select
+          id="tipo"
+          [(ngModel)]="tipoSeleccionado"
+          (ngModelChange)="aplicarFiltros()"
+        >
+          <option value="todos">
+            Todos
+          </option>
+
+          <option value="entrada">
+            Entradas
+          </option>
+
+          <option value="salida">
+            Salidas
+          </option>
+
+          <option value="ajuste">
+            Ajustes
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="sucursal">
+          Sucursal
+        </label>
+
+        <select
+          id="sucursal"
+          [(ngModel)]="sucursalSeleccionada"
+          (ngModelChange)="aplicarFiltros()"
+        >
+          <option value="todas">
+            Todas
+          </option>
+
+          <option
+            *ngFor="let sucursal of sucursales"
+            [value]="sucursal"
+          >
+            {{ sucursal }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="fecha">
+          Fecha
+        </label>
+
+        <input
+          id="fecha"
+          type="date"
+          [(ngModel)]="fechaSeleccionada"
+          (ngModelChange)="aplicarFiltros()"
+        />
+      </div>
+
+      <button
+        class="clear-button"
+        type="button"
+        (click)="limpiarFiltros()"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
+
+  <!-- Tabla -->
+  <section class="movements-section">
+    <div class="table-heading">
+      <div>
+        <h2>
+          Historial de movimientos
+        </h2>
+
+        <p>
+          {{ movimientosFiltrados.length }}
+          movimiento(s) encontrado(s)
+        </p>
+      </div>
+
+      <span class="results-badge">
+        Registro actualizado
+      </span>
+    </div>
+
+    <div
+      class="table-container"
+      *ngIf="
+        movimientosFiltrados.length > 0;
+        else sinMovimientos
+      "
+    >
+      <table>
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Producto</th>
+            <th>Sucursal</th>
+            <th>Cantidad</th>
+            <th>Existencia</th>
+            <th>Responsable</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            *ngFor="
+              let movimiento of movimientosFiltrados
+            "
+          >
+            <td>
+              <span class="folio">
+                {{ movimiento.folio }}
+              </span>
+            </td>
+
+            <td>
+              <div class="date-cell">
+                <strong>
+                  {{
+                    movimiento.fecha
+                      | date:'dd/MM/yyyy'
+                  }}
+                </strong>
+
+                <span>
+                  {{ movimiento.hora }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <span
+                class="type-badge"
+                [ngClass]="movimiento.tipo"
+              >
+                <span class="type-icon">
+                  {{
+                    movimiento.tipo === 'entrada'
+                      ? '↓'
+                      : movimiento.tipo === 'salida'
+                        ? '↑'
+                        : '⚙'
+                  }}
+                </span>
+
+                {{
+                  obtenerTextoTipo(
+                    movimiento.tipo
+                  )
+                }}
+              </span>
+            </td>
+
+            <td>
+              <div class="product-cell">
+                <div class="product-icon">
+                  📦
+                </div>
+
+                <div>
+                  <strong>
+                    {{ movimiento.producto }}
+                  </strong>
+
+                  <span>
+                    {{ movimiento.codigoProducto }}
+                  </span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="branch-cell">
+                <span aria-hidden="true">
+                  🏪
+                </span>
+
+                <span>
+                  {{ movimiento.sucursal }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <strong
+                class="quantity"
+                [ngClass]="movimiento.tipo"
+              >
+                {{
+                  obtenerSignoCantidad(
+                    movimiento
+                  )
+                }}
+              </strong>
+            </td>
+
+            <td>
+              <div class="stock-change">
+                <span>
+                  {{ movimiento.existenciaAnterior }}
+                </span>
+
+                <strong>→</strong>
+
+                <span>
+                  {{ movimiento.existenciaNueva }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <div class="responsible-cell">
+                <div class="responsible-avatar">
+                  {{
+                    movimiento.responsable
+                      .charAt(0)
+                      .toUpperCase()
+                  }}
+                </div>
+
+                <span>
+                  {{ movimiento.responsable }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <span
+                class="reason"
+                [title]="movimiento.motivo"
+              >
+                {{ movimiento.motivo }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #sinMovimientos>
+      <div class="empty-state">
+        <div class="empty-icon">
+          🔍
+        </div>
+
+        <h3>
+          No se encontraron movimientos
+        </h3>
+
+        <p>
+          Modifica los filtros o registra un nuevo
+          movimiento de inventario.
+        </p>
+
+        <button
+          type="button"
+          (click)="limpiarFiltros()"
+        >
+          Mostrar todos los movimientos
+        </button>
+      </div>
+    </ng-template>
+  </section>
+</main>
+
+<!-- Modal para registrar movimiento -->
+<div
+  class="modal-backdrop"
+  *ngIf="modalMovimientoAbierto"
+  (click)="cerrarModalMovimiento()"
+>
+  <section
+    class="modal-card"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="modal-header">
+      <div>
+        <span>
+          Inventario
+        </span>
+
+        <h2>
+          Registrar movimiento
+        </h2>
+
+        <p>
+          Agrega una entrada, salida o ajuste
+          de existencias.
+        </p>
+      </div>
+
+      <button
+        class="close-modal"
+        type="button"
+        aria-label="Cerrar"
+        (click)="cerrarModalMovimiento()"
+      >
+        ×
+      </button>
+    </header>
+
+    <form
+      class="movement-form"
+      (ngSubmit)="registrarMovimiento()"
+    >
+      <div class="movement-types">
+        <button
+          type="button"
+          class="movement-type"
+          [class.active]="
+            tipoNuevoMovimiento === 'entrada'
+          "
+          (click)="
+            tipoNuevoMovimiento = 'entrada'
+          "
+        >
+          <span class="movement-type-icon entry">
+            ↓
+          </span>
+
+          <div>
+            <strong>Entrada</strong>
+
+            <small>
+              Aumenta la existencia.
+            </small>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          class="movement-type"
+          [class.active]="
+            tipoNuevoMovimiento === 'salida'
+          "
+          (click)="
+            tipoNuevoMovimiento = 'salida'
+          "
+        >
+          <span class="movement-type-icon exit">
+            ↑
+          </span>
+
+          <div>
+            <strong>Salida</strong>
+
+            <small>
+              Descuenta unidades.
+            </small>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          class="movement-type"
+          [class.active]="
+            tipoNuevoMovimiento === 'ajuste'
+          "
+          (click)="
+            tipoNuevoMovimiento = 'ajuste'
+          "
+        >
+          <span class="movement-type-icon adjustment">
+            ⚙
+          </span>
+
+          <div>
+            <strong>Ajuste</strong>
+
+            <small>
+              Define la existencia real.
+            </small>
+          </div>
+        </button>
+      </div>
+
+      <div class="modal-form-grid">
+        <div class="form-group full-width">
+          <label for="productoMovimiento">
+            Producto
+          </label>
+
+          <select
+            id="productoMovimiento"
+            name="productoMovimiento"
+            [(ngModel)]="productoSeleccionadoId"
+            [disabled]="guardando"
+            required
+          >
+            <option [ngValue]="0">
+              Selecciona un producto
+            </option>
+
+            <option
+              *ngFor="let producto of productos"
+              [ngValue]="producto.id"
+            >
+              {{ producto.codigo }} ·
+              {{ producto.nombre }}
+              · Stock: {{ producto.existencia }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cantidadMovimiento">
+            {{
+              tipoNuevoMovimiento === 'ajuste'
+                ? 'Nueva existencia'
+                : 'Cantidad'
+            }}
+          </label>
+
+          <input
+            id="cantidadMovimiento"
+            name="cantidadMovimiento"
+            type="number"
+            min="0"
+            step="1"
+            placeholder="0"
+            [(ngModel)]="cantidadMovimiento"
+            [disabled]="guardando"
+            required
+          />
+
+          <small *ngIf="productoSeleccionado">
+            Existencia actual:
+            {{ productoSeleccionado.existencia }}
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="sucursalMovimiento">
+            Sucursal
+          </label>
+
+          <input
+            id="sucursalMovimiento"
+            name="sucursalMovimiento"
+            type="text"
+            maxlength="100"
+            placeholder="Sucursal"
+            [(ngModel)]="sucursalMovimiento"
+            [disabled]="guardando"
+            required
+          />
+        </div>
+
+        <div class="form-group full-width">
+          <label for="motivoMovimiento">
+            Motivo
+          </label>
+
+          <textarea
+            id="motivoMovimiento"
+            name="motivoMovimiento"
+            rows="4"
+            maxlength="250"
+            placeholder="Describe el motivo del movimiento..."
+            [(ngModel)]="motivoMovimiento"
+            [disabled]="guardando"
+            required
+          ></textarea>
+        </div>
+      </div>
+
+      <p
+        class="message error"
+        *ngIf="mensajeError"
+      >
+        {{ mensajeError }}
+      </p>
+
+      <div class="modal-actions">
+        <button
+          class="secondary-button"
+          type="button"
+          [disabled]="guardando"
+          (click)="cerrarModalMovimiento()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          class="save-button"
+          type="submit"
+          [disabled]="guardando"
+        >
+          {{
+            guardando
+              ? 'Guardando...'
+              : 'Registrar movimiento'
+          }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

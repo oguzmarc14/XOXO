@@ -1,277 +1,281 @@
-<div class="dashboard-shell">
-  <app-sidebar></app-sidebar>
+<main class="dashboard-content">
+  <!-- Estado y gestión del turno -->
+  <section
+    class="turno-banner"
+    [class.turno-inactivo]="!turnoActivo"
+  >
+    <div class="turno-information">
+      <span class="turno-label">
+        Estado del turno
+      </span>
 
-  <div class="dashboard-page">
-    <app-topbar
-      titulo="Panel de gestión de la sucursal"
-      [subtitulo]="subtituloTurno"
-    ></app-topbar>
+      <h2>
+        {{ turnoActivo ? 'Turno activo' : 'Turno inactivo' }}
+      </h2>
 
-    <main class="dashboard-content">
-      <!-- Estado y gestión del turno -->
-      <section
-        class="turno-banner"
-        [class.turno-inactivo]="!turnoActivo"
+      <p>
+        {{
+          turnoActivo
+            ? 'La sucursal se encuentra operando actualmente.'
+            : 'Debe abrirse un turno para comenzar las operaciones.'
+        }}
+      </p>
+    </div>
+
+    <div class="turno-status">
+      <span
+        class="status-indicator"
+        [class.active]="turnoActivo"
+      ></span>
+
+      <span>
+        {{ turnoActivo ? 'En operación' : 'Fuera de operación' }}
+      </span>
+    </div>
+
+    <div class="turno-actions">
+      <a
+        *ngIf="!turnoActivo"
+        class="turno-button open"
+        routerLink="/abrir-turno"
       >
-        <div class="turno-information">
-          <span class="turno-label">
-            Estado del turno
-          </span>
+        Abrir turno
+      </a>
 
-          <h2>
-            {{ turnoActivo ? 'Turno activo' : 'Turno inactivo' }}
-          </h2>
+      <a
+        *ngIf="turnoActivo"
+        class="turno-button close"
+        routerLink="/cerrar-turno"
+      >
+        Cerrar turno
+      </a>
+    </div>
+  </section>
+
+  <!-- Accesos principales -->
+  <section class="quick-actions">
+    <a
+      class="action-card primary"
+      routerLink="/nueva-venta"
+    >
+      <div class="action-icon">🛒</div>
+
+      <div>
+        <h3>Nueva venta</h3>
+
+        <p>
+          Registrar una nueva venta desde la sucursal.
+        </p>
+      </div>
+    </a>
+
+    <a
+      class="action-card"
+      routerLink="/historial-ventas"
+    >
+      <div class="action-icon">🧾</div>
+
+      <div>
+        <h3>Historial de ventas</h3>
+
+        <p>
+          Consultar las ventas y devoluciones de la sucursal.
+        </p>
+      </div>
+    </a>
+
+    <a
+      class="action-card"
+      routerLink="/lista-inventario"
+    >
+      <div class="action-icon">📦</div>
+
+      <div>
+        <h3>Inventario</h3>
+
+        <p>
+          Consultar y administrar las existencias disponibles.
+        </p>
+      </div>
+    </a>
+
+    <a
+      class="action-card"
+      routerLink="/movimientos-inventario"
+    >
+      <div class="action-icon">🔄</div>
+
+      <div>
+        <h3>Movimientos</h3>
+
+        <p>
+          Revisar entradas, salidas y ajustes de inventario.
+        </p>
+      </div>
+    </a>
+  </section>
+
+  <!-- Información principal -->
+  <section class="dashboard-grid">
+    <!-- Ventas recientes -->
+    <section class="table-section">
+      <div class="section-header">
+        <div>
+          <h2>Ventas recientes</h2>
 
           <p>
-            {{
-              turnoActivo
-                ? 'La sucursal se encuentra operando actualmente.'
-                : 'Debe abrirse un turno para comenzar las operaciones.'
-            }}
+            Últimos movimientos registrados en la sucursal
           </p>
         </div>
 
-        <div class="turno-status">
-          <span
-            class="status-indicator"
-            [class.active]="turnoActivo"
-          ></span>
-
-          <span>
-            {{ turnoActivo ? 'En operación' : 'Fuera de operación' }}
-          </span>
-        </div>
-
-        <div class="turno-actions">
-          <a
-            *ngIf="!turnoActivo"
-            class="turno-button open"
-            routerLink="/abrir-turno"
-          >
-            Abrir turno
-          </a>
-
-          <a
-            *ngIf="turnoActivo"
-            class="turno-button close"
-            routerLink="/cerrar-turno"
-          >
-            Cerrar turno
-          </a>
-        </div>
-      </section>
-
-      <!-- Accesos principales -->
-      <section class="quick-actions">
         <a
-          class="action-card primary"
-          routerLink="/nueva-venta"
-        >
-          <div class="action-icon">🛒</div>
-
-          <div>
-            <h3>Nueva venta</h3>
-
-            <p>
-              Registrar una nueva venta desde la sucursal.
-            </p>
-          </div>
-        </a>
-
-        <a
-          class="action-card"
+          class="section-link"
           routerLink="/historial-ventas"
         >
-          <div class="action-icon">🧾</div>
-
-          <div>
-            <h3>Historial de ventas</h3>
-
-            <p>
-              Consultar las ventas y devoluciones de la sucursal.
-            </p>
-          </div>
+          Ver historial
         </a>
+      </div>
 
-        <a
-          class="action-card"
-          routerLink="/lista-inventario"
-        >
-          <div class="action-icon">📦</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Cajero</th>
+              <th>Hora</th>
+              <th>Total</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
 
-          <div>
-            <h3>Inventario</h3>
+          <tbody>
+            <tr>
+              <td>#V-0046</td>
+              <td>María López</td>
+              <td>16:42</td>
+              <td>$520.00</td>
+              <td>
+                <span class="status-badge success">
+                  Completada
+                </span>
+              </td>
+            </tr>
 
-            <p>
-              Consultar y administrar las existencias disponibles.
-            </p>
-          </div>
-        </a>
+            <tr>
+              <td>#V-0045</td>
+              <td>José Ramírez</td>
+              <td>16:31</td>
+              <td>$218.00</td>
+              <td>
+                <span class="status-badge success">
+                  Completada
+                </span>
+              </td>
+            </tr>
 
-        <a
-          class="action-card"
-          routerLink="/movimientos-inventario"
-        >
-          <div class="action-icon">🔄</div>
+            <tr>
+              <td>#V-0044</td>
+              <td>María López</td>
+              <td>16:18</td>
+              <td>$96.00</td>
+              <td>
+                <span class="status-badge danger">
+                  Devuelta
+                </span>
+              </td>
+            </tr>
 
-          <div>
-            <h3>Movimientos</h3>
+            <tr>
+              <td>#V-0043</td>
+              <td>Ana Torres</td>
+              <td>15:57</td>
+              <td>$380.00</td>
+              <td>
+                <span class="status-badge success">
+                  Completada
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-            <p>
-              Revisar entradas, salidas y ajustes de inventario.
-            </p>
-          </div>
-        </a>
-      </section>
+    <!-- Alertas de inventario -->
+    <aside class="alerts-section">
+      <div class="section-header">
+        <div>
+          <h2>Alertas de inventario</h2>
 
-      <!-- Información principal -->
-      <section class="dashboard-grid">
-        <!-- Ventas recientes -->
-        <section class="table-section">
-          <div class="section-header">
-            <div>
-              <h2>Ventas recientes</h2>
+          <p>
+            Productos que requieren atención
+          </p>
+        </div>
+      </div>
 
-              <p>
-                Últimos movimientos registrados en la sucursal
-              </p>
-            </div>
-
-            <a
-              class="section-link"
-              routerLink="/historial-ventas"
-            >
-              Ver historial
-            </a>
-          </div>
-
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Folio</th>
-                  <th>Cajero</th>
-                  <th>Hora</th>
-                  <th>Total</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                <tr>
-                  <td>#V-0046</td>
-                  <td>María López</td>
-                  <td>16:42</td>
-                  <td>$520.00</td>
-                  <td>
-                    <span class="status-badge success">
-                      Completada
-                    </span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>#V-0045</td>
-                  <td>José Ramírez</td>
-                  <td>16:31</td>
-                  <td>$218.00</td>
-                  <td>
-                    <span class="status-badge success">
-                      Completada
-                    </span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>#V-0044</td>
-                  <td>María López</td>
-                  <td>16:18</td>
-                  <td>$96.00</td>
-                  <td>
-                    <span class="status-badge danger">
-                      Devuelta
-                    </span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>#V-0043</td>
-                  <td>Ana Torres</td>
-                  <td>15:57</td>
-                  <td>$380.00</td>
-                  <td>
-                    <span class="status-badge success">
-                      Completada
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- Alertas de inventario -->
-        <aside class="alerts-section">
-          <div class="section-header">
-            <div>
-              <h2>Alertas de inventario</h2>
-
-              <p>
-                Productos que requieren atención
-              </p>
-            </div>
+      <div class="alert-list">
+        <article class="alert-item">
+          <div class="alert-icon">
+            ⚠️
           </div>
 
-          <div class="alert-list">
-            <article class="alert-item">
-              <div class="alert-icon">
-                ⚠️
-              </div>
+          <div class="alert-content">
+            <strong>
+              Playera negra mediana
+            </strong>
 
-              <div class="alert-content">
-                <strong>Playera negra mediana</strong>
-                <span>Quedan 3 unidades</span>
-              </div>
-            </article>
+            <span>
+              Quedan 3 unidades
+            </span>
+          </div>
+        </article>
 
-            <article class="alert-item">
-              <div class="alert-icon">
-                ⚠️
-              </div>
-
-              <div class="alert-content">
-                <strong>Sudadera vino grande</strong>
-                <span>Quedan 2 unidades</span>
-              </div>
-            </article>
-
-            <article class="alert-item">
-              <div class="alert-icon">
-                ⚠️
-              </div>
-
-              <div class="alert-content">
-                <strong>Bolsa XoXO edición especial</strong>
-                <span>Queda 1 unidad</span>
-              </div>
-            </article>
+        <article class="alert-item">
+          <div class="alert-icon">
+            ⚠️
           </div>
 
-          <a
-            class="inventory-link"
-            routerLink="/lista-inventario"
-          >
-            Revisar inventario
-          </a>
-        </aside>
-      </section>
+          <div class="alert-content">
+            <strong>
+              Sudadera vino grande
+            </strong>
 
-      <!-- Resumen reutilizable -->
-      <app-card-resumen
-        titulo="Resumen de la sucursal"
-        subtitulo="Estado del turno y datos complementarios de la operación"
-        [items]="resumenFinal"
-      ></app-card-resumen>
-    </main>
-  </div>
-</div>
+            <span>
+              Quedan 2 unidades
+            </span>
+          </div>
+        </article>
+
+        <article class="alert-item">
+          <div class="alert-icon">
+            ⚠️
+          </div>
+
+          <div class="alert-content">
+            <strong>
+              Bolsa XoXO edición especial
+            </strong>
+
+            <span>
+              Queda 1 unidad
+            </span>
+          </div>
+        </article>
+      </div>
+
+      <a
+        class="inventory-link"
+        routerLink="/lista-inventario"
+      >
+        Revisar inventario
+      </a>
+    </aside>
+  </section>
+
+  <!-- Resumen reutilizable -->
+  <app-card-resumen
+    titulo="Resumen de la sucursal"
+    subtitulo="Estado del turno y datos complementarios de la operación"
+    [items]="resumenFinal"
+  ></app-card-resumen>
+</main>

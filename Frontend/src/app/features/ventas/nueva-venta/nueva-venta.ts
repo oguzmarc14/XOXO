@@ -46,8 +46,6 @@ interface ProductoCarrito extends ProductoCatalogo {
     CommonModule,
     FormsModule,
     RouterLink,
-    Sidebar,
-    Topbar
   ],
   templateUrl: './nueva-venta.html',
   styleUrl: './nueva-venta.css'

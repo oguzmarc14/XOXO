@@ -1,92 +1,102 @@
-import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
-import { Router } from '@angular/router';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output
+} from '@angular/core';
 
-type UserRole = 'cajero' | 'gerente' | 'admin';
+import {
+  CommonModule
+} from '@angular/common';
+
+import {
+  Usuario
+} from '../../../core/models/usuario.model';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule
+  ],
   templateUrl: './topbar.html',
   styleUrl: './topbar.css'
 })
 export class Topbar {
-  @Input() titulo = 'Bienvenido al sistema de ventas de XoXO';
+  @Input() titulo = '';
   @Input() subtitulo = '';
+
+  @Input() usuario!: Usuario;
+
+  @Output() revisarPerfil =
+    new EventEmitter<void>();
+
+  @Output() cerrarSesion =
+    new EventEmitter<void>();
 
   menuUsuarioAbierto = false;
 
-  private readonly rolActual: UserRole =
-    (localStorage.getItem('rol') as UserRole) || 'cajero';
+  constructor(
+    private elementRef:
+      ElementRef<HTMLElement>
+  ) {}
 
-  usuario = {
-    nombre: this.obtenerNombre(),
-    correo: localStorage.getItem('correo') || 'usuario@xoxo.com',
-    rol: this.obtenerNombreRol(),
-    sucursal:
-      localStorage.getItem('sucursal') || 'Sucursal #027 - Centro',
-    avatar: this.obtenerAvatar()
-  };
+  alternarMenuUsuario(
+    event: MouseEvent
+  ): void {
+    event.stopPropagation();
 
-  constructor(private router: Router) {}
-
-  alternarMenuUsuario(): void {
-    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+    this.menuUsuarioAbierto =
+      !this.menuUsuarioAbierto;
   }
 
-  cerrarMenuUsuario(): void {
+  abrirPerfil(): void {
     this.menuUsuarioAbierto = false;
+
+    this.revisarPerfil.emit();
   }
 
-  cerrarSesion(): void {
-    localStorage.removeItem('correo');
-    localStorage.removeItem('rol');
-    localStorage.removeItem('nombre');
-    localStorage.removeItem('sucursal');
+  salir(): void {
+    this.menuUsuarioAbierto = false;
 
-    this.router.navigate(['/']);
+    this.cerrarSesion.emit();
   }
 
-  private obtenerNombre(): string {
-    const nombreGuardado = localStorage.getItem('nombre');
+  manejarErrorImagen(
+    event: Event
+  ): void {
+    const imagen =
+      event.target as HTMLImageElement;
 
-    if (nombreGuardado) {
-      return nombreGuardado;
-    }
-
-    if (this.rolActual === 'admin') {
-      return 'Carlos Ramírez';
-    }
-
-    if (this.rolActual === 'gerente') {
-      return 'Laura Hernández';
-    }
-
-    return 'María López';
+    imagen.src = '/XoXO.png';
   }
 
-  private obtenerNombreRol(): string {
-    if (this.rolActual === 'admin') {
-      return 'Administrador';
-    }
+  @HostListener(
+    'document:click',
+    ['$event']
+  )
+  cerrarMenuAlHacerClickFuera(
+    event: MouseEvent
+  ): void {
+    const objetivo =
+      event.target as Node;
 
-    if (this.rolActual === 'gerente') {
-      return 'Gerente';
-    }
+    const clickDentro =
+      this.elementRef
+        .nativeElement
+        .contains(objetivo);
 
-    return 'Cajero';
+    if (!clickDentro) {
+      this.menuUsuarioAbierto = false;
+    }
   }
 
-  private obtenerAvatar(): string {
-    if (this.rolActual === 'admin') {
-      return '/Administradores.png';
-    }
-
-    if (this.rolActual === 'gerente') {
-      return '/Gerentes.png';
-    }
-
-    return '/Cajeros.png';
+  @HostListener(
+    'document:keydown.escape'
+  )
+  cerrarMenuConEscape(): void {
+    this.menuUsuarioAbierto = false;
   }
 }

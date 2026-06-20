@@ -1,1 +1,419 @@
-<p>lista-inventario works!</p>
+<main class="inventory-page">
+  <!-- Resumen -->
+  <section class="summary-grid">
+    <article class="summary-card featured">
+      <div class="summary-icon">
+        📦
+      </div>
+
+      <div>
+        <span>Productos registrados</span>
+
+        <strong>
+          {{ totalProductos }}
+        </strong>
+
+        <small>
+          Productos distintos
+        </small>
+      </div>
+    </article>
+
+    <article class="summary-card">
+      <div class="summary-icon">
+        🧮
+      </div>
+
+      <div>
+        <span>Unidades disponibles</span>
+
+        <strong>
+          {{ totalUnidades }}
+        </strong>
+
+        <small>
+          Existencias acumuladas
+        </small>
+      </div>
+    </article>
+
+    <article class="summary-card warning">
+      <div class="summary-icon">
+        ⚠️
+      </div>
+
+      <div>
+        <span>Stock bajo</span>
+
+        <strong>
+          {{ productosStockBajo }}
+        </strong>
+
+        <small>
+          Requieren reabastecimiento
+        </small>
+      </div>
+    </article>
+
+    <article class="summary-card danger">
+      <div class="summary-icon">
+        ✖
+      </div>
+
+      <div>
+        <span>Productos agotados</span>
+
+        <strong>
+          {{ productosAgotados }}
+        </strong>
+
+        <small>
+          Sin unidades disponibles
+        </small>
+      </div>
+    </article>
+
+    <article class="summary-card value">
+      <div class="summary-icon">
+        💰
+      </div>
+
+      <div>
+        <span>Valor del inventario</span>
+
+        <strong>
+          {{
+            valorInventario
+              | currency:'MXN':'symbol':'1.2-2'
+          }}
+        </strong>
+
+        <small>
+          Valor estimado disponible
+        </small>
+      </div>
+    </article>
+  </section>
+
+  <!-- Filtros -->
+  <section class="filters-section">
+    <div class="section-heading">
+      <div>
+        <h2>Consultar inventario</h2>
+
+        <p>
+          Busca productos y filtra las existencias
+          disponibles por sucursal.
+        </p>
+      </div>
+
+      <div class="heading-actions">
+        <a
+          *ngIf="puedeVerMovimientos"
+          class="secondary-link"
+          routerLink="/movimientos-inventario"
+        >
+          🔄 Ver movimientos
+        </a>
+
+        <a
+          *ngIf="puedeAdministrar"
+          class="primary-link"
+          routerLink="/lista-productos"
+        >
+          🏷️ Administrar productos
+        </a>
+      </div>
+    </div>
+
+    <div class="filters-grid">
+      <div class="form-group search-group">
+        <label for="busqueda">
+          Buscar producto
+        </label>
+
+        <div class="search-control">
+          <span aria-hidden="true">
+            🔍
+          </span>
+
+          <input
+            id="busqueda"
+            type="search"
+            placeholder="Código, nombre, categoría o sucursal"
+            [(ngModel)]="busqueda"
+            (ngModelChange)="aplicarFiltros()"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="categoria">
+          Categoría
+        </label>
+
+        <select
+          id="categoria"
+          [(ngModel)]="categoriaSeleccionada"
+          (ngModelChange)="aplicarFiltros()"
+        >
+          <option value="todas">
+            Todas
+          </option>
+
+          <option
+            *ngFor="let categoria of categorias"
+            [value]="categoria"
+          >
+            {{ categoria }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="sucursal">
+          Sucursal
+        </label>
+
+        <select
+          id="sucursal"
+          [(ngModel)]="sucursalSeleccionada"
+          (ngModelChange)="aplicarFiltros()"
+        >
+          <option value="todas">
+            Todas
+          </option>
+
+          <option
+            *ngFor="let sucursal of sucursales"
+            [value]="sucursal"
+          >
+            {{ sucursal }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="estado">
+          Nivel de existencias
+        </label>
+
+        <select
+          id="estado"
+          [(ngModel)]="estadoSeleccionado"
+          (ngModelChange)="aplicarFiltros()"
+        >
+          <option value="todos">
+            Todos
+          </option>
+
+          <option value="disponible">
+            Disponible
+          </option>
+
+          <option value="bajo">
+            Stock bajo
+          </option>
+
+          <option value="agotado">
+            Agotado
+          </option>
+        </select>
+      </div>
+
+      <button
+        class="clear-button"
+        type="button"
+        (click)="limpiarFiltros()"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
+
+  <!-- Tabla -->
+  <section class="inventory-section">
+    <div class="table-heading">
+      <div>
+        <h2>Existencias registradas</h2>
+
+        <p>
+          {{ productosFiltrados.length }}
+          producto(s) encontrado(s)
+        </p>
+      </div>
+
+      <span class="results-badge">
+        Inventario actualizado
+      </span>
+    </div>
+
+    <div
+      class="table-container"
+      *ngIf="
+        productosFiltrados.length > 0;
+        else inventarioVacio
+      "
+    >
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Código</th>
+            <th>Categoría</th>
+            <th>Sucursal</th>
+            <th>Existencia</th>
+            <th>Mínimo</th>
+            <th>Precio</th>
+            <th>Estado</th>
+            <th>Actualización</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            *ngFor="
+              let producto of productosFiltrados
+            "
+          >
+            <td>
+              <div class="product-cell">
+                <div class="product-avatar">
+                  {{
+                    producto.categoria === 'Playeras'
+                      ? '👕'
+                      : producto.categoria === 'Sudaderas'
+                        ? '🧥'
+                        : producto.categoria === 'Accesorios'
+                          ? '👜'
+                          : '🎁'
+                  }}
+                </div>
+
+                <div>
+                  <strong>
+                    {{ producto.nombre }}
+                  </strong>
+
+                  <span>
+                    ID {{ producto.id }}
+                  </span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="product-code">
+                {{ producto.codigo }}
+              </span>
+            </td>
+
+            <td>
+              {{ producto.categoria }}
+            </td>
+
+            <td>
+              <div class="branch-cell">
+                <span aria-hidden="true">
+                  🏪
+                </span>
+
+                <span>
+                  {{ producto.sucursal }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <strong
+                class="stock-number"
+                [class.stock-warning]="
+                  producto.estado === 'bajo'
+                "
+                [class.stock-danger]="
+                  producto.estado === 'agotado'
+                "
+              >
+                {{ producto.existencia }}
+              </strong>
+            </td>
+
+            <td>
+              {{ producto.minimo }}
+            </td>
+
+            <td>
+              {{
+                producto.precio
+                  | currency:'MXN':'symbol':'1.2-2'
+              }}
+            </td>
+
+            <td>
+              <span
+                class="status-badge"
+                [ngClass]="
+                  obtenerClaseEstado(
+                    producto.estado
+                  )
+                "
+              >
+                <span
+                  class="status-dot"
+                ></span>
+
+                {{
+                  obtenerTextoEstado(
+                    producto.estado
+                  )
+                }}
+              </span>
+            </td>
+
+            <td>
+              <div class="date-cell">
+                <strong>
+                  {{
+                    producto.ultimaActualizacion
+                      | date:'dd/MM/yyyy'
+                  }}
+                </strong>
+
+                <span>
+                  {{
+                    producto.ultimaActualizacion
+                      | date:'HH:mm'
+                  }}
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #inventarioVacio>
+      <div class="empty-state">
+        <div class="empty-icon">
+          🔍
+        </div>
+
+        <h3>
+          No se encontraron productos
+        </h3>
+
+        <p>
+          Modifica los filtros para consultar otros
+          registros del inventario.
+        </p>
+
+        <button
+          type="button"
+          (click)="limpiarFiltros()"
+        >
+          Mostrar todo el inventario
+        </button>
+      </div>
+    </ng-template>
+  </section>
+</main>

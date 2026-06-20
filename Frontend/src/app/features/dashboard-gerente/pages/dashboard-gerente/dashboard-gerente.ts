@@ -14,8 +14,6 @@ import {
   standalone: true,
   imports: [
     RouterLink,
-    Sidebar,
-    Topbar,
     CardResumen
   ],
   templateUrl: './dashboard-gerente.html',

@@ -1,42 +1,27 @@
 :host {
   display: block;
-  min-height: 100vh;
-  font-family: Arial, Helvetica, sans-serif;
-  color: #f9fafb;
-  background: #111827;
-}
-
-.dashboard-shell {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  align-items: stretch;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(225, 29, 72, 0.12),
-      transparent 32%
-    ),
-    linear-gradient(135deg, #111827, #1f2937);
-}
-
-app-sidebar {
-  display: block;
-  min-height: 100vh;
-}
-
-.dashboard-page {
+  width: 100%;
   min-width: 0;
-  min-height: 100vh;
+  min-height: 100%;
+  color: #f9fafb;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 .dashboard-content {
-  padding: 8px 30px 30px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 30px 34px;
 }
 
 /* Gestión del sistema */
 
 .management-section {
+  width: 100%;
+  min-width: 0;
   margin-bottom: 28px;
   padding: 24px;
   border: 1px solid rgba(249, 250, 251, 0.08);
@@ -65,12 +50,16 @@ app-sidebar {
 }
 
 .management-grid {
+  width: 100%;
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
 .management-card {
+  min-width: 0;
   min-height: 145px;
   padding: 18px;
   border: 1px solid rgba(249, 250, 251, 0.08);
@@ -79,7 +68,8 @@ app-sidebar {
   color: #f9fafb;
   text-decoration: none;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
   align-items: flex-start;
   gap: 14px;
   transition:
@@ -154,14 +144,19 @@ app-sidebar {
 /* Actividad y alertas */
 
 .dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(290px, 0.8fr);
-  gap: 20px;
+  width: 100%;
+  min-width: 0;
   margin-bottom: 30px;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 2fr)
+    minmax(290px, 0.8fr);
+  gap: 20px;
 }
 
 .table-section,
 .alerts-section {
+  min-width: 0;
   padding: 24px;
   border: 1px solid rgba(249, 250, 251, 0.08);
   border-radius: 24px;
@@ -190,19 +185,21 @@ app-sidebar {
 .alerts-link:hover {
   transform: translateY(-1px);
   border-color: rgba(225, 29, 72, 0.7);
-  color: #f9fafb;
   background: linear-gradient(135deg, #9f1239, #e11d48);
+  color: #f9fafb;
 }
 
 /* Tabla */
 
 .table-container {
   width: 100%;
+  min-width: 0;
   overflow-x: auto;
 }
 
 table {
   width: 100%;
+  min-width: 760px;
   border-collapse: collapse;
 }
 
@@ -211,6 +208,7 @@ td {
   padding: 16px 14px;
   border-bottom: 1px solid rgba(249, 250, 251, 0.08);
   text-align: left;
+  white-space: nowrap;
 }
 
 th {
@@ -257,13 +255,14 @@ tbody tr:last-child td {
 /* Alertas */
 
 .alert-list {
+  margin-bottom: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 18px;
 }
 
 .alert-item {
+  min-width: 0;
   padding: 14px;
   border: 1px solid rgba(249, 250, 251, 0.07);
   border-radius: 15px;
@@ -306,8 +305,11 @@ tbody tr:last-child td {
 }
 
 .alert-content strong {
+  overflow: hidden;
   color: #f9fafb;
   font-size: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .alert-content span {
@@ -322,21 +324,27 @@ tbody tr:last-child td {
   text-align: center;
 }
 
+/* Resumen */
+
 app-card-resumen {
   display: block;
+  width: 100%;
+  min-width: 0;
 }
 
 /* Responsive */
 
 @media (max-width: 1300px) {
   .management-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 1150px) {
   .management-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
   .dashboard-grid {
@@ -344,19 +352,9 @@ app-card-resumen {
   }
 }
 
-@media (max-width: 1050px) {
-  .dashboard-shell {
-    grid-template-columns: 1fr;
-  }
-
-  app-sidebar {
-    min-height: auto;
-  }
-}
-
 @media (max-width: 720px) {
   .dashboard-content {
-    padding: 8px 20px 20px;
+    padding: 8px 18px 24px;
   }
 
   .management-grid {
@@ -376,7 +374,11 @@ app-card-resumen {
 
   .section-link {
     width: 100%;
-    box-sizing: border-box;
     text-align: center;
+  }
+
+  .management-card {
+    grid-template-columns:
+      auto minmax(0, 1fr) auto;
   }
 }

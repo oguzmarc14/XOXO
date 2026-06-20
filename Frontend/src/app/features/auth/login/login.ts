@@ -3,14 +3,19 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { UserRole } from '../../../core/models/usuario.model';
+import {
+  SexoUsuario,
+  Usuario,
+  UserRole
+} from '../../../core/models/usuario.model';
 
-interface UsuarioPrueba {
-  nombre: string;
-  correo: string;
+import {
+  UsuarioActualService
+} from '../../../core/services/usuario-actual';
+
+interface UsuarioPrueba
+  extends Usuario {
   contrasena: string;
-  rol: UserRole;
-  sucursal: string;
   dashboard: string;
 }
 
@@ -32,55 +37,84 @@ export class Login {
   cargando = false;
   mostrarContrasena = false;
 
-  private readonly usuarios: UsuarioPrueba[] = [
-    {
-      nombre: 'María López',
-      correo: 'cajero@xoxo.com',
-      contrasena: '1234',
-      rol: 'cajero',
-      sucursal: 'Sucursal #027 - Centro',
-      dashboard: '/dashboard-cajero'
-    },
-    {
-      nombre: 'Laura Hernández',
-      correo: 'gerente@xoxo.com',
-      contrasena: '1234',
-      rol: 'gerente',
-      sucursal: 'Sucursal #027 - Centro',
-      dashboard: '/dashboard-gerente'
-    },
-    {
-      nombre: 'Carlos Ramírez',
-      correo: 'admin@xoxo.com',
-      contrasena: '1234',
-      rol: 'admin',
-      sucursal: 'Administración general',
-      dashboard: '/dashboard-admin'
-    }
-  ];
+  private readonly usuarios:
+    UsuarioPrueba[] = [
+      {
+        id: 1,
+        nombre: 'María López',
+        sexo: 'mujer',
+        correo: 'cajero@xoxo.com',
+        contrasena: '1234',
+        rol: 'cajero',
+        cargo: 'Cajera',
+        sucursal:
+          'Sucursal #027 - Centro',
+        avatar: '/Cajera.png',
+        dashboard: '/cajero/inicio'
+      },
+      {
+        id: 2,
+        nombre: 'Laura Hernández',
+        sexo: 'mujer',
+        correo: 'gerente@xoxo.com',
+        contrasena: '1234',
+        rol: 'gerente',
+        cargo: 'Gerente',
+        sucursal:
+          'Sucursal #027 - Centro',
+        avatar: '/GerenteF.png',
+        dashboard: '/gerente/inicio'
+      },
+      {
+        id: 3,
+        nombre: 'Carlos Ramírez',
+        sexo: 'hombre',
+        correo: 'admin@xoxo.com',
+        contrasena: '1234',
+        rol: 'admin',
+        cargo: 'Administrador',
+        sucursal:
+          'Administración general',
+        avatar: '/Administrador.png',
+        dashboard: '/admin/inicio'
+      }
+    ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private usuarioActualService:
+      UsuarioActualService
+  ) {}
 
   iniciarSesion(): void {
     this.error = '';
 
-    const correoNormalizado = this.correo
-      .trim()
-      .toLowerCase();
+    const correoNormalizado =
+      this.correo
+        .trim()
+        .toLowerCase();
 
-    const contrasenaNormalizada = this.contrasena.trim();
+    const contrasenaNormalizada =
+      this.contrasena.trim();
 
-    if (!correoNormalizado || !contrasenaNormalizada) {
+    if (
+      !correoNormalizado ||
+      !contrasenaNormalizada
+    ) {
       this.error =
         'Ingresa el correo electrónico y la contraseña.';
       return;
     }
 
-    const usuarioEncontrado = this.usuarios.find(
-      (usuario) =>
-        usuario.correo.toLowerCase() === correoNormalizado &&
-        usuario.contrasena === contrasenaNormalizada
-    );
+    const usuarioEncontrado =
+      this.usuarios.find(
+        (usuario) =>
+          usuario.correo
+            .toLowerCase() ===
+            correoNormalizado &&
+          usuario.contrasena ===
+            contrasenaNormalizada
+      );
 
     if (!usuarioEncontrado) {
       this.error =
@@ -90,13 +124,47 @@ export class Login {
 
     this.cargando = true;
 
-    this.guardarSesion(usuarioEncontrado);
+    const usuarioSesion: Usuario = {
+      id: usuarioEncontrado.id,
+      nombre:
+        usuarioEncontrado.nombre,
+      sexo:
+        usuarioEncontrado.sexo,
+      correo:
+        usuarioEncontrado.correo,
+      rol:
+        usuarioEncontrado.rol,
+      cargo:
+        usuarioEncontrado.cargo,
+      sucursal:
+        usuarioEncontrado.sucursal,
+      avatar:
+        usuarioEncontrado.avatar
+    };
+
+    this.usuarioActualService
+      .establecerUsuario(
+        usuarioSesion
+      );
+
+    localStorage.setItem(
+      'sesionActiva',
+      'true'
+    );
 
     this.router
-      .navigate([usuarioEncontrado.dashboard])
+      .navigate([
+        usuarioEncontrado.dashboard
+      ])
+      .then((navegacionExitosa) => {
+        if (!navegacionExitosa) {
+          this.error =
+            'No fue posible abrir el panel del usuario.';
+        }
+      })
       .catch(() => {
         this.error =
-          'No fue posible abrir el panel del usuario.';
+          'Ocurrió un error al iniciar sesión.';
       })
       .finally(() => {
         this.cargando = false;
@@ -104,31 +172,42 @@ export class Login {
   }
 
   alternarContrasena(): void {
-    this.mostrarContrasena = !this.mostrarContrasena;
+    this.mostrarContrasena =
+      !this.mostrarContrasena;
   }
 
   limpiarError(): void {
-    if (this.error) {
-      this.error = '';
-    }
+    this.error = '';
   }
 
-  private guardarSesion(usuario: UsuarioPrueba): void {
-    localStorage.setItem('nombre', usuario.nombre);
-    localStorage.setItem('correo', usuario.correo);
-    localStorage.setItem('rol', usuario.rol);
-    localStorage.setItem('sucursal', usuario.sucursal);
+  seleccionarUsuarioPrueba(
+    rol: UserRole
+  ): void {
+    const usuario =
+      this.usuarios.find(
+        (item) => item.rol === rol
+      );
 
-    localStorage.setItem('sesionActiva', 'true');
+    if (!usuario) {
+      return;
+    }
 
-    localStorage.setItem(
-      'usuarioActual',
-      JSON.stringify({
-        nombre: usuario.nombre,
-        correo: usuario.correo,
-        rol: usuario.rol,
-        sucursal: usuario.sucursal
-      })
-    );
+    this.correo = usuario.correo;
+    this.contrasena =
+      usuario.contrasena;
+
+    this.error = '';
+  }
+
+  obtenerSexoUsuarioPrueba(
+    rol: UserRole
+  ): SexoUsuario | null {
+    const usuario =
+      this.usuarios.find(
+        (item) => item.rol === rol
+      );
+
+    return usuario?.sexo ?? null;
   }
 }
+

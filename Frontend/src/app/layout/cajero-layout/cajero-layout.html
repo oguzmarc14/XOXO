@@ -1,1 +1,83 @@
-<p>cajero-layout works!</p>
+<div class="cashier-layout">
+  <aside
+    class="layout-sidebar"
+    [class.open]="menuMovilAbierto"
+  >
+    <div class="mobile-sidebar-header">
+      <div class="mobile-brand">
+        <img
+          src="/XoXO.png"
+          alt="Logo de XoXO"
+        />
+
+        <div>
+          <strong>XoXO</strong>
+          <span>Panel Cajero</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="close-sidebar-button"
+        aria-label="Cerrar menú"
+        (click)="cerrarMenuMovil()"
+      >
+        ×
+      </button>
+    </div>
+
+    <app-sidebar></app-sidebar>
+  </aside>
+
+  <button
+    *ngIf="menuMovilAbierto"
+    type="button"
+    class="sidebar-backdrop"
+    aria-label="Cerrar menú lateral"
+    (click)="cerrarMenuMovil()"
+  ></button>
+
+  <div class="layout-main">
+    <div
+      class="mobile-top-row"
+      *ngIf="usuario"
+    >
+      <button
+        type="button"
+        class="menu-button"
+        aria-label="Abrir menú"
+        (click)="alternarMenuMovil()"
+      >
+        ☰
+      </button>
+
+      <div class="mobile-page-title">
+        <strong>{{ titulo }}</strong>
+
+        <span>
+          {{ usuario.cargo || 'Cajero' }}
+        </span>
+      </div>
+
+      <img
+        class="mobile-avatar"
+        [src]="usuario.avatar"
+        [alt]="'Foto de perfil de ' + usuario.nombre"
+        (error)="manejarErrorAvatar()"
+      />
+    </div>
+
+    <app-topbar
+      *ngIf="usuario"
+      [titulo]="titulo"
+      [subtitulo]="subtitulo"
+      [usuario]="usuario"
+      (revisarPerfil)="revisarPerfil()"
+      (cerrarSesion)="cerrarSesion()"
+    ></app-topbar>
+
+    <main class="layout-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

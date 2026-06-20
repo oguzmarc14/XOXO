@@ -7,67 +7,118 @@
     </p>
   </div>
 
-  <div class="user-menu">
+  <div
+    class="user-menu"
+    *ngIf="usuario"
+  >
     <button
       class="user-trigger"
       type="button"
-      (click)="alternarMenuUsuario()"
+      [attr.aria-expanded]="menuUsuarioAbierto"
+      aria-haspopup="menu"
+      (click)="alternarMenuUsuario($event)"
     >
       <img
         [src]="usuario.avatar"
-        [alt]="'Avatar de ' + usuario.rol"
+        [alt]="'Avatar de ' + usuario.nombre"
         class="avatar-img"
+        (error)="manejarErrorImagen($event)"
       />
 
       <div class="user-trigger-info">
-        <strong>{{ usuario.nombre }}</strong>
-        <span>{{ usuario.rol }}</span>
+        <strong>
+          {{ usuario.nombre }}
+        </strong>
+
+        <span>
+          {{ usuario.cargo }}
+        </span>
       </div>
 
       <span
         class="chevron"
         [class.open]="menuUsuarioAbierto"
+        aria-hidden="true"
       >
         ⌄
       </span>
     </button>
 
-    <div
+    <section
       class="user-dropdown"
       *ngIf="menuUsuarioAbierto"
+      role="menu"
+      (click)="$event.stopPropagation()"
     >
       <div class="dropdown-header">
         <img
           [src]="usuario.avatar"
-          [alt]="'Avatar de ' + usuario.rol"
+          [alt]="'Avatar de ' + usuario.nombre"
           class="avatar-img large"
+          (error)="manejarErrorImagen($event)"
         />
 
         <div class="dropdown-user-data">
-          <h3>{{ usuario.nombre }}</h3>
-          <p>{{ usuario.correo }}</p>
+          <h3>
+            {{ usuario.nombre }}
+          </h3>
+
+          <p>
+            {{ usuario.correo }}
+          </p>
+
+          <small>
+            {{ usuario.sucursal }}
+          </small>
         </div>
       </div>
 
       <div class="dropdown-info">
         <div class="info-row">
           <span>Rol</span>
-          <strong>{{ usuario.rol }}</strong>
+
+          <strong>
+            {{ usuario.cargo }}
+          </strong>
         </div>
 
         <div class="info-row">
           <span>Sucursal</span>
-          <strong>{{ usuario.sucursal }}</strong>
+
+          <strong>
+            {{ usuario.sucursal }}
+          </strong>
         </div>
       </div>
 
-      <button
-        class="dropdown-logout"
-        type="button"
-        (click)="cerrarSesion()"
-      >
-        Cerrar sesión
-      </button>
-    </div>
+      <div class="dropdown-actions">
+        <button
+          class="profile-option"
+          type="button"
+          role="menuitem"
+          (click)="abrirPerfil()"
+        >
+          <span aria-hidden="true">👤</span>
+
+          <span>
+            Revisar perfil
+          </span>
+        </button>
+
+        <button
+          class="logout-option"
+          type="button"
+          role="menuitem"
+          (click)="salir()"
+        >
+          <span aria-hidden="true">🚪</span>
+
+          <span>
+            Cerrar sesión
+          </span>
+        </button>
+      </div>
+    </section>
   </div>
 </header>
+

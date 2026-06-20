@@ -1,301 +1,327 @@
-<div class="dashboard-shell">
-  <app-sidebar></app-sidebar>
+<main class="dashboard-content">
+  <!-- Accesos principales del administrador -->
+  <section class="management-section">
+    <div class="section-header">
+      <div>
+        <h2>Gestión del sistema</h2>
 
-  <div class="dashboard-page">
-    <app-topbar
-      titulo="Panel general de administración"
-      [subtitulo]="subtituloSistema"
-    ></app-topbar>
+        <p>
+          Accesos principales para la administración de XoXO
+        </p>
+      </div>
+    </div>
 
-    <main class="dashboard-content">
-      <!-- Accesos principales del administrador -->
-      <section class="management-section">
-        <div class="section-header">
-          <div>
-            <h2>Gestión del sistema</h2>
-            <p>Accesos principales para la administración de XoXO</p>
-          </div>
+    <div class="management-grid">
+      <a
+        class="management-card primary"
+        routerLink="/lista-tiendas"
+      >
+        <div class="management-icon">🏪</div>
+
+        <div class="management-content">
+          <h3>Tiendas</h3>
+
+          <p>
+            Consultar, registrar y administrar las sucursales.
+          </p>
         </div>
 
-        <div class="management-grid">
-          <a
-            class="management-card primary"
-            routerLink="/lista-tiendas"
-          >
-            <div class="management-icon">🏪</div>
+        <span class="card-arrow">→</span>
+      </a>
 
-            <div class="management-content">
-              <h3>Tiendas</h3>
-              <p>
-                Consultar, registrar y administrar las sucursales.
-              </p>
-            </div>
+      <a
+        class="management-card"
+        routerLink="/lista-usuarios"
+      >
+        <div class="management-icon">👥</div>
 
-            <span class="card-arrow">→</span>
-          </a>
+        <div class="management-content">
+          <h3>Usuarios</h3>
 
-          <a
-            class="management-card"
-            routerLink="/lista-usuarios"
-          >
-            <div class="management-icon">👥</div>
-
-            <div class="management-content">
-              <h3>Usuarios</h3>
-              <p>
-                Gestionar administradores, gerentes y cajeros.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
-
-          <a
-            class="management-card"
-            routerLink="/lista-productos"
-          >
-            <div class="management-icon">🏷️</div>
-
-            <div class="management-content">
-              <h3>Productos</h3>
-              <p>
-                Crear, modificar y administrar el catálogo general.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
-
-          <a
-            class="management-card"
-            routerLink="/lista-inventario"
-          >
-            <div class="management-icon">📦</div>
-
-            <div class="management-content">
-              <h3>Inventario</h3>
-              <p>
-                Consultar las existencias de todas las sucursales.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
-
-          <a
-            class="management-card"
-            routerLink="/movimientos-inventario"
-          >
-            <div class="management-icon">🔄</div>
-
-            <div class="management-content">
-              <h3>Movimientos</h3>
-              <p>
-                Revisar entradas, salidas y ajustes de inventario.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
-
-          <a
-            class="management-card"
-            routerLink="/historial-ventas"
-          >
-            <div class="management-icon">🧾</div>
-
-            <div class="management-content">
-              <h3>Ventas</h3>
-              <p>
-                Consultar las operaciones realizadas en el sistema.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
-
-          <a
-            class="management-card"
-            routerLink="/abrir-turno"
-          >
-            <div class="management-icon">🕐</div>
-
-            <div class="management-content">
-              <h3>Turnos</h3>
-              <p>
-                Supervisar la apertura y cierre de los turnos.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
-
-          <a
-            class="management-card"
-            routerLink="/reportes"
-          >
-            <div class="management-icon">📊</div>
-
-            <div class="management-content">
-              <h3>Reportes</h3>
-              <p>
-                Consultar indicadores y resultados generales.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
+          <p>
+            Gestionar administradores, gerentes y cajeros.
+          </p>
         </div>
-      </section>
 
-      <!-- Actividad y alertas -->
-      <section class="dashboard-grid">
-        <section class="table-section">
-          <div class="section-header">
-            <div>
-              <h2>Actividad reciente</h2>
-              <p>Últimas operaciones registradas en el sistema</p>
-            </div>
+        <span class="card-arrow">→</span>
+      </a>
 
-            <a
-              class="section-link"
-              routerLink="/historial-ventas"
-            >
-              Ver historial
-            </a>
+      <a
+        class="management-card"
+        routerLink="/lista-productos"
+      >
+        <div class="management-icon">🏷️</div>
+
+        <div class="management-content">
+          <h3>Productos</h3>
+
+          <p>
+            Crear, modificar y administrar el catálogo general.
+          </p>
+        </div>
+
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a
+        class="management-card"
+        routerLink="/lista-inventario"
+      >
+        <div class="management-icon">📦</div>
+
+        <div class="management-content">
+          <h3>Inventario</h3>
+
+          <p>
+            Consultar las existencias de todas las sucursales.
+          </p>
+        </div>
+
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a
+        class="management-card"
+        routerLink="/movimientos-inventario"
+      >
+        <div class="management-icon">🔄</div>
+
+        <div class="management-content">
+          <h3>Movimientos</h3>
+
+          <p>
+            Revisar entradas, salidas y ajustes de inventario.
+          </p>
+        </div>
+
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a
+        class="management-card"
+        routerLink="/historial-ventas"
+      >
+        <div class="management-icon">🧾</div>
+
+        <div class="management-content">
+          <h3>Ventas</h3>
+
+          <p>
+            Consultar las operaciones realizadas en el sistema.
+          </p>
+        </div>
+
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a
+        class="management-card"
+        routerLink="/abrir-turno"
+      >
+        <div class="management-icon">🕐</div>
+
+        <div class="management-content">
+          <h3>Turnos</h3>
+
+          <p>
+            Supervisar la apertura y cierre de los turnos.
+          </p>
+        </div>
+
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a
+        class="management-card"
+        routerLink="/reportes"
+      >
+        <div class="management-icon">📊</div>
+
+        <div class="management-content">
+          <h3>Reportes</h3>
+
+          <p>
+            Consultar indicadores y resultados generales.
+          </p>
+        </div>
+
+        <span class="card-arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Actividad y alertas -->
+  <section class="dashboard-grid">
+    <section class="table-section">
+      <div class="section-header">
+        <div>
+          <h2>Actividad reciente</h2>
+
+          <p>
+            Últimas operaciones registradas en el sistema
+          </p>
+        </div>
+
+        <a
+          class="section-link"
+          routerLink="/historial-ventas"
+        >
+          Ver historial
+        </a>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Sucursal</th>
+              <th>Usuario</th>
+              <th>Tipo</th>
+              <th>Total</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>#V-1284</td>
+              <td>Sucursal #027</td>
+              <td>María López</td>
+              <td>Venta</td>
+              <td>$520.00</td>
+              <td>
+                <span class="status-badge success">
+                  Completada
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>#V-1283</td>
+              <td>Sucursal #115</td>
+              <td>José Ramírez</td>
+              <td>Venta</td>
+              <td>$218.00</td>
+              <td>
+                <span class="status-badge success">
+                  Completada
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>#V-1282</td>
+              <td>Sucursal #043</td>
+              <td>Laura Hernández</td>
+              <td>Devolución</td>
+              <td>$96.00</td>
+              <td>
+                <span class="status-badge warning">
+                  Procesada
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>#V-1281</td>
+              <td>Sucursal #082</td>
+              <td>Ana Torres</td>
+              <td>Venta</td>
+              <td>$1,240.00</td>
+              <td>
+                <span class="status-badge success">
+                  Completada
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="alerts-section">
+      <div class="section-header">
+        <div>
+          <h2>Alertas generales</h2>
+
+          <p>
+            Situaciones que requieren atención
+          </p>
+        </div>
+      </div>
+
+      <div class="alert-list">
+        <article class="alert-item danger">
+          <div class="alert-icon">⚠️</div>
+
+          <div class="alert-content">
+            <strong>
+              12 productos con stock crítico
+            </strong>
+
+            <span>
+              Distribuidos en 8 sucursales
+            </span>
           </div>
+        </article>
 
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Folio</th>
-                  <th>Sucursal</th>
-                  <th>Usuario</th>
-                  <th>Tipo</th>
-                  <th>Total</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
+        <article class="alert-item warning">
+          <div class="alert-icon">🕐</div>
 
-              <tbody>
-                <tr>
-                  <td>#V-1284</td>
-                  <td>Sucursal #027</td>
-                  <td>María López</td>
-                  <td>Venta</td>
-                  <td>$520.00</td>
-                  <td>
-                    <span class="status-badge success">
-                      Completada
-                    </span>
-                  </td>
-                </tr>
+          <div class="alert-content">
+            <strong>
+              3 turnos sin cerrar
+            </strong>
 
-                <tr>
-                  <td>#V-1283</td>
-                  <td>Sucursal #115</td>
-                  <td>José Ramírez</td>
-                  <td>Venta</td>
-                  <td>$218.00</td>
-                  <td>
-                    <span class="status-badge success">
-                      Completada
-                    </span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>#V-1282</td>
-                  <td>Sucursal #043</td>
-                  <td>Laura Hernández</td>
-                  <td>Devolución</td>
-                  <td>$96.00</td>
-                  <td>
-                    <span class="status-badge warning">
-                      Procesada
-                    </span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>#V-1281</td>
-                  <td>Sucursal #082</td>
-                  <td>Ana Torres</td>
-                  <td>Venta</td>
-                  <td>$1,240.00</td>
-                  <td>
-                    <span class="status-badge success">
-                      Completada
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <span>
+              Requieren revisión administrativa
+            </span>
           </div>
-        </section>
+        </article>
 
-        <aside class="alerts-section">
-          <div class="section-header">
-            <div>
-              <h2>Alertas generales</h2>
-              <p>Situaciones que requieren atención</p>
-            </div>
+        <article class="alert-item info">
+          <div class="alert-icon">👤</div>
+
+          <div class="alert-content">
+            <strong>
+              6 usuarios nuevos
+            </strong>
+
+            <span>
+              Registrados durante esta semana
+            </span>
           </div>
+        </article>
 
-          <div class="alert-list">
-            <article class="alert-item danger">
-              <div class="alert-icon">⚠️</div>
+        <article class="alert-item success">
+          <div class="alert-icon">✓</div>
 
-              <div class="alert-content">
-                <strong>12 productos con stock crítico</strong>
-                <span>Distribuidos en 8 sucursales</span>
-              </div>
-            </article>
+          <div class="alert-content">
+            <strong>
+              Sistema operativo
+            </strong>
 
-            <article class="alert-item warning">
-              <div class="alert-icon">🕐</div>
-
-              <div class="alert-content">
-                <strong>3 turnos sin cerrar</strong>
-                <span>Requieren revisión administrativa</span>
-              </div>
-            </article>
-
-            <article class="alert-item info">
-              <div class="alert-icon">👤</div>
-
-              <div class="alert-content">
-                <strong>6 usuarios nuevos</strong>
-                <span>Registrados durante esta semana</span>
-              </div>
-            </article>
-
-            <article class="alert-item success">
-              <div class="alert-icon">✓</div>
-
-              <div class="alert-content">
-                <strong>Sistema operativo</strong>
-                <span>Los servicios principales están disponibles</span>
-              </div>
-            </article>
+            <span>
+              Los servicios principales están disponibles
+            </span>
           </div>
+        </article>
+      </div>
 
-          <a
-            class="alerts-link"
-            routerLink="/reportes"
-          >
-            Revisar información
-          </a>
-        </aside>
-      </section>
+      <a
+        class="alerts-link"
+        routerLink="/reportes"
+      >
+        Revisar información
+      </a>
+    </aside>
+  </section>
 
-      <!-- Resumen general reutilizable -->
-      <app-card-resumen
-        titulo="Resumen general del sistema"
-        subtitulo="Información complementaria de la operación global"
-        [items]="resumenFinal"
-      ></app-card-resumen>
-    </main>
-  </div>
-</div>
+  <!-- Resumen general reutilizable -->
+  <app-card-resumen
+    titulo="Resumen general del sistema"
+    subtitulo="Información complementaria de la operación global"
+    [items]="resumenFinal"
+  ></app-card-resumen>
+</main>

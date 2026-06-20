@@ -3,6 +3,9 @@ import { Routes } from '@angular/router';
 /* Autenticación */
 import { Login } from './features/auth/login/login';
 
+/* Perfil */
+import { Perfil } from './features/perfil/perfil';
+
 /* Dashboards */
 import { DashboardCajero } from './features/dashboard-cajero/pages/dashboard-cajero/dashboard-cajero';
 import { DashboardGerente } from './features/dashboard-gerente/pages/dashboard-gerente/dashboard-gerente';
@@ -33,17 +36,19 @@ import { ListaUsuarios } from './features/usuarios/lista-usuarios/lista-usuarios
 import { HistorialVentas } from './features/ventas/historial-ventas/historial-ventas';
 import { NuevaVenta } from './features/ventas/nueva-venta/nueva-venta';
 
-/* Layouts */
-import { CajeroLayout } from './layout/cajero-layout/cajero-layout';
-import { GerenteLayout } from './layout/gerente-layout/gerente-layout';
-import { AdminLayout } from './layout/admin-layout/admin-layout';
-
 export const routes: Routes = [
+  /* Login */
   {
     path: '',
+    component: Login,
+    pathMatch: 'full'
+  },
+  {
+    path: 'login',
     component: Login
   },
 
+  /* Dashboards */
   {
     path: 'dashboard-cajero',
     component: DashboardCajero
@@ -57,6 +62,21 @@ export const routes: Routes = [
     component: DashboardAdmin
   },
 
+  /* Perfiles por rol */
+  {
+    path: 'cajero/perfil',
+    component: Perfil
+  },
+  {
+    path: 'gerente/perfil',
+    component: Perfil
+  },
+  {
+    path: 'admin/perfil',
+    component: Perfil
+  },
+
+  /* Inventario */
   {
     path: 'lista-inventario',
     component: ListaInventario
@@ -66,6 +86,7 @@ export const routes: Routes = [
     component: MovimientosInventario
   },
 
+  /* Productos */
   {
     path: 'crear-producto',
     component: CrearProducto
@@ -79,6 +100,7 @@ export const routes: Routes = [
     component: ListaProductos
   },
 
+  /* Tiendas */
   {
     path: 'crear-tienda',
     component: CrearTienda
@@ -88,6 +110,7 @@ export const routes: Routes = [
     component: ListaTiendas
   },
 
+  /* Turnos */
   {
     path: 'abrir-turno',
     component: AbrirTurno
@@ -97,6 +120,7 @@ export const routes: Routes = [
     component: CerrarTurno
   },
 
+  /* Usuarios */
   {
     path: 'crear-usuario',
     component: CrearUsuario
@@ -106,6 +130,7 @@ export const routes: Routes = [
     component: ListaUsuarios
   },
 
+  /* Ventas */
   {
     path: 'historial-ventas',
     component: HistorialVentas
@@ -115,6 +140,7 @@ export const routes: Routes = [
     component: NuevaVenta
   },
 
+  /* Ruta no encontrada */
   {
     path: '**',
     redirectTo: ''

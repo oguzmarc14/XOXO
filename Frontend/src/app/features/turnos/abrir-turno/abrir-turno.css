@@ -1,47 +1,41 @@
 :host {
   display: block;
-  min-height: 100vh;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
   color: #f9fafb;
-  background: #111827;
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.page-shell {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(225, 29, 72, 0.12),
-      transparent 32%
-    ),
-    linear-gradient(135deg, #111827, #1f2937);
+* {
+  box-sizing: border-box;
 }
 
-app-sidebar {
-  display: block;
-  min-height: 100vh;
-}
-
-.page-content {
-  min-width: 0;
+button,
+input {
+  font: inherit;
 }
 
 .turno-content {
+  width: 100%;
+  min-width: 0;
   padding: 10px 30px 40px;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
 }
 
 .turno-card {
   width: min(760px, 100%);
+  min-width: 0;
   padding: 30px;
   border: 1px solid rgba(249, 250, 251, 0.09);
   border-radius: 26px;
   background: rgba(31, 41, 55, 0.82);
   box-shadow: 0 24px 55px rgba(0, 0, 0, 0.25);
 }
+
+/* Encabezado */
 
 .card-heading {
   padding-bottom: 24px;
@@ -74,6 +68,7 @@ app-sidebar {
 .card-heading h1,
 .status-card h1 {
   margin: 7px 0 8px;
+  color: #f9fafb;
   font-size: 28px;
 }
 
@@ -84,6 +79,8 @@ app-sidebar {
   line-height: 1.5;
 }
 
+/* Formulario */
+
 .turno-form {
   padding-top: 24px;
 }
@@ -91,12 +88,14 @@ app-sidebar {
 .info-grid {
   margin-bottom: 26px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
 .info-item,
 .active-details > div {
+  min-width: 0;
   padding: 15px;
   border: 1px solid rgba(249, 250, 251, 0.07);
   border-radius: 15px;
@@ -114,6 +113,8 @@ app-sidebar {
 
 .info-item strong,
 .active-details strong {
+  overflow-wrap: anywhere;
+  color: #f9fafb;
   font-size: 14px;
 }
 
@@ -124,6 +125,7 @@ app-sidebar {
 }
 
 .form-group label {
+  color: #f9fafb;
   font-size: 14px;
   font-weight: 700;
 }
@@ -152,6 +154,7 @@ app-sidebar {
 
 .money-input input {
   width: 100%;
+  min-width: 0;
   padding: 16px 17px 16px 8px;
   border: none;
   outline: none;
@@ -160,10 +163,21 @@ app-sidebar {
   font-size: 17px;
 }
 
+.money-input input::placeholder {
+  color: #6b7280;
+}
+
+.money-input input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .form-group small {
   color: #9ca3af;
   font-size: 12px;
 }
+
+/* Mensaje de error */
 
 .error-message {
   margin: 18px 0 0;
@@ -173,7 +187,10 @@ app-sidebar {
   background: rgba(225, 29, 72, 0.11);
   color: #fb7185;
   font-size: 13px;
+  line-height: 1.45;
 }
+
+/* Acciones */
 
 .form-actions {
   margin-top: 28px;
@@ -195,15 +212,31 @@ app-sidebar {
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.primary-button:hover:not(:disabled),
+.secondary-button:hover,
+.danger-button:hover {
+  transform: translateY(-2px);
 }
 
 .primary-button {
-  background: linear-gradient(135deg, #15803d, #22c55e);
+  background: linear-gradient(
+    135deg,
+    #15803d,
+    #22c55e
+  );
+  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.16);
 }
 
 .primary-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+  box-shadow: none;
 }
 
 .secondary-button {
@@ -212,8 +245,15 @@ app-sidebar {
 }
 
 .danger-button {
-  background: linear-gradient(135deg, #9f1239, #e11d48);
+  background: linear-gradient(
+    135deg,
+    #9f1239,
+    #e11d48
+  );
+  box-shadow: 0 12px 24px rgba(225, 29, 72, 0.18);
 }
+
+/* Estado activo */
 
 .status-card {
   text-align: center;
@@ -239,7 +279,8 @@ app-sidebar {
 .active-details {
   margin-top: 26px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
   gap: 13px;
   text-align: left;
 }
@@ -248,15 +289,7 @@ app-sidebar {
   justify-content: center;
 }
 
-@media (max-width: 1050px) {
-  .page-shell {
-    grid-template-columns: 1fr;
-  }
-
-  app-sidebar {
-    min-height: auto;
-  }
-}
+/* Responsive */
 
 @media (max-width: 700px) {
   .turno-content {
@@ -265,6 +298,11 @@ app-sidebar {
 
   .turno-card {
     padding: 21px;
+    border-radius: 21px;
+  }
+
+  .card-heading {
+    flex-direction: column;
   }
 
   .info-grid,
@@ -280,6 +318,5 @@ app-sidebar {
   .secondary-button,
   .danger-button {
     width: 100%;
-    box-sizing: border-box;
   }
 }

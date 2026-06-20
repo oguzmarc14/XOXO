@@ -27,8 +27,6 @@ import { Topbar } from '../../../shared/components/topbar/topbar';
     CommonModule,
     FormsModule,
     RouterLink,
-    Sidebar,
-    Topbar
   ],
   templateUrl: './historial-ventas.html',
   styleUrl: './historial-ventas.css'

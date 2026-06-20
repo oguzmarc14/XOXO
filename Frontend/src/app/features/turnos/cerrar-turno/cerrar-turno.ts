@@ -14,8 +14,6 @@ import { Topbar } from '../../../shared/components/topbar/topbar';
     CommonModule,
     FormsModule,
     RouterLink,
-    Sidebar,
-    Topbar
   ],
   templateUrl: './cerrar-turno.html',
   styleUrl: './cerrar-turno.css'

@@ -1,1 +1,109 @@
-<router-outlet></router-outlet>
+<div
+  class="application-shell"
+  [class.with-navigation]="mostrarNavegacion"
+  [class.login-mode]="!mostrarNavegacion"
+>
+  <aside
+    *ngIf="mostrarNavegacion"
+    class="global-sidebar"
+    [class.open]="menuMovilAbierto"
+  >
+    <div class="mobile-sidebar-header">
+      <div class="mobile-brand">
+        <img
+          src="/XoXO.png"
+          alt="Logo de XoXO"
+        />
+
+        <div>
+          <strong>XoXO</strong>
+
+          <span>
+            {{ titulo }}
+          </span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="close-sidebar-button"
+        aria-label="Cerrar menú"
+        (click)="cerrarMenuMovil()"
+      >
+        ×
+      </button>
+    </div>
+
+    <app-sidebar></app-sidebar>
+  </aside>
+
+  <button
+    *ngIf="
+      mostrarNavegacion &&
+      menuMovilAbierto
+    "
+    type="button"
+    class="sidebar-backdrop"
+    aria-label="Cerrar menú lateral"
+    (click)="cerrarMenuMovil()"
+  ></button>
+
+  <section class="application-main">
+    <div
+      *ngIf="
+        mostrarNavegacion &&
+        usuario
+      "
+      class="mobile-topbar"
+    >
+      <button
+        type="button"
+        class="mobile-menu-button"
+        aria-label="Abrir menú"
+        (click)="alternarMenuMovil()"
+      >
+        ☰
+      </button>
+
+      <div class="mobile-title">
+        <strong>{{ titulo }}</strong>
+
+        <span>
+          {{ usuario.cargo }}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="mobile-profile-button"
+        aria-label="Revisar perfil"
+        (click)="revisarPerfil()"
+      >
+        <img
+          [src]="usuario.avatar"
+          [alt]="
+            'Foto de perfil de ' +
+            usuario.nombre
+          "
+          (error)="manejarErrorAvatar()"
+        />
+      </button>
+    </div>
+
+    <app-topbar
+      *ngIf="
+        mostrarNavegacion &&
+        usuario
+      "
+      [titulo]="titulo"
+      [subtitulo]="subtitulo"
+      [usuario]="usuario"
+      (revisarPerfil)="revisarPerfil()"
+      (cerrarSesion)="cerrarSesion()"
+    ></app-topbar>
+
+    <main class="application-content">
+      <router-outlet></router-outlet>
+    </main>
+  </section>
+</div>

@@ -1,45 +1,209 @@
 <div class="login-page">
-  <div class="login-card">
-    <div class="logo-box">
-      <img src="XoXO.png" alt="Logo XoXO" class="logo" />
-    </div>
-
-    <h1>Bienvenido a XoXO</h1>
-    <p class="subtitle">Acceso al sistema interno de la tienda</p>
-
-    <form (ngSubmit)="iniciarSesion()">
-      <div class="input-group">
-        <label for="correo">Correo electrónico</label>
-        <input
-          id="correo"
-          type="email"
-          name="correo"
-          [(ngModel)]="correo"
-          placeholder="ejemplo@xoxo.com"
-        />
+  <section class="login-panel">
+    <div class="brand-section">
+      <div class="brand-logo">
+        <span>XoXO</span>
       </div>
 
-      <div class="input-group">
-        <label for="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          name="password"
-          [(ngModel)]="password"
-          placeholder="Ingresa tu contraseña"
-        />
+      <div class="brand-copy">
+        <span class="brand-label">
+          Sistema administrativo
+        </span>
+
+        <h1>Bienvenido a XoXO</h1>
+
+        <p>
+          Inicia sesión para acceder al panel correspondiente
+          a tu tipo de usuario.
+        </p>
       </div>
-
-      <p class="error" *ngIf="error">{{ error }}</p>
-
-      <button type="submit">Entrar</button>
-    </form>
-    
-    <div class="demo-info">
-      <p><strong>Usuarios de prueba</strong></p>
-      <p>Administrador: admin@xoxo.com / 1234</p>
-      <p>Gerente: gerente@xoxo.com / 1234</p>
-      <p>Cajero: cajero@xoxo.com / 1234</p>
     </div>
-  </div>
+
+    <div class="login-card">
+      <header class="login-header">
+        <span class="eyebrow">
+          Acceso al sistema
+        </span>
+
+        <h2>Iniciar sesión</h2>
+
+        <p>
+          Ingresa tu correo electrónico y contraseña.
+        </p>
+      </header>
+
+      <form
+        class="login-form"
+        (ngSubmit)="iniciarSesion()"
+        #loginForm="ngForm"
+      >
+        <div class="form-group">
+          <label for="correo">
+            Correo electrónico
+          </label>
+
+          <div class="input-control">
+            <span class="input-icon">
+              ✉
+            </span>
+
+            <input
+              id="correo"
+              name="correo"
+              type="email"
+              placeholder="correo@xoxo.com"
+              autocomplete="email"
+              [(ngModel)]="correo"
+              (input)="limpiarError()"
+              [disabled]="cargando"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="contrasena">
+            Contraseña
+          </label>
+
+          <div class="input-control password-control">
+            <span class="input-icon">
+              🔒
+            </span>
+
+            <input
+              id="contrasena"
+              name="contrasena"
+              [type]="
+                mostrarContrasena
+                  ? 'text'
+                  : 'password'
+              "
+              placeholder="Ingresa tu contraseña"
+              autocomplete="current-password"
+              [(ngModel)]="contrasena"
+              (input)="limpiarError()"
+              [disabled]="cargando"
+              required
+            />
+
+            <button
+              class="toggle-password"
+              type="button"
+              [disabled]="cargando"
+              (click)="alternarContrasena()"
+              [attr.aria-label]="
+                mostrarContrasena
+                  ? 'Ocultar contraseña'
+                  : 'Mostrar contraseña'
+              "
+            >
+              {{
+                mostrarContrasena
+                  ? 'Ocultar'
+                  : 'Mostrar'
+              }}
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="error-message"
+          *ngIf="error"
+        >
+          <span>!</span>
+
+          <p>{{ error }}</p>
+        </div>
+
+        <button
+          class="login-button"
+          type="submit"
+          [disabled]="
+            cargando ||
+            !correo.trim() ||
+            !contrasena.trim()
+          "
+        >
+          {{
+            cargando
+              ? 'Ingresando...'
+              : 'Iniciar sesión'
+          }}
+        </button>
+      </form>
+
+      <section class="test-users">
+        <div class="test-users-heading">
+          <span>Usuarios de prueba</span>
+
+          <small>
+            Selecciona uno para completar los datos.
+          </small>
+        </div>
+
+        <div class="test-users-grid">
+          <button
+            type="button"
+            [disabled]="cargando"
+            (click)="seleccionarUsuarioPrueba('cajero')"
+          >
+            <span class="test-user-icon">
+              🧾
+            </span>
+
+            <div>
+              <strong>Cajero</strong>
+              <small>cajero@xoxo.com</small>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            [disabled]="cargando"
+            (click)="seleccionarUsuarioPrueba('gerente')"
+          >
+            <span class="test-user-icon">
+              📊
+            </span>
+
+            <div>
+              <strong>Gerente</strong>
+              <small>gerente@xoxo.com</small>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            [disabled]="cargando"
+            (click)="seleccionarUsuarioPrueba('admin')"
+          >
+            <span class="test-user-icon">
+              ⚙
+            </span>
+
+            <div>
+              <strong>Administrador</strong>
+              <small>admin@xoxo.com</small>
+            </div>
+          </button>
+        </div>
+
+        <p class="test-password">
+          Contraseña para las cuentas de prueba:
+          <strong>1234</strong>
+        </p>
+      </section>
+    </div>
+  </section>
+
+  <footer class="login-footer">
+    <span>
+      XoXO · Sistema de gestión
+    </span>
+
+    <span>
+      Acceso exclusivo para personal autorizado
+    </span>
+  </footer>
 </div>

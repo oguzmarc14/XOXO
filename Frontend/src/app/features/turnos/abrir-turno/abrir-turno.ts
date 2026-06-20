@@ -17,8 +17,6 @@ import {
     CommonModule,
     FormsModule,
     RouterLink,
-    Sidebar,
-    Topbar
   ],
   templateUrl: './abrir-turno.html',
   styleUrl: './abrir-turno.css'
