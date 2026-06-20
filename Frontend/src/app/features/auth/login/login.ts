@@ -1,37 +1,23 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component
-} from '@angular/core';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
-import {
-  FormsModule
-} from '@angular/forms';
-
-import {
-  Router
-} from '@angular/router';
-
-import {
-  Usuario,
-  UserRole
-} from '../../../core/models/usuario.model';
-
-import {
-  UsuarioActualService
-} from '../../../core/services/usuario-actual';
-
-interface UsuarioPrueba extends Usuario {
-  contrasena: string;
-  dashboard: string;
+interface LoginResponse {
+  message: string;
+  usuario: {
+    id: string;
+    nombre: string;
+    usuario: string;
+    rol: 'ADMIN' | 'GERENTE' | 'CAJERO';
+    tiendaId: any;
+  };
 }
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
@@ -43,193 +29,76 @@ export class Login {
   cargando = false;
   mostrarContrasena = false;
 
-  private readonly usuarios:
-    UsuarioPrueba[] = [
-      {
-        id: 1,
-        nombre: 'María López',
-        sexo: 'mujer',
-        correo: 'cajero@xoxo.com',
-        contrasena: '1234',
-        rol: 'cajero',
-        cargo: 'Cajera',
-        sucursal:
-          'Sucursal #027 - Centro',
-        avatar: '/Cajera.png',
-        dashboard:
-          '/dashboard-cajero'
-      },
-      {
-        id: 2,
-        nombre: 'Laura Hernández',
-        sexo: 'mujer',
-        correo: 'gerente@xoxo.com',
-        contrasena: '1234',
-        rol: 'gerente',
-        cargo: 'Gerente',
-        sucursal:
-          'Sucursal #027 - Centro',
-        avatar: '/GerenteF.png',
-        dashboard:
-          '/dashboard-gerente'
-      },
-      {
-        id: 3,
-        nombre: 'Carlos Ramírez',
-        sexo: 'hombre',
-        correo: 'admin@xoxo.com',
-        contrasena: '1234',
-        rol: 'admin',
-        cargo: 'Administrador',
-        sucursal:
-          'Administración general',
-        avatar: '/Administrador.png',
-        dashboard:
-          '/dashboard-admin'
-      }
-    ];
+  constructor(private router: Router) {}
 
-  constructor(
-    private router: Router,
-
-    private usuarioActualService:
-      UsuarioActualService
-  ) {}
-
-  iniciarSesion(): void {
+  async iniciarSesion(): Promise<void> {
     this.error = '';
 
-    const correoNormalizado =
-      this.correo
-        .trim()
-        .toLowerCase();
+    const usuario = this.correo.trim();
+    const password = this.contrasena.trim();
 
-    const contrasenaNormalizada =
-      this.contrasena.trim();
-
-    if (
-      !correoNormalizado ||
-      !contrasenaNormalizada
-    ) {
-      this.error =
-        'Ingresa el correo electrónico y la contraseña.';
-
-      return;
-    }
-
-    const usuarioEncontrado =
-      this.usuarios.find(
-        usuario =>
-          usuario.correo
-            .trim()
-            .toLowerCase() ===
-            correoNormalizado &&
-          usuario.contrasena ===
-            contrasenaNormalizada
-      );
-
-    if (!usuarioEncontrado) {
-      this.error =
-        'El correo electrónico o la contraseña son incorrectos.';
-
+    if (!usuario || !password) {
+      this.error = 'Ingresa el usuario y la contraseña.';
       return;
     }
 
     this.cargando = true;
 
-    const usuarioSesion:
-      Usuario = {
-        id:
-          usuarioEncontrado.id,
-
-        nombre:
-          usuarioEncontrado.nombre,
-
-        sexo:
-          usuarioEncontrado.sexo,
-
-        correo:
-          usuarioEncontrado.correo,
-
-        rol:
-          usuarioEncontrado.rol,
-
-        cargo:
-          usuarioEncontrado.cargo,
-
-        sucursal:
-          usuarioEncontrado.sucursal,
-
-        avatar:
-          usuarioEncontrado.avatar
-      };
-
     try {
-      localStorage.setItem(
-        'sesionActiva',
-        'true'
-      );
+      const respuesta = await fetch('http://localhost:3000/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          usuario,
+          password
+        })
+      });
 
-      this.usuarioActualService
-        .establecerUsuario(
-          usuarioSesion
-        );
+      const data: LoginResponse = await respuesta.json();
 
-      this.router
-        .navigateByUrl(
-          usuarioEncontrado.dashboard
-        )
-        .then(
-          navegacionExitosa => {
-            if (!navegacionExitosa) {
-              this.error =
-                'No fue posible abrir el panel del usuario.';
+      if (!respuesta.ok) {
+        this.error = data.message || 'Usuario o contraseña incorrectos.';
+        this.cargando = false;
+        return;
+      }
 
-              this.cargando = false;
-            }
-          }
-        )
-        .catch(() => {
-          this.error =
-            'Ocurrió un error al abrir el panel.';
+      localStorage.setItem('sesionActiva', 'true');
+      localStorage.setItem('usuario', JSON.stringify(data.usuario));
 
-          this.cargando = false;
-        });
+      const rol = data.usuario.rol;
+
+      if (rol === 'GERENTE') {
+        await this.router.navigateByUrl('/dashboard-gerente');
+      } else if (rol === 'CAJERO') {
+        await this.router.navigateByUrl('/dashboard-cajero');
+      } else if (rol === 'ADMIN') {
+        await this.router.navigateByUrl('/dashboard-admin');
+      } else {
+        this.error = 'Rol no reconocido.';
+        this.cargando = false;
+      }
+
     } catch {
-      this.error =
-        'No fue posible iniciar la sesión.';
-
+      this.error = 'No se pudo conectar con el servidor.';
       this.cargando = false;
     }
   }
 
   alternarContrasena(): void {
-    this.mostrarContrasena =
-      !this.mostrarContrasena;
+    this.mostrarContrasena = !this.mostrarContrasena;
   }
 
   limpiarError(): void {
     this.error = '';
   }
 
-  seleccionarUsuarioPrueba(
-    rol: UserRole
-  ): void {
-    const usuario =
-      this.usuarios.find(
-        item =>
-          item.rol === rol
-      );
-
-    if (!usuario) {
-      return;
+  seleccionarUsuarioPrueba(rol: 'CAJERO' | 'GERENTE' | 'ADMIN'): void {
+    if (rol === 'GERENTE') {
+      this.correo = 'marco';
+      this.contrasena = '1234';
     }
-
-    this.correo =
-      usuario.correo;
-
-    this.contrasena =
-      usuario.contrasena;
 
     this.error = '';
   }

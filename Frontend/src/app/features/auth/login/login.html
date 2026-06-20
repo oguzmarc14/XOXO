@@ -6,52 +6,35 @@
       </div>
 
       <div class="brand-copy">
-        <span class="brand-label">
-          Sistema administrativo
-        </span>
+        <span class="brand-label"> Sistema administrativo </span>
 
         <h1>Bienvenido a XoXO</h1>
 
-        <p>
-          Inicia sesión para acceder al panel correspondiente
-          a tu tipo de usuario.
-        </p>
+        <p>Inicia sesión para acceder al panel correspondiente a tu tipo de usuario.</p>
       </div>
     </div>
 
     <div class="login-card">
       <header class="login-header">
-        <span class="eyebrow">
-          Acceso al sistema
-        </span>
+        <span class="eyebrow"> Acceso al sistema </span>
 
         <h2>Iniciar sesión</h2>
 
-        <p>
-          Ingresa tu correo electrónico y contraseña.
-        </p>
+        <p>Ingresa tu correo electrónico y contraseña.</p>
       </header>
 
-      <form
-        class="login-form"
-        (ngSubmit)="iniciarSesion()"
-        #loginForm="ngForm"
-      >
+      <form class="login-form" (ngSubmit)="iniciarSesion()" #loginForm="ngForm">
         <div class="form-group">
-          <label for="correo">
-            Correo electrónico
-          </label>
+          <label for="correo"> Usuario </label>
 
           <div class="input-control">
-            <span class="input-icon">
-              ✉
-            </span>
+            <span class="input-icon"> ✉ </span>
 
             <input
               id="correo"
               name="correo"
               type="email"
-              placeholder="correo@xoxo.com"
+              placeholder="Ingresa tu usuario"
               autocomplete="email"
               [(ngModel)]="correo"
               (input)="limpiarError()"
@@ -62,23 +45,15 @@
         </div>
 
         <div class="form-group">
-          <label for="contrasena">
-            Contraseña
-          </label>
+          <label for="contrasena"> Contraseña </label>
 
           <div class="input-control password-control">
-            <span class="input-icon">
-              🔒
-            </span>
+            <span class="input-icon"> 🔒 </span>
 
             <input
               id="contrasena"
               name="contrasena"
-              [type]="
-                mostrarContrasena
-                  ? 'text'
-                  : 'password'
-              "
+              [type]="mostrarContrasena ? 'text' : 'password'"
               placeholder="Ingresa tu contraseña"
               autocomplete="current-password"
               [(ngModel)]="contrasena"
@@ -92,25 +67,14 @@
               type="button"
               [disabled]="cargando"
               (click)="alternarContrasena()"
-              [attr.aria-label]="
-                mostrarContrasena
-                  ? 'Ocultar contraseña'
-                  : 'Mostrar contraseña'
-              "
+              [attr.aria-label]="mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'"
             >
-              {{
-                mostrarContrasena
-                  ? 'Ocultar'
-                  : 'Mostrar'
-              }}
+              {{ mostrarContrasena ? 'Ocultar' : 'Mostrar' }}
             </button>
           </div>
         </div>
 
-        <div
-          class="error-message"
-          *ngIf="error"
-        >
+        <div class="error-message" *ngIf="error">
           <span>!</span>
 
           <p>{{ error }}</p>
@@ -119,17 +83,9 @@
         <button
           class="login-button"
           type="submit"
-          [disabled]="
-            cargando ||
-            !correo.trim() ||
-            !contrasena.trim()
-          "
+          [disabled]="cargando || !correo.trim() || !contrasena.trim()"
         >
-          {{
-            cargando
-              ? 'Ingresando...'
-              : 'Iniciar sesión'
-          }}
+          {{ cargando ? 'Ingresando...' : 'Iniciar sesión' }}
         </button>
       </form>
 
@@ -137,20 +93,12 @@
         <div class="test-users-heading">
           <span>Usuarios de prueba</span>
 
-          <small>
-            Selecciona uno para completar los datos.
-          </small>
+          <small> Selecciona uno para completar los datos. </small>
         </div>
 
         <div class="test-users-grid">
-          <button
-            type="button"
-            [disabled]="cargando"
-            (click)="seleccionarUsuarioPrueba('cajero')"
-          >
-            <span class="test-user-icon">
-              🧾
-            </span>
+          <button type="button" [disabled]="cargando" (click)="seleccionarUsuarioPrueba('CAJERO')">
+            <span class="test-user-icon"> 🧾 </span>
 
             <div>
               <strong>Cajero</strong>
@@ -158,14 +106,8 @@
             </div>
           </button>
 
-          <button
-            type="button"
-            [disabled]="cargando"
-            (click)="seleccionarUsuarioPrueba('gerente')"
-          >
-            <span class="test-user-icon">
-              📊
-            </span>
+          <button type="button" [disabled]="cargando" (click)="seleccionarUsuarioPrueba('GERENTE')">
+            <span class="test-user-icon"> 📊 </span>
 
             <div>
               <strong>Gerente</strong>
@@ -173,14 +115,8 @@
             </div>
           </button>
 
-          <button
-            type="button"
-            [disabled]="cargando"
-            (click)="seleccionarUsuarioPrueba('admin')"
-          >
-            <span class="test-user-icon">
-              ⚙
-            </span>
+          <button type="button" [disabled]="cargando" (click)="seleccionarUsuarioPrueba('ADMIN')">
+            <span class="test-user-icon"> ⚙ </span>
 
             <div>
               <strong>Administrador</strong>
@@ -198,12 +134,8 @@
   </section>
 
   <footer class="login-footer">
-    <span>
-      XoXO · Sistema de gestión
-    </span>
+    <span> XoXO · Sistema de gestión </span>
 
-    <span>
-      Acceso exclusivo para personal autorizado
-    </span>
+    <span> Acceso exclusivo para personal autorizado </span>
   </footer>
 </div>
