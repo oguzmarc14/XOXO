@@ -4,16 +4,22 @@
   <div class="dashboard-page">
     <app-topbar
       titulo="Panel de gestión de la sucursal"
-      [subtitulo]="'Sucursal asignada: ' + sucursal"
+      [subtitulo]="subtituloTurno"
     ></app-topbar>
 
     <main class="dashboard-content">
-      <section class="turno-banner">
-        <div>
-          <span class="turno-label">Estado del turno</span>
+      <!-- Estado y gestión del turno -->
+      <section
+        class="turno-banner"
+        [class.turno-inactivo]="!turnoActivo"
+      >
+        <div class="turno-information">
+          <span class="turno-label">
+            Estado del turno
+          </span>
 
           <h2>
-            {{ turnoActivo ? 'Turno abierto' : 'Turno cerrado' }}
+            {{ turnoActivo ? 'Turno activo' : 'Turno inactivo' }}
           </h2>
 
           <p>
@@ -25,8 +31,20 @@
           </p>
         </div>
 
+        <div class="turno-status">
+          <span
+            class="status-indicator"
+            [class.active]="turnoActivo"
+          ></span>
+
+          <span>
+            {{ turnoActivo ? 'En operación' : 'Fuera de operación' }}
+          </span>
+        </div>
+
         <div class="turno-actions">
           <a
+            *ngIf="!turnoActivo"
             class="turno-button open"
             routerLink="/abrir-turno"
           >
@@ -34,6 +52,7 @@
           </a>
 
           <a
+            *ngIf="turnoActivo"
             class="turno-button close"
             routerLink="/cerrar-turno"
           >
@@ -42,6 +61,7 @@
         </div>
       </section>
 
+      <!-- Accesos principales -->
       <section class="quick-actions">
         <a
           class="action-card primary"
@@ -51,6 +71,7 @@
 
           <div>
             <h3>Nueva venta</h3>
+
             <p>
               Registrar una nueva venta desde la sucursal.
             </p>
@@ -65,8 +86,9 @@
 
           <div>
             <h3>Historial de ventas</h3>
+
             <p>
-              Consultar ventas, estados y devoluciones.
+              Consultar las ventas y devoluciones de la sucursal.
             </p>
           </div>
         </a>
@@ -79,8 +101,9 @@
 
           <div>
             <h3>Inventario</h3>
+
             <p>
-              Consultar existencias disponibles en la sucursal.
+              Consultar y administrar las existencias disponibles.
             </p>
           </div>
         </a>
@@ -93,6 +116,7 @@
 
           <div>
             <h3>Movimientos</h3>
+
             <p>
               Revisar entradas, salidas y ajustes de inventario.
             </p>
@@ -100,64 +124,17 @@
         </a>
       </section>
 
-      <section class="summary-grid">
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Ventas del día</span>
-            <span class="summary-icon">🧾</span>
-          </div>
-
-          <h2>46</h2>
-          <p>Operaciones registradas</p>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Total vendido</span>
-            <span class="summary-icon">💰</span>
-          </div>
-
-          <h2>$12,840</h2>
-          <p>Acumulado del turno</p>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Productos vendidos</span>
-            <span class="summary-icon">🛍️</span>
-          </div>
-
-          <h2>128</h2>
-          <p>Unidades registradas</p>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Devoluciones</span>
-            <span class="summary-icon">↩️</span>
-          </div>
-
-          <h2>4</h2>
-          <p>Operaciones procesadas</p>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Stock bajo</span>
-            <span class="summary-icon">⚠️</span>
-          </div>
-
-          <h2>7</h2>
-          <p>Productos por revisar</p>
-        </article>
-      </section>
-
+      <!-- Información principal -->
       <section class="dashboard-grid">
+        <!-- Ventas recientes -->
         <section class="table-section">
           <div class="section-header">
             <div>
               <h2>Ventas recientes</h2>
-              <p>Últimos movimientos registrados en la sucursal</p>
+
+              <p>
+                Últimos movimientos registrados en la sucursal
+              </p>
             </div>
 
             <a
@@ -216,46 +193,68 @@
                     </span>
                   </td>
                 </tr>
+
+                <tr>
+                  <td>#V-0043</td>
+                  <td>Ana Torres</td>
+                  <td>15:57</td>
+                  <td>$380.00</td>
+                  <td>
+                    <span class="status-badge success">
+                      Completada
+                    </span>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
         </section>
 
+        <!-- Alertas de inventario -->
         <aside class="alerts-section">
           <div class="section-header">
             <div>
               <h2>Alertas de inventario</h2>
-              <p>Productos que requieren atención</p>
+
+              <p>
+                Productos que requieren atención
+              </p>
             </div>
           </div>
 
           <div class="alert-list">
-            <div class="alert-item">
-              <div class="alert-icon">⚠️</div>
+            <article class="alert-item">
+              <div class="alert-icon">
+                ⚠️
+              </div>
 
-              <div>
+              <div class="alert-content">
                 <strong>Playera negra mediana</strong>
                 <span>Quedan 3 unidades</span>
               </div>
-            </div>
+            </article>
 
-            <div class="alert-item">
-              <div class="alert-icon">⚠️</div>
+            <article class="alert-item">
+              <div class="alert-icon">
+                ⚠️
+              </div>
 
-              <div>
+              <div class="alert-content">
                 <strong>Sudadera vino grande</strong>
                 <span>Quedan 2 unidades</span>
               </div>
-            </div>
+            </article>
 
-            <div class="alert-item">
-              <div class="alert-icon">⚠️</div>
+            <article class="alert-item">
+              <div class="alert-icon">
+                ⚠️
+              </div>
 
-              <div>
+              <div class="alert-content">
                 <strong>Bolsa XoXO edición especial</strong>
                 <span>Queda 1 unidad</span>
               </div>
-            </div>
+            </article>
           </div>
 
           <a
@@ -266,6 +265,13 @@
           </a>
         </aside>
       </section>
+
+      <!-- Resumen reutilizable -->
+      <app-card-resumen
+        titulo="Resumen de la sucursal"
+        subtitulo="Estado del turno y datos complementarios de la operación"
+        [items]="resumenFinal"
+      ></app-card-resumen>
     </main>
   </div>
 </div>

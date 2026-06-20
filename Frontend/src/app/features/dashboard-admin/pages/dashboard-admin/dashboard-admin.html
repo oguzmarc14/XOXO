@@ -4,138 +4,30 @@
   <div class="dashboard-page">
     <app-topbar
       titulo="Panel general de administración"
-      subtitulo="Control y supervisión global del sistema XoXO"
+      [subtitulo]="subtituloSistema"
     ></app-topbar>
 
     <main class="dashboard-content">
-      <section class="summary-grid">
-        <article class="summary-card featured">
-          <div class="summary-header">
-            <span>Sucursales registradas</span>
-            <span class="summary-icon">🏪</span>
-          </div>
-
-          <h2>{{ totalSucursales }}</h2>
-          <p>Sucursales dentro del sistema</p>
-
-          <a routerLink="/lista-tiendas">
-            Gestionar sucursales
-          </a>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Usuarios activos</span>
-            <span class="summary-icon">👥</span>
-          </div>
-
-          <h2>{{ usuariosActivos }}</h2>
-          <p>Administradores, gerentes y cajeros</p>
-
-          <a routerLink="/lista-usuarios">
-            Gestionar usuarios
-          </a>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Ventas del día</span>
-            <span class="summary-icon">🧾</span>
-          </div>
-
-          <h2>{{ ventasDelDia }}</h2>
-          <p>Operaciones realizadas hoy</p>
-
-          <a routerLink="/historial-ventas">
-            Ver historial
-          </a>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Total vendido</span>
-            <span class="summary-icon">💰</span>
-          </div>
-
-          <h2>
-            ${{ totalVendido.toLocaleString('es-MX') }}
-          </h2>
-
-          <p>Acumulado general del día</p>
-
-          <a routerLink="/reportes">
-            Ver reportes
-          </a>
-        </article>
-      </section>
-
+      <!-- Accesos principales del administrador -->
       <section class="management-section">
-        <div class="section-heading">
+        <div class="section-header">
           <div>
             <h2>Gestión del sistema</h2>
-            <p>Accesos principales del administrador</p>
+            <p>Accesos principales para la administración de XoXO</p>
           </div>
         </div>
 
         <div class="management-grid">
           <a
-            class="management-card"
-            routerLink="/lista-inventario"
-          >
-            <div class="management-icon">📦</div>
-
-            <div>
-              <h3>Inventario</h3>
-              <p>
-                Consultar existencias de productos en las sucursales.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
-
-          <a
-            class="management-card"
-            routerLink="/movimientos-inventario"
-          >
-            <div class="management-icon">🔄</div>
-
-            <div>
-              <h3>Movimientos del inventario</h3>
-              <p>
-                Revisar entradas, salidas y ajustes registrados.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
-
-          <a
-            class="management-card"
-            routerLink="/lista-productos"
-          >
-            <div class="management-icon">🏷️</div>
-
-            <div>
-              <h3>Productos</h3>
-              <p>
-                Crear, modificar y administrar el catálogo.
-              </p>
-            </div>
-
-            <span class="card-arrow">→</span>
-          </a>
-
-          <a
-            class="management-card"
+            class="management-card primary"
             routerLink="/lista-tiendas"
           >
             <div class="management-icon">🏪</div>
 
-            <div>
+            <div class="management-content">
               <h3>Tiendas</h3>
               <p>
-                Consultar y administrar todas las sucursales.
+                Consultar, registrar y administrar las sucursales.
               </p>
             </div>
 
@@ -148,10 +40,58 @@
           >
             <div class="management-icon">👥</div>
 
-            <div>
+            <div class="management-content">
               <h3>Usuarios</h3>
               <p>
                 Gestionar administradores, gerentes y cajeros.
+              </p>
+            </div>
+
+            <span class="card-arrow">→</span>
+          </a>
+
+          <a
+            class="management-card"
+            routerLink="/lista-productos"
+          >
+            <div class="management-icon">🏷️</div>
+
+            <div class="management-content">
+              <h3>Productos</h3>
+              <p>
+                Crear, modificar y administrar el catálogo general.
+              </p>
+            </div>
+
+            <span class="card-arrow">→</span>
+          </a>
+
+          <a
+            class="management-card"
+            routerLink="/lista-inventario"
+          >
+            <div class="management-icon">📦</div>
+
+            <div class="management-content">
+              <h3>Inventario</h3>
+              <p>
+                Consultar las existencias de todas las sucursales.
+              </p>
+            </div>
+
+            <span class="card-arrow">→</span>
+          </a>
+
+          <a
+            class="management-card"
+            routerLink="/movimientos-inventario"
+          >
+            <div class="management-icon">🔄</div>
+
+            <div class="management-content">
+              <h3>Movimientos</h3>
+              <p>
+                Revisar entradas, salidas y ajustes de inventario.
               </p>
             </div>
 
@@ -164,10 +104,10 @@
           >
             <div class="management-icon">🧾</div>
 
-            <div>
-              <h3>Historial de ventas</h3>
+            <div class="management-content">
+              <h3>Ventas</h3>
               <p>
-                Revisar ventas realizadas en todo el sistema.
+                Consultar las operaciones realizadas en el sistema.
               </p>
             </div>
 
@@ -180,7 +120,7 @@
           >
             <div class="management-icon">🕐</div>
 
-            <div>
+            <div class="management-content">
               <h3>Turnos</h3>
               <p>
                 Supervisar la apertura y cierre de los turnos.
@@ -196,7 +136,7 @@
           >
             <div class="management-icon">📊</div>
 
-            <div>
+            <div class="management-content">
               <h3>Reportes</h3>
               <p>
                 Consultar indicadores y resultados generales.
@@ -208,9 +148,10 @@
         </div>
       </section>
 
+      <!-- Actividad y alertas -->
       <section class="dashboard-grid">
         <section class="table-section">
-          <div class="section-heading table-heading">
+          <div class="section-header">
             <div>
               <h2>Actividad reciente</h2>
               <p>Últimas operaciones registradas en el sistema</p>
@@ -295,7 +236,7 @@
         </section>
 
         <aside class="alerts-section">
-          <div class="section-heading">
+          <div class="section-header">
             <div>
               <h2>Alertas generales</h2>
               <p>Situaciones que requieren atención</p>
@@ -306,16 +247,16 @@
             <article class="alert-item danger">
               <div class="alert-icon">⚠️</div>
 
-              <div>
+              <div class="alert-content">
                 <strong>12 productos con stock crítico</strong>
-                <span>En 8 sucursales diferentes</span>
+                <span>Distribuidos en 8 sucursales</span>
               </div>
             </article>
 
             <article class="alert-item warning">
               <div class="alert-icon">🕐</div>
 
-              <div>
+              <div class="alert-content">
                 <strong>3 turnos sin cerrar</strong>
                 <span>Requieren revisión administrativa</span>
               </div>
@@ -324,9 +265,18 @@
             <article class="alert-item info">
               <div class="alert-icon">👤</div>
 
-              <div>
+              <div class="alert-content">
                 <strong>6 usuarios nuevos</strong>
                 <span>Registrados durante esta semana</span>
+              </div>
+            </article>
+
+            <article class="alert-item success">
+              <div class="alert-icon">✓</div>
+
+              <div class="alert-content">
+                <strong>Sistema operativo</strong>
+                <span>Los servicios principales están disponibles</span>
               </div>
             </article>
           </div>
@@ -339,6 +289,13 @@
           </a>
         </aside>
       </section>
+
+      <!-- Resumen general reutilizable -->
+      <app-card-resumen
+        titulo="Resumen general del sistema"
+        subtitulo="Información complementaria de la operación global"
+        [items]="resumenFinal"
+      ></app-card-resumen>
     </main>
   </div>
 </div>

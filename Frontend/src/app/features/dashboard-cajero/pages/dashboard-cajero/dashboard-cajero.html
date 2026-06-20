@@ -4,10 +4,11 @@
   <div class="dashboard-page">
     <app-topbar
       titulo="Bienvenido al sistema de ventas de XoXO"
-      [subtitulo]="'Turno @ ' + sucursal"
+      [subtitulo]="subtituloTurno"
     ></app-topbar>
 
     <main class="dashboard-content">
+      <!-- Acciones principales del cajero -->
       <section class="quick-actions">
         <a
           class="action-card primary"
@@ -52,54 +53,22 @@
         </a>
       </section>
 
-      <section class="summary-grid">
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Ventas del día</span>
-            <span class="summary-icon">🧾</span>
-          </div>
-
-          <h2>18</h2>
-          <p>Ventas registradas</p>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Total vendido</span>
-            <span class="summary-icon">💰</span>
-          </div>
-
-          <h2>$4,820</h2>
-          <p>Durante el turno actual</p>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Productos vendidos</span>
-            <span class="summary-icon">🛍️</span>
-          </div>
-
-          <h2>56</h2>
-          <p>Unidades registradas</p>
-        </article>
-
-        <article class="summary-card">
-          <div class="summary-header">
-            <span>Devoluciones</span>
-            <span class="summary-icon">↩️</span>
-          </div>
-
-          <h2>2</h2>
-          <p>Operaciones registradas</p>
-        </article>
-      </section>
-
+      <!-- Ventas recientes -->
       <section class="table-section">
         <div class="section-header">
           <div>
             <h2>Últimas ventas</h2>
-            <p>Movimientos recientes del cajero</p>
+            <p>
+              Movimientos recientes registrados durante el turno
+            </p>
           </div>
+
+          <a
+            class="history-link"
+            routerLink="/historial-ventas"
+          >
+            Ver historial
+          </a>
         </div>
 
         <div class="table-container">
@@ -166,6 +135,13 @@
           </table>
         </div>
       </section>
+
+      <!-- Resumen reutilizable del turno -->
+      <app-card-resumen
+        titulo="Resumen del turno"
+        subtitulo="Indicadores generales de la operación actual"
+        [items]="resumenFinal"
+      ></app-card-resumen>
     </main>
   </div>
 </div>
