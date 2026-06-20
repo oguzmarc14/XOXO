@@ -1,1 +1,141 @@
-<p>dashboard-cajero works!</p>
+<main class="dashboard-content">
+  <!-- Acciones principales del cajero -->
+  <section class="quick-actions">
+    <a
+      class="action-card primary"
+      routerLink="/nueva-venta"
+    >
+      <div class="action-icon">🛒</div>
+
+      <div>
+        <h3>Nueva venta</h3>
+
+        <p>
+          Registrar una venta nueva para el cliente.
+        </p>
+      </div>
+    </a>
+
+    <a
+      class="action-card"
+      routerLink="/historial-ventas"
+    >
+      <div class="action-icon">↩️</div>
+
+      <div>
+        <h3>Devoluciones</h3>
+
+        <p>
+          Buscar una venta y gestionar una devolución.
+        </p>
+      </div>
+    </a>
+
+    <a
+      class="action-card"
+      routerLink="/lista-inventario"
+    >
+      <div class="action-icon">📦</div>
+
+      <div>
+        <h3>Ver inventario</h3>
+
+        <p>
+          Consultar productos disponibles sin editar datos.
+        </p>
+      </div>
+    </a>
+  </section>
+
+  <!-- Ventas recientes -->
+  <section class="table-section">
+    <div class="section-header">
+      <div>
+        <h2>Últimas ventas</h2>
+
+        <p>
+          Movimientos recientes registrados durante el turno
+        </p>
+      </div>
+
+      <a
+        class="history-link"
+        routerLink="/historial-ventas"
+      >
+        Ver historial
+      </a>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Hora</th>
+            <th>Productos</th>
+            <th>Total</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>#V-0018</td>
+            <td>14:35</td>
+            <td>5 productos</td>
+            <td>$345.00</td>
+            <td>
+              <span class="status-badge success">
+                Completada
+              </span>
+            </td>
+          </tr>
+
+          <tr>
+            <td>#V-0017</td>
+            <td>14:12</td>
+            <td>2 productos</td>
+            <td>$128.00</td>
+            <td>
+              <span class="status-badge success">
+                Completada
+              </span>
+            </td>
+          </tr>
+
+          <tr>
+            <td>#V-0016</td>
+            <td>13:58</td>
+            <td>1 producto</td>
+            <td>$79.00</td>
+            <td>
+              <span class="status-badge danger">
+                Devuelta
+              </span>
+            </td>
+          </tr>
+
+          <tr>
+            <td>#V-0015</td>
+            <td>13:41</td>
+            <td>4 productos</td>
+            <td>$286.00</td>
+            <td>
+              <span class="status-badge success">
+                Completada
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Resumen reutilizable del turno -->
+  <app-card-resumen
+    titulo="Resumen del turno"
+    subtitulo="Indicadores generales de la operación actual"
+    [items]="resumenFinal"
+  ></app-card-resumen>
+</main>
+

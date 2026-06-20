@@ -1,1 +1,124 @@
-<p>topbar works!</p>
+<header class="topbar">
+  <div class="page-heading">
+    <h1>{{ titulo }}</h1>
+
+    <p *ngIf="subtitulo">
+      {{ subtitulo }}
+    </p>
+  </div>
+
+  <div
+    class="user-menu"
+    *ngIf="usuario"
+  >
+    <button
+      class="user-trigger"
+      type="button"
+      [attr.aria-expanded]="menuUsuarioAbierto"
+      aria-haspopup="menu"
+      (click)="alternarMenuUsuario($event)"
+    >
+      <img
+        [src]="usuario.avatar"
+        [alt]="'Avatar de ' + usuario.nombre"
+        class="avatar-img"
+        (error)="manejarErrorImagen($event)"
+      />
+
+      <div class="user-trigger-info">
+        <strong>
+          {{ usuario.nombre }}
+        </strong>
+
+        <span>
+          {{ usuario.cargo }}
+        </span>
+      </div>
+
+      <span
+        class="chevron"
+        [class.open]="menuUsuarioAbierto"
+        aria-hidden="true"
+      >
+        ⌄
+      </span>
+    </button>
+
+    <section
+      class="user-dropdown"
+      *ngIf="menuUsuarioAbierto"
+      role="menu"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="dropdown-header">
+        <img
+          [src]="usuario.avatar"
+          [alt]="'Avatar de ' + usuario.nombre"
+          class="avatar-img large"
+          (error)="manejarErrorImagen($event)"
+        />
+
+        <div class="dropdown-user-data">
+          <h3>
+            {{ usuario.nombre }}
+          </h3>
+
+          <p>
+            {{ usuario.correo }}
+          </p>
+
+          <small>
+            {{ usuario.sucursal }}
+          </small>
+        </div>
+      </div>
+
+      <div class="dropdown-info">
+        <div class="info-row">
+          <span>Rol</span>
+
+          <strong>
+            {{ usuario.cargo }}
+          </strong>
+        </div>
+
+        <div class="info-row">
+          <span>Sucursal</span>
+
+          <strong>
+            {{ usuario.sucursal }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="dropdown-actions">
+        <button
+          class="profile-option"
+          type="button"
+          role="menuitem"
+          (click)="abrirPerfil()"
+        >
+          <span aria-hidden="true">👤</span>
+
+          <span>
+            Revisar perfil
+          </span>
+        </button>
+
+        <button
+          class="logout-option"
+          type="button"
+          role="menuitem"
+          (click)="salir()"
+        >
+          <span aria-hidden="true">🚪</span>
+
+          <span>
+            Cerrar sesión
+          </span>
+        </button>
+      </div>
+    </section>
+  </div>
+</header>
+

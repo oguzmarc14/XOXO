@@ -1,1 +1,743 @@
-<p>crear-usuario works!</p>
+<main class="create-user-page">
+  <section class="page-introduction">
+    <div>
+      <span class="eyebrow">
+        Administración de cuentas
+      </span>
+
+      <h2>
+        Crear nuevo usuario
+      </h2>
+
+      <p>
+        Registra los datos personales, permisos y
+        credenciales de acceso del usuario.
+      </p>
+    </div>
+
+    <button
+      class="back-button"
+      type="button"
+      (click)="volverAlListado()"
+    >
+      <span aria-hidden="true">
+        ←
+      </span>
+
+      Volver al listado
+    </button>
+  </section>
+
+  <div class="create-user-layout">
+    <!-- Formulario -->
+    <section class="user-form-card">
+      <div class="section-heading">
+        <div>
+          <h2>
+            Información del usuario
+          </h2>
+
+          <p>
+            Completa los datos obligatorios para
+            crear una nueva cuenta.
+          </p>
+        </div>
+
+        <span class="required-label">
+          * Campos obligatorios
+        </span>
+      </div>
+
+      <form
+        class="user-form"
+        (ngSubmit)="guardarUsuario()"
+      >
+        <!-- Datos personales -->
+        <section class="form-section">
+          <div class="form-section-heading">
+            <span class="section-number">
+              1
+            </span>
+
+            <div>
+              <h3>
+                Datos personales
+              </h3>
+
+              <p>
+                Información general del usuario.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="nombre">
+                Nombre completo *
+              </label>
+
+              <input
+                id="nombre"
+                name="nombre"
+                type="text"
+                maxlength="100"
+                placeholder="Nombre y apellidos"
+                [(ngModel)]="nombre"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="correo">
+                Correo electrónico *
+              </label>
+
+              <input
+                id="correo"
+                name="correo"
+                type="email"
+                maxlength="100"
+                placeholder="usuario@xoxo.com"
+                [(ngModel)]="correo"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="telefono">
+                Teléfono *
+              </label>
+
+              <input
+                id="telefono"
+                name="telefono"
+                type="tel"
+                maxlength="20"
+                placeholder="449 123 4567"
+                [(ngModel)]="telefono"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label>
+                Sexo *
+              </label>
+
+              <div class="gender-options">
+                <button
+                  type="button"
+                  class="gender-option"
+                  [class.selected]="
+                    sexo === 'hombre'
+                  "
+                  [disabled]="guardando"
+                  (click)="
+                    seleccionarSexo('hombre')
+                  "
+                >
+                  <span class="gender-icon">
+                    👨
+                  </span>
+
+                  <div>
+                    <strong>
+                      Hombre
+                    </strong>
+
+                    <small>
+                      Utilizará la fotografía masculina
+                      correspondiente al rol.
+                    </small>
+                  </div>
+
+                  <span
+                    class="selection-check"
+                    *ngIf="
+                      sexo === 'hombre'
+                    "
+                  >
+                    ✓
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  class="gender-option"
+                  [class.selected]="
+                    sexo === 'mujer'
+                  "
+                  [disabled]="guardando"
+                  (click)="
+                    seleccionarSexo('mujer')
+                  "
+                >
+                  <span class="gender-icon">
+                    👩
+                  </span>
+
+                  <div>
+                    <strong>
+                      Mujer
+                    </strong>
+
+                    <small>
+                      Utilizará la fotografía femenina
+                      correspondiente al rol.
+                    </small>
+                  </div>
+
+                  <span
+                    class="selection-check"
+                    *ngIf="
+                      sexo === 'mujer'
+                    "
+                  >
+                    ✓
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Rol y asignación -->
+        <section class="form-section">
+          <div class="form-section-heading">
+            <span class="section-number">
+              2
+            </span>
+
+            <div>
+              <h3>
+                Rol y asignación
+              </h3>
+
+              <p>
+                Define los permisos y la sucursal.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>
+                Tipo de usuario *
+              </label>
+
+              <div class="role-options">
+                <button
+                  *ngFor="let item of roles"
+                  type="button"
+                  class="role-option"
+                  [class.selected]="
+                    rol === item.valor
+                  "
+                  [disabled]="guardando"
+                  (click)="
+                    seleccionarRol(item.valor)
+                  "
+                >
+                  <span class="role-icon">
+                    {{ item.icono }}
+                  </span>
+
+                  <div>
+                    <strong>
+                      {{ item.nombre }}
+                    </strong>
+
+                    <small>
+                      {{ item.descripcion }}
+                    </small>
+                  </div>
+
+                  <span
+                    class="selection-check"
+                    *ngIf="
+                      rol === item.valor
+                    "
+                  >
+                    ✓
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="cargo">
+                Cargo
+              </label>
+
+              <input
+                id="cargo"
+                name="cargo"
+                type="text"
+                [value]="cargo"
+                disabled
+              />
+
+              <small>
+                Se asigna automáticamente según
+                el rol y el sexo.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="sucursal">
+                Sucursal asignada *
+              </label>
+
+              <select
+                id="sucursal"
+                name="sucursal"
+                [(ngModel)]="sucursal"
+                [disabled]="
+                  guardando ||
+                  rol === 'admin'
+                "
+                required
+              >
+                <option value="">
+                  Selecciona una sucursal
+                </option>
+
+                <option
+                  *ngFor="
+                    let sucursalItem of sucursales
+                  "
+                  [value]="sucursalItem"
+                >
+                  {{ sucursalItem }}
+                </option>
+
+                <option
+                  *ngIf="rol === 'admin'"
+                  value="Administración general"
+                >
+                  Administración general
+                </option>
+              </select>
+
+              <small *ngIf="rol === 'admin'">
+                Los administradores pertenecen a
+                Administración general.
+              </small>
+            </div>
+
+            <div class="form-group full-width">
+              <label>
+                Estado de la cuenta
+              </label>
+
+              <div class="status-options">
+                <button
+                  type="button"
+                  class="status-option active-option"
+                  [class.selected]="
+                    estado === 'activo'
+                  "
+                  [disabled]="guardando"
+                  (click)="
+                    seleccionarEstado('activo')
+                  "
+                >
+                  <span class="status-point"></span>
+
+                  <div>
+                    <strong>
+                      Activo
+                    </strong>
+
+                    <small>
+                      El usuario podrá iniciar sesión.
+                    </small>
+                  </div>
+
+                  <span
+                    class="selection-check"
+                    *ngIf="
+                      estado === 'activo'
+                    "
+                  >
+                    ✓
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  class="status-option inactive-option"
+                  [class.selected]="
+                    estado === 'inactivo'
+                  "
+                  [disabled]="guardando"
+                  (click)="
+                    seleccionarEstado('inactivo')
+                  "
+                >
+                  <span class="status-point"></span>
+
+                  <div>
+                    <strong>
+                      Inactivo
+                    </strong>
+
+                    <small>
+                      La cuenta quedará sin acceso.
+                    </small>
+                  </div>
+
+                  <span
+                    class="selection-check"
+                    *ngIf="
+                      estado === 'inactivo'
+                    "
+                  >
+                    ✓
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Seguridad -->
+        <section class="form-section">
+          <div class="form-section-heading">
+            <span class="section-number">
+              3
+            </span>
+
+            <div>
+              <h3>
+                Credenciales de acceso
+              </h3>
+
+              <p>
+                Configura la contraseña inicial.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="contrasena">
+                Contraseña *
+              </label>
+
+              <div class="password-control">
+                <span aria-hidden="true">
+                  🔒
+                </span>
+
+                <input
+                  id="contrasena"
+                  name="contrasena"
+                  [type]="
+                    mostrarContrasena
+                      ? 'text'
+                      : 'password'
+                  "
+                  maxlength="60"
+                  placeholder="Contraseña inicial"
+                  [(ngModel)]="contrasena"
+                  [disabled]="guardando"
+                  required
+                />
+
+                <button
+                  type="button"
+                  [disabled]="guardando"
+                  (click)="alternarContrasena()"
+                >
+                  {{
+                    mostrarContrasena
+                      ? 'Ocultar'
+                      : 'Mostrar'
+                  }}
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmarContrasena">
+                Confirmar contraseña *
+              </label>
+
+              <div class="password-control">
+                <span aria-hidden="true">
+                  🔒
+                </span>
+
+                <input
+                  id="confirmarContrasena"
+                  name="confirmarContrasena"
+                  [type]="
+                    mostrarConfirmacion
+                      ? 'text'
+                      : 'password'
+                  "
+                  maxlength="60"
+                  placeholder="Repite la contraseña"
+                  [(ngModel)]="confirmarContrasena"
+                  [disabled]="guardando"
+                  required
+                />
+
+                <button
+                  type="button"
+                  [disabled]="guardando"
+                  (click)="alternarConfirmacion()"
+                >
+                  {{
+                    mostrarConfirmacion
+                      ? 'Ocultar'
+                      : 'Mostrar'
+                  }}
+                </button>
+              </div>
+            </div>
+
+            <div class="password-requirements full-width">
+              <span>
+                Requisitos de contraseña
+              </span>
+
+              <ul>
+                <li
+                  [class.valid]="
+                    contrasena.length >= 8
+                  "
+                >
+                  Al menos 8 caracteres
+                </li>
+
+                <li
+                  [class.valid]="
+                    contrasena.match('[A-Z]')
+                  "
+                >
+                  Una letra mayúscula
+                </li>
+
+                <li
+                  [class.valid]="
+                    contrasena.match('[a-z]')
+                  "
+                >
+                  Una letra minúscula
+                </li>
+
+                <li
+                  [class.valid]="
+                    contrasena.match('[0-9]')
+                  "
+                >
+                  Un número
+                </li>
+
+                <li
+                  [class.valid]="
+                    confirmarContrasena &&
+                    contrasena === confirmarContrasena
+                  "
+                >
+                  Las contraseñas coinciden
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <div
+          class="message error"
+          *ngIf="mensajeError"
+        >
+          <span>!</span>
+
+          <p>
+            {{ mensajeError }}
+          </p>
+        </div>
+
+        <div
+          class="message success"
+          *ngIf="mensajeExito"
+        >
+          <span>✓</span>
+
+          <p>
+            {{ mensajeExito }}
+          </p>
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="clear-button"
+            type="button"
+            [disabled]="guardando"
+            (click)="limpiarFormulario()"
+          >
+            Limpiar formulario
+          </button>
+
+          <div>
+            <button
+              class="cancel-button"
+              type="button"
+              [disabled]="guardando"
+              (click)="volverAlListado()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              class="save-button"
+              type="submit"
+              [disabled]="guardando"
+            >
+              {{
+                guardando
+                  ? 'Guardando...'
+                  : 'Guardar usuario'
+              }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Vista previa -->
+    <aside class="user-preview-card">
+      <div class="preview-heading">
+        <span>
+          Vista previa
+        </span>
+
+        <small>
+          Así aparecerá en el sistema
+        </small>
+      </div>
+
+      <article
+        class="user-preview"
+        [class.inactive]="
+          estado === 'inactivo'
+        "
+      >
+        <div class="preview-avatar">
+          <img
+            [src]="avatar"
+            [alt]="
+              'Avatar de ' +
+              nombreVistaPrevia
+            "
+            (error)="
+              manejarErrorImagen($event)
+            "
+          />
+
+          <span
+            [class.active]="
+              estado === 'activo'
+            "
+          ></span>
+        </div>
+
+        <h3>
+          {{ nombreVistaPrevia }}
+        </h3>
+
+        <span
+          class="preview-role"
+          [ngClass]="rol"
+        >
+          {{ rolTexto }}
+        </span>
+
+        <strong class="preview-cargo">
+          {{ cargo }}
+        </strong>
+
+        <p class="preview-email">
+          {{ correoVistaPrevia }}
+        </p>
+
+        <p class="preview-phone">
+          {{ telefonoVistaPrevia }}
+        </p>
+
+        <div class="preview-branch">
+          <span aria-hidden="true">
+            🏪
+          </span>
+
+          <div>
+            <span>
+              Sucursal asignada
+            </span>
+
+            <strong>
+              {{ sucursalVistaPrevia }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="preview-status">
+          <span>
+            Estado de la cuenta
+          </span>
+
+          <strong
+            [class.active]="
+              estado === 'activo'
+            "
+          >
+            {{
+              estado === 'activo'
+                ? 'Activa'
+                : 'Inactiva'
+            }}
+          </strong>
+        </div>
+      </article>
+
+      <div class="avatar-information">
+        <span aria-hidden="true">
+          🖼️
+        </span>
+
+        <div>
+          <strong>
+            Fotografía automática
+          </strong>
+
+          <p>
+            La imagen se asigna según el rol
+            {{ rolTexto }} y el sexo registrado.
+          </p>
+        </div>
+      </div>
+
+      <div class="security-information">
+        <span aria-hidden="true">
+          🔐
+        </span>
+
+        <div>
+          <strong>
+            Credenciales protegidas
+          </strong>
+
+          <p>
+            El usuario utilizará su correo y contraseña
+            para iniciar sesión.
+          </p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>

@@ -1,1 +1,147 @@
-<p>sidebar works!</p>
+<aside class="sidebar">
+  <div class="brand">
+    <img src="/XoXO.png" alt="Logo XoXO" />
+
+    <div class="brand-info">
+      <h2>XoXO</h2>
+      <span>{{ nombrePanel }}</span>
+    </div>
+  </div>
+
+  <nav class="menu">
+    <!-- Inicio -->
+    <a
+      class="menu-item"
+      [routerLink]="dashboardRuta"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      *appHasPermission="'DASHBOARD_VER'"
+    >
+      <span class="menu-icon">🏠</span>
+      <span>Inicio</span>
+    </a>
+
+    <!-- Inventario -->
+    <details
+      class="menu-group"
+      *appHasPermission="'INVENTARIO_VER'"
+    >
+      <summary class="menu-item menu-summary">
+        <span class="menu-icon">📦</span>
+        <span class="menu-label">Inventario</span>
+        <span class="submenu-arrow">⌄</span>
+      </summary>
+
+      <div class="submenu">
+        <a
+          class="submenu-item"
+          routerLink="/lista-inventario"
+          routerLinkActive="active"
+          *appHasPermission="'INVENTARIO_VER'"
+        >
+          <span class="submenu-dot"></span>
+          <span>Listado del inventario</span>
+        </a>
+
+        <a
+          class="submenu-item"
+          routerLink="/movimientos-inventario"
+          routerLinkActive="active"
+          *appHasPermission="'INVENTARIO_MOVIMIENTOS_VER'"
+        >
+          <span class="submenu-dot"></span>
+          <span>Movimientos del inventario</span>
+        </a>
+      </div>
+    </details>
+
+    <!-- Tiendas -->
+    <a
+      class="menu-item"
+      routerLink="/lista-tiendas"
+      routerLinkActive="active"
+      *appHasPermission="'TIENDAS_VER'"
+    >
+      <span class="menu-icon">🏪</span>
+      <span>Tiendas</span>
+    </a>
+
+    <!-- Turnos -->
+    <details
+      class="menu-group"
+      *appHasPermission="'TURNOS_VER'"
+    >
+      <summary class="menu-item menu-summary">
+        <span class="menu-icon">🕐</span>
+        <span class="menu-label">Turnos</span>
+        <span class="submenu-arrow">⌄</span>
+      </summary>
+
+      <div class="submenu">
+        <a
+          class="submenu-item"
+          routerLink="/abrir-turno"
+          routerLinkActive="active"
+          *appHasPermission="'TURNOS_ABRIR'"
+        >
+          <span class="submenu-dot"></span>
+          <span>Abrir turno</span>
+        </a>
+
+        <a
+          class="submenu-item"
+          routerLink="/cerrar-turno"
+          routerLinkActive="active"
+          *appHasPermission="'TURNOS_CERRAR'"
+        >
+          <span class="submenu-dot"></span>
+          <span>Cerrar turno</span>
+        </a>
+      </div>
+    </details>
+
+    <!-- Usuarios -->
+    <a
+      class="menu-item"
+      routerLink="/lista-usuarios"
+      routerLinkActive="active"
+      *appHasPermission="'USUARIOS_VER'"
+    >
+      <span class="menu-icon">👥</span>
+      <span>Usuarios</span>
+    </a>
+
+    <!-- Ventas -->
+    <a
+      class="menu-item"
+      routerLink="/historial-ventas"
+      routerLinkActive="active"
+      *appHasPermission="'VENTAS_HISTORIAL_VER'"
+    >
+      <span class="menu-icon">🧾</span>
+      <span>Ventas</span>
+    </a>
+
+    <!-- Productos -->
+    <a
+      class="menu-item"
+      routerLink="/lista-productos"
+      routerLinkActive="active"
+      *appHasPermission="'PRODUCTOS_VER'"
+    >
+      <span class="menu-icon">🏷️</span>
+      <span>Productos</span>
+    </a>
+
+    <!-- Reportes -->
+    <a
+      class="menu-item"
+      routerLink="/reportes"
+      routerLinkActive="active"
+      *appHasPermission="'REPORTES_VER'"
+    >
+      <!--<span class="menu-icon">📊</span>
+      <span>Reportes</span> -->
+    </a>
+  </nav>
+</aside>

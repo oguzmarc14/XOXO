@@ -1,1 +1,55 @@
-<p>card-resumen works!</p>
+<section class="resumen-section">
+  <div class="resumen-heading">
+    <div>
+      <h2>{{ titulo }}</h2>
+
+      <p *ngIf="subtitulo">
+        {{ subtitulo }}
+      </p>
+    </div>
+  </div>
+
+  <div
+    class="resumen-grid"
+    *ngIf="itemsVisibles.length > 0; else sinInformacion"
+  >
+    <article
+      *ngFor="let item of itemsVisibles"
+      class="resumen-card"
+      [ngClass]="obtenerClaseEstado(item)"
+    >
+      <div class="card-header">
+        <span class="card-title">
+          {{ item.titulo }}
+        </span>
+
+        <span class="card-icon">
+          {{ item.icono }}
+        </span>
+      </div>
+
+      <strong class="card-value">
+        {{ item.valor }}
+      </strong>
+
+      <p class="card-description">
+        {{ item.descripcion }}
+      </p>
+
+      <a
+        *ngIf="item.ruta && item.textoEnlace"
+        class="card-link"
+        [routerLink]="item.ruta"
+      >
+        {{ item.textoEnlace }}
+        <span aria-hidden="true">→</span>
+      </a>
+    </article>
+  </div>
+
+  <ng-template #sinInformacion>
+    <div class="empty-state">
+      No hay información disponible para este usuario.
+    </div>
+  </ng-template>
+</section>

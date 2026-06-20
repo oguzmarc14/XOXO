@@ -1,1 +1,172 @@
-<p>cerrar-turno works!</p>
+<main class="turno-content">
+  <!-- Formulario de cierre -->
+  <section
+    class="turno-card"
+    *ngIf="turnoActual.activo; else turnoInactivo"
+  >
+    <div class="card-heading">
+      <div class="heading-icon">
+        🔒
+      </div>
+
+      <div>
+        <span class="eyebrow">
+          Fin de operaciones
+        </span>
+
+        <h1>Cerrar turno</h1>
+
+        <p>
+          Verifica la información e ingresa el efectivo
+          disponible antes de finalizar el turno.
+        </p>
+      </div>
+    </div>
+
+    <form
+      class="turno-form"
+      (ngSubmit)="cerrarTurno()"
+    >
+      <div class="info-grid">
+        <div class="info-item">
+          <span>Responsable</span>
+
+          <strong>
+            {{ turnoActual.usuario }}
+          </strong>
+        </div>
+
+        <div class="info-item">
+          <span>Sucursal</span>
+
+          <strong>
+            {{ turnoActual.sucursal }}
+          </strong>
+        </div>
+
+        <div class="info-item">
+          <span>Apertura</span>
+
+          <strong>
+            {{
+              turnoActual.fechaApertura
+                | date:'dd/MM/yyyy HH:mm'
+            }}
+          </strong>
+        </div>
+
+        <div class="info-item">
+          <span>Fondo inicial</span>
+
+          <strong>
+            ${{
+              turnoActual.montoInicial
+                | number:'1.2-2'
+            }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="montoFinal">
+          Efectivo final en caja
+        </label>
+
+        <div class="money-input">
+          <span>$</span>
+
+          <input
+            id="montoFinal"
+            name="montoFinal"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+            [(ngModel)]="montoFinal"
+            [disabled]="enviando"
+            required
+          />
+        </div>
+
+        <small>
+          Registra el efectivo contado al finalizar el turno.
+        </small>
+      </div>
+
+      <label class="confirmation">
+        <input
+          type="checkbox"
+          name="confirmacion"
+          [(ngModel)]="confirmacion"
+          [disabled]="enviando"
+        />
+
+        <span>
+          Confirmo que revisé el efectivo y la información
+          correspondiente al turno.
+        </span>
+      </label>
+
+      <p
+        class="error-message"
+        *ngIf="mensajeError"
+      >
+        {{ mensajeError }}
+      </p>
+
+      <div class="form-actions">
+        <a
+          class="secondary-button"
+          [routerLink]="dashboardRuta"
+        >
+          Cancelar
+        </a>
+
+        <button
+          class="danger-button"
+          type="submit"
+          [disabled]="enviando"
+        >
+          {{
+            enviando
+              ? 'Cerrando...'
+              : 'Cerrar turno'
+          }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Sin turno activo -->
+  <ng-template #turnoInactivo>
+    <section class="turno-card status-card">
+      <div class="status-icon">
+        !
+      </div>
+
+      <h1>
+        No hay un turno activo
+      </h1>
+
+      <p>
+        Debes abrir un turno antes de poder realizar un cierre.
+      </p>
+
+      <div class="form-actions centered">
+        <a
+          class="secondary-button"
+          [routerLink]="dashboardRuta"
+        >
+          Volver al dashboard
+        </a>
+
+        <a
+          class="primary-button"
+          routerLink="/abrir-turno"
+        >
+          Abrir turno
+        </a>
+      </div>
+    </section>
+  </ng-template>
+</main>

@@ -1,0 +1,279 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  color: #f9fafb;
+  background: #111827;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns:
+    280px
+    minmax(0, 1fr);
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgba(225, 29, 72, 0.09),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #111827,
+      #1f2937
+    );
+}
+
+/* Sidebar */
+
+.layout-sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 280px;
+  height: 100vh;
+  min-height: 100vh;
+  border-right:
+    1px solid
+    rgba(225, 29, 72, 0.25);
+  background: #0f172a;
+  overflow-y: auto;
+}
+
+.layout-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.layout-sidebar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background:
+    rgba(249, 250, 251, 0.1);
+}
+
+app-sidebar {
+  display: block;
+  min-height: 100%;
+}
+
+.mobile-sidebar-header {
+  display: none;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+/* Contenido principal */
+
+.layout-main {
+  min-width: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: block;
+}
+
+.layout-content {
+  min-width: 0;
+  flex: 1;
+}
+
+/* Encabezado móvil */
+
+.mobile-top-row {
+  display: none;
+}
+
+.menu-button {
+  width: 42px;
+  height: 42px;
+  border:
+    1px solid
+    rgba(249, 250, 251, 0.1);
+  border-radius: 12px;
+  background:
+    rgba(17, 24, 39, 0.72);
+  color: #f9fafb;
+  font-size: 20px;
+}
+
+.mobile-page-title {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mobile-page-title strong {
+  overflow: hidden;
+  color: #f9fafb;
+  font-size: 15px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mobile-page-title span {
+  overflow: hidden;
+  color: #9ca3af;
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mobile-avatar {
+  width: 42px;
+  height: 42px;
+  border:
+    2px solid
+    rgba(225, 29, 72, 0.65);
+  border-radius: 50%;
+  background: #111827;
+  object-fit: cover;
+}
+
+/* Tablet y móvil */
+
+@media (max-width: 1050px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .layout-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    width: min(300px, 86vw);
+    transform: translateX(-105%);
+    box-shadow:
+      24px 0 55px
+      rgba(0, 0, 0, 0.42);
+    transition:
+      transform 0.25s ease;
+  }
+
+  .layout-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .mobile-sidebar-header {
+    min-height: 76px;
+    padding: 14px 15px;
+    border-bottom:
+      1px solid
+      rgba(249, 250, 251, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mobile-brand {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+
+  .mobile-brand img {
+    width: 45px;
+    height: 45px;
+    border-radius: 14px;
+    object-fit: cover;
+  }
+
+  .mobile-brand > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .mobile-brand strong {
+    color: #f9fafb;
+    font-size: 17px;
+  }
+
+  .mobile-brand span {
+    color: #9ca3af;
+    font-size: 11px;
+  }
+
+  .close-sidebar-button {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 11px;
+    background:
+      rgba(225, 29, 72, 0.12);
+    color: #fb7185;
+    font-size: 24px;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background:
+      rgba(3, 7, 18, 0.72);
+    backdrop-filter: blur(3px);
+    display: block;
+  }
+
+  app-topbar {
+    display: none;
+  }
+
+  .mobile-top-row {
+    position: sticky;
+    top: 0;
+    z-index: 35;
+    min-height: 70px;
+    padding: 12px 18px;
+    border-bottom:
+      1px solid
+      rgba(249, 250, 251, 0.08);
+    background:
+      rgba(15, 23, 42, 0.94);
+    backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .mobile-top-row {
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+
+  .menu-button,
+  .mobile-avatar {
+    width: 40px;
+    height: 40px;
+  }
+}
