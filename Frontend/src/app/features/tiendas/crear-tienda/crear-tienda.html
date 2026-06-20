@@ -1,1 +1,670 @@
-<p>crear-tienda works!</p>
+<main class="create-store-page">
+  <section class="page-introduction">
+    <div>
+      <span class="eyebrow">
+        Administración de sucursales
+      </span>
+
+      <h2>
+        Crear nueva sucursal
+      </h2>
+
+      <p>
+        Registra la información general, ubicación,
+        responsable y horario de operación.
+      </p>
+    </div>
+
+    <button
+      class="back-button"
+      type="button"
+      (click)="volverAlListado()"
+    >
+      <span aria-hidden="true">
+        ←
+      </span>
+
+      Volver al listado
+    </button>
+  </section>
+
+  <!-- Límite alcanzado -->
+  <section
+    class="limit-card"
+    *ngIf="limiteAlcanzado"
+  >
+    <div class="limit-icon">
+      ⚠️
+    </div>
+
+    <h2>
+      Límite de sucursales alcanzado
+    </h2>
+
+    <p>
+      El sistema permite registrar un máximo de
+      <strong>
+        {{ limiteSucursales }} sucursales
+      </strong>.
+    </p>
+
+    <button
+      type="button"
+      (click)="volverAlListado()"
+    >
+      Volver al listado
+    </button>
+  </section>
+
+  <div
+    class="create-store-layout"
+    *ngIf="!limiteAlcanzado"
+  >
+    <!-- Formulario -->
+    <section class="store-form-card">
+      <div class="section-heading">
+        <div>
+          <h2>
+            Información de la sucursal
+          </h2>
+
+          <p>
+            Completa los datos obligatorios antes
+            de registrar la tienda.
+          </p>
+        </div>
+
+        <span class="capacity-label">
+          {{ espaciosDisponibles }}
+          espacios disponibles
+        </span>
+      </div>
+
+      <form
+        class="store-form"
+        (ngSubmit)="guardarSucursal()"
+      >
+        <div class="form-section">
+          <div class="form-section-heading">
+            <span class="section-number">
+              1
+            </span>
+
+            <div>
+              <h3>
+                Identificación
+              </h3>
+
+              <p>
+                Datos principales para reconocer
+                la sucursal.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="numero">
+                Número de sucursal *
+              </label>
+
+              <div class="number-control">
+                <span>#</span>
+
+                <input
+                  id="numero"
+                  name="numero"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="001"
+                  [(ngModel)]="numero"
+                  [disabled]="guardando"
+                  required
+                />
+
+                <button
+                  type="button"
+                  [disabled]="guardando"
+                  (click)="generarNumeroManual()"
+                >
+                  Generar
+                </button>
+              </div>
+
+              <small>
+                Debe ser un número único.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="nombre">
+                Nombre de la sucursal *
+              </label>
+
+              <input
+                id="nombre"
+                name="nombre"
+                type="text"
+                maxlength="100"
+                placeholder="Ejemplo: Sucursal Centro"
+                [(ngModel)]="nombre"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-heading">
+            <span class="section-number">
+              2
+            </span>
+
+            <div>
+              <h3>
+                Ubicación
+              </h3>
+
+              <p>
+                Dirección física de la sucursal.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="estadoUbicacion">
+                Estado *
+              </label>
+
+              <select
+                id="estadoUbicacion"
+                name="estadoUbicacion"
+                [(ngModel)]="estadoUbicacion"
+                [disabled]="guardando"
+                required
+              >
+                <option value="">
+                  Selecciona un estado
+                </option>
+
+                <option
+                  *ngFor="
+                    let estadoItem of estadosDisponibles
+                  "
+                  [value]="estadoItem"
+                >
+                  {{ estadoItem }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="ciudad">
+                Ciudad o municipio *
+              </label>
+
+              <input
+                id="ciudad"
+                name="ciudad"
+                type="text"
+                maxlength="80"
+                placeholder="Ciudad o municipio"
+                [(ngModel)]="ciudad"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label for="direccion">
+                Dirección completa *
+              </label>
+
+              <textarea
+                id="direccion"
+                name="direccion"
+                rows="3"
+                maxlength="220"
+                placeholder="Calle, número, colonia y referencias"
+                [(ngModel)]="direccion"
+                [disabled]="guardando"
+                required
+              ></textarea>
+
+              <small class="character-count">
+                {{ direccion.length }}/220 caracteres
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="codigoPostal">
+                Código postal *
+              </label>
+
+              <input
+                id="codigoPostal"
+                name="codigoPostal"
+                type="text"
+                inputmode="numeric"
+                maxlength="5"
+                placeholder="00000"
+                [(ngModel)]="codigoPostal"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="telefono">
+                Teléfono *
+              </label>
+
+              <input
+                id="telefono"
+                name="telefono"
+                type="tel"
+                maxlength="20"
+                placeholder="449 123 4567"
+                [(ngModel)]="telefono"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label for="correo">
+                Correo de contacto
+              </label>
+
+              <input
+                id="correo"
+                name="correo"
+                type="email"
+                maxlength="100"
+                placeholder="sucursal@xoxo.com"
+                [(ngModel)]="correo"
+                [disabled]="guardando"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-heading">
+            <span class="section-number">
+              3
+            </span>
+
+            <div>
+              <h3>
+                Operación
+              </h3>
+
+              <p>
+                Responsable, personal y horario.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="gerente">
+                Gerente responsable *
+              </label>
+
+              <input
+                id="gerente"
+                name="gerente"
+                type="text"
+                maxlength="100"
+                placeholder="Nombre completo"
+                [(ngModel)]="gerente"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="empleados">
+                Número de empleados *
+              </label>
+
+              <input
+                id="empleados"
+                name="empleados"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+                [(ngModel)]="empleados"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="horarioApertura">
+                Horario de apertura *
+              </label>
+
+              <input
+                id="horarioApertura"
+                name="horarioApertura"
+                type="time"
+                [(ngModel)]="horarioApertura"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="horarioCierre">
+                Horario de cierre *
+              </label>
+
+              <input
+                id="horarioCierre"
+                name="horarioCierre"
+                type="time"
+                [(ngModel)]="horarioCierre"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label>
+                Estado operativo
+              </label>
+
+              <div class="status-options">
+                <button
+                  type="button"
+                  class="status-option active-option"
+                  [class.selected]="
+                    estado === 'activa'
+                  "
+                  [disabled]="guardando"
+                  (click)="
+                    seleccionarEstadoOperativo(
+                      'activa'
+                    )
+                  "
+                >
+                  <span class="status-point"></span>
+
+                  <div>
+                    <strong>
+                      Activa
+                    </strong>
+
+                    <small>
+                      La sucursal estará disponible
+                      para operar.
+                    </small>
+                  </div>
+
+                  <span
+                    class="selection-check"
+                    *ngIf="
+                      estado === 'activa'
+                    "
+                  >
+                    ✓
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  class="status-option inactive-option"
+                  [class.selected]="
+                    estado === 'inactiva'
+                  "
+                  [disabled]="guardando"
+                  (click)="
+                    seleccionarEstadoOperativo(
+                      'inactiva'
+                    )
+                  "
+                >
+                  <span class="status-point"></span>
+
+                  <div>
+                    <strong>
+                      Inactiva
+                    </strong>
+
+                    <small>
+                      La sucursal quedará fuera
+                      de operación.
+                    </small>
+                  </div>
+
+                  <span
+                    class="selection-check"
+                    *ngIf="
+                      estado === 'inactiva'
+                    "
+                  >
+                    ✓
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="message error"
+          *ngIf="mensajeError"
+        >
+          <span>!</span>
+
+          <p>
+            {{ mensajeError }}
+          </p>
+        </div>
+
+        <div
+          class="message success"
+          *ngIf="mensajeExito"
+        >
+          <span>✓</span>
+
+          <p>
+            {{ mensajeExito }}
+          </p>
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="clear-button"
+            type="button"
+            [disabled]="guardando"
+            (click)="limpiarFormulario()"
+          >
+            Limpiar formulario
+          </button>
+
+          <div>
+            <button
+              class="cancel-button"
+              type="button"
+              [disabled]="guardando"
+              (click)="volverAlListado()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              class="save-button"
+              type="submit"
+              [disabled]="guardando"
+            >
+              {{
+                guardando
+                  ? 'Guardando...'
+                  : 'Guardar sucursal'
+              }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Vista previa -->
+    <aside class="store-preview-card">
+      <div class="preview-heading">
+        <span>
+          Vista previa
+        </span>
+
+        <small>
+          Así aparecerá en el listado
+        </small>
+      </div>
+
+      <article
+        class="store-preview"
+        [class.inactive]="
+          estado === 'inactiva'
+        "
+      >
+        <div class="preview-top">
+          <div class="store-icon">
+            🏪
+          </div>
+
+          <div class="preview-badges">
+            <span
+              class="status-badge"
+              [class.active]="
+                estado === 'activa'
+              "
+              [class.inactive]="
+                estado === 'inactiva'
+              "
+            >
+              {{
+                estado === 'activa'
+                  ? 'Activa'
+                  : 'Inactiva'
+              }}
+            </span>
+
+            <span class="number-badge">
+              #{{ numeroVistaPrevia }}
+            </span>
+          </div>
+        </div>
+
+        <h3>
+          {{ nombreVistaPrevia }}
+        </h3>
+
+        <p class="preview-location">
+          📍 {{ ubicacionVistaPrevia }}
+        </p>
+
+        <p class="preview-address">
+          {{ direccionVistaPrevia }}
+        </p>
+
+        <div class="preview-data">
+          <div>
+            <span>Teléfono</span>
+
+            <strong>
+              {{ telefonoVistaPrevia }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Empleados</span>
+
+            <strong>
+              {{ empleados || 0 }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="manager-preview">
+          <div class="manager-avatar">
+            {{
+              gerente
+                ? gerente
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase()
+                : 'XO'
+            }}
+          </div>
+
+          <div>
+            <span>
+              Gerente responsable
+            </span>
+
+            <strong>
+              {{ gerenteVistaPrevia }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="schedule-preview">
+          <span aria-hidden="true">
+            🕐
+          </span>
+
+          <div>
+            <span>
+              Horario de operación
+            </span>
+
+            <strong>
+              {{ horarioVistaPrevia }}
+            </strong>
+          </div>
+        </div>
+      </article>
+
+      <div class="capacity-preview">
+        <div>
+          <span>
+            Sucursales actuales
+          </span>
+
+          <strong>
+            {{ totalSucursalesActuales }}
+          </strong>
+        </div>
+
+        <div>
+          <span>
+            Límite máximo
+          </span>
+
+          <strong>
+            {{ limiteSucursales }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="preview-notice">
+        <span aria-hidden="true">
+          💡
+        </span>
+
+        <p>
+          La nueva sucursal se agregará al listado
+          y ocupará uno de los
+          {{ espaciosDisponibles }}
+          espacios disponibles.
+        </p>
+      </div>
+    </aside>
+  </div>
+</main>
