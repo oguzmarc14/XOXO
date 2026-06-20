@@ -1,1 +1,434 @@
-<p>crear-producto works!</p>
+<main class="create-product-page">
+  <section class="page-introduction">
+    <div>
+      <span class="eyebrow">
+        Catálogo de productos
+      </span>
+
+      <h2>
+        Registrar nuevo producto
+      </h2>
+
+      <p>
+        Captura la información necesaria para agregar
+        un producto al catálogo de XoXO.
+      </p>
+    </div>
+
+    <a
+      class="back-link"
+      routerLink="/lista-productos"
+    >
+      <span aria-hidden="true">←</span>
+      Volver al listado
+    </a>
+  </section>
+
+  <div class="create-product-layout">
+    <!-- Formulario -->
+    <section class="product-form-card">
+      <div class="section-heading">
+        <div>
+          <h2>
+            Información del producto
+          </h2>
+
+          <p>
+            Completa los campos obligatorios antes de guardar.
+          </p>
+        </div>
+
+        <span class="required-label">
+          * Campos obligatorios
+        </span>
+      </div>
+
+      <form
+        class="product-form"
+        (ngSubmit)="guardarProducto()"
+      >
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="codigo">
+              Código del producto *
+            </label>
+
+            <div class="code-control">
+              <input
+                id="codigo"
+                name="codigo"
+                type="text"
+                maxlength="30"
+                placeholder="XO-PR-0001"
+                [(ngModel)]="codigo"
+                [disabled]="guardando"
+                required
+              />
+
+              <button
+                type="button"
+                [disabled]="guardando"
+                (click)="generarCodigo()"
+              >
+                Generar
+              </button>
+            </div>
+
+            <small>
+              Identificador único del producto.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="nombre">
+              Nombre del producto *
+            </label>
+
+            <input
+              id="nombre"
+              name="nombre"
+              type="text"
+              maxlength="100"
+              placeholder="Ejemplo: Playera negra XoXO"
+              [(ngModel)]="nombre"
+              [disabled]="guardando"
+              required
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label>
+              Categoría *
+            </label>
+
+            <div class="category-grid">
+              <button
+                *ngFor="let item of categorias"
+                type="button"
+                class="category-option"
+                [class.active]="
+                  categoria === item.nombre
+                "
+                [disabled]="guardando"
+                (click)="seleccionarCategoria(item)"
+              >
+                <span class="category-icon">
+                  {{ item.icono }}
+                </span>
+
+                <span>
+                  {{ item.nombre }}
+                </span>
+
+                <span
+                  class="category-check"
+                  *ngIf="
+                    categoria === item.nombre
+                  "
+                >
+                  ✓
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="descripcion">
+              Descripción *
+            </label>
+
+            <textarea
+              id="descripcion"
+              name="descripcion"
+              rows="4"
+              maxlength="300"
+              placeholder="Describe las características principales del producto..."
+              [(ngModel)]="descripcion"
+              [disabled]="guardando"
+              required
+            ></textarea>
+
+            <small class="character-count">
+              {{ descripcion.length }}/300 caracteres
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="precio">
+              Precio de venta *
+            </label>
+
+            <div class="money-control">
+              <span>$</span>
+
+              <input
+                id="precio"
+                name="precio"
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+                [(ngModel)]="precio"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="stockInicial">
+              Stock inicial *
+            </label>
+
+            <input
+              id="stockInicial"
+              name="stockInicial"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="0"
+              [(ngModel)]="stockInicial"
+              [disabled]="guardando"
+              required
+            />
+
+            <small>
+              Unidades disponibles al registrar.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="stockMinimo">
+              Stock mínimo *
+            </label>
+
+            <input
+              id="stockMinimo"
+              name="stockMinimo"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="0"
+              [(ngModel)]="stockMinimo"
+              [disabled]="guardando"
+              required
+            />
+
+            <small>
+              Nivel para generar una alerta.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>
+              Estado del producto
+            </label>
+
+            <div class="status-options">
+              <button
+                type="button"
+                class="status-option active-option"
+                [class.selected]="
+                  estado === 'activo'
+                "
+                [disabled]="guardando"
+                (click)="
+                  seleccionarEstado('activo')
+                "
+              >
+                <span class="status-point"></span>
+
+                <div>
+                  <strong>Activo</strong>
+                  <small>Disponible para venta</small>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                class="status-option inactive-option"
+                [class.selected]="
+                  estado === 'inactivo'
+                "
+                [disabled]="guardando"
+                (click)="
+                  seleccionarEstado('inactivo')
+                "
+              >
+                <span class="status-point"></span>
+
+                <div>
+                  <strong>Inactivo</strong>
+                  <small>No disponible para venta</small>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="message error"
+          *ngIf="mensajeError"
+        >
+          <span>!</span>
+
+          <p>
+            {{ mensajeError }}
+          </p>
+        </div>
+
+        <div
+          class="message success"
+          *ngIf="mensajeExito"
+        >
+          <span>✓</span>
+
+          <p>
+            {{ mensajeExito }}
+          </p>
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="clear-form-button"
+            type="button"
+            [disabled]="guardando"
+            (click)="limpiarFormulario()"
+          >
+            Limpiar formulario
+          </button>
+
+          <div>
+            <a
+              class="cancel-button"
+              routerLink="/lista-productos"
+            >
+              Cancelar
+            </a>
+
+            <button
+              class="save-button"
+              type="submit"
+              [disabled]="guardando"
+            >
+              {{
+                guardando
+                  ? 'Guardando...'
+                  : 'Guardar producto'
+              }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Vista previa -->
+    <aside class="product-preview-card">
+      <div class="preview-heading">
+        <span>
+          Vista previa
+        </span>
+
+        <small>
+          Así se mostrará en el catálogo
+        </small>
+      </div>
+
+      <article
+        class="product-preview"
+        [class.inactive]="estado === 'inactivo'"
+      >
+        <div class="preview-top">
+          <div class="product-icon">
+            {{ icono }}
+          </div>
+
+          <span
+            class="product-status"
+            [class.inactive]="
+              estado === 'inactivo'
+            "
+          >
+            {{
+              estado === 'activo'
+                ? 'Activo'
+                : 'Inactivo'
+            }}
+          </span>
+        </div>
+
+        <span class="preview-code">
+          {{ codigo || 'XO-PR-0000' }}
+        </span>
+
+        <h3>
+          {{ nombreVistaPrevia }}
+        </h3>
+
+        <span class="preview-category">
+          {{ categoriaVistaPrevia }}
+        </span>
+
+        <p>
+          {{ descripcionVistaPrevia }}
+        </p>
+
+        <div class="preview-price">
+          <span>Precio de venta</span>
+
+          <strong>
+            {{
+              precioVistaPrevia
+                | currency:'MXN':'symbol':'1.2-2'
+            }}
+          </strong>
+        </div>
+
+        <div class="preview-stock">
+          <div>
+            <span>Existencia</span>
+
+            <strong>
+              {{ stockVistaPrevia }}
+              unidades
+            </strong>
+          </div>
+
+          <span
+            class="stock-badge"
+            [ngClass]="estadoStock"
+          >
+            {{ textoEstadoStock }}
+          </span>
+        </div>
+      </article>
+
+      <div class="preview-information">
+        <div>
+          <span>Stock mínimo</span>
+
+          <strong>
+            {{ stockMinimoVistaPrevia }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Categoría</span>
+
+          <strong>
+            {{ categoriaVistaPrevia }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="preview-notice">
+        <span aria-hidden="true">💡</span>
+
+        <p>
+          La vista previa se actualiza automáticamente
+          mientras completas el formulario.
+        </p>
+      </div>
+    </aside>
+  </div>
+</main>
