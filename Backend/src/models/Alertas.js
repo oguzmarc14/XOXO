@@ -13,7 +13,7 @@ const alertaSchema = new mongoose.Schema({
   },
   ventaId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Venta",
+    ref: "Ventas",
   },
   tipo: {
     type: String,
@@ -34,6 +34,14 @@ const alertaSchema = new mongoose.Schema({
   stockNuevo: {
     type: Number,
     required: true,
+  },
+  estado: {
+    type: String,
+    enum: ["PENDIENTE", "RESUELTA"],
+    default: "PENDIENTE",
+  },
+  fechaResolucion: {
+    type: Date,
   },
   fecha: {
     type: Date,
