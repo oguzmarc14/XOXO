@@ -1,10 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import {
+  Component
+} from '@angular/core';
 
 import {
-  SexoUsuario,
+  FormsModule
+} from '@angular/forms';
+
+import {
+  Router
+} from '@angular/router';
+
+import {
   Usuario,
   UserRole
 } from '../../../core/models/usuario.model';
@@ -13,8 +20,7 @@ import {
   UsuarioActualService
 } from '../../../core/services/usuario-actual';
 
-interface UsuarioPrueba
-  extends Usuario {
+interface UsuarioPrueba extends Usuario {
   contrasena: string;
   dashboard: string;
 }
@@ -50,7 +56,8 @@ export class Login {
         sucursal:
           'Sucursal #027 - Centro',
         avatar: '/Cajera.png',
-        dashboard: '/cajero/inicio'
+        dashboard:
+          '/dashboard-cajero'
       },
       {
         id: 2,
@@ -63,7 +70,8 @@ export class Login {
         sucursal:
           'Sucursal #027 - Centro',
         avatar: '/GerenteF.png',
-        dashboard: '/gerente/inicio'
+        dashboard:
+          '/dashboard-gerente'
       },
       {
         id: 3,
@@ -76,12 +84,14 @@ export class Login {
         sucursal:
           'Administración general',
         avatar: '/Administrador.png',
-        dashboard: '/admin/inicio'
+        dashboard:
+          '/dashboard-admin'
       }
     ];
 
   constructor(
     private router: Router,
+
     private usuarioActualService:
       UsuarioActualService
   ) {}
@@ -103,13 +113,15 @@ export class Login {
     ) {
       this.error =
         'Ingresa el correo electrónico y la contraseña.';
+
       return;
     }
 
     const usuarioEncontrado =
       this.usuarios.find(
-        (usuario) =>
+        usuario =>
           usuario.correo
+            .trim()
             .toLowerCase() ===
             correoNormalizado &&
           usuario.contrasena ===
@@ -119,56 +131,76 @@ export class Login {
     if (!usuarioEncontrado) {
       this.error =
         'El correo electrónico o la contraseña son incorrectos.';
+
       return;
     }
 
     this.cargando = true;
 
-    const usuarioSesion: Usuario = {
-      id: usuarioEncontrado.id,
-      nombre:
-        usuarioEncontrado.nombre,
-      sexo:
-        usuarioEncontrado.sexo,
-      correo:
-        usuarioEncontrado.correo,
-      rol:
-        usuarioEncontrado.rol,
-      cargo:
-        usuarioEncontrado.cargo,
-      sucursal:
-        usuarioEncontrado.sucursal,
-      avatar:
-        usuarioEncontrado.avatar
-    };
+    const usuarioSesion:
+      Usuario = {
+        id:
+          usuarioEncontrado.id,
 
-    this.usuarioActualService
-      .establecerUsuario(
-        usuarioSesion
+        nombre:
+          usuarioEncontrado.nombre,
+
+        sexo:
+          usuarioEncontrado.sexo,
+
+        correo:
+          usuarioEncontrado.correo,
+
+        rol:
+          usuarioEncontrado.rol,
+
+        cargo:
+          usuarioEncontrado.cargo,
+
+        sucursal:
+          usuarioEncontrado.sucursal,
+
+        avatar:
+          usuarioEncontrado.avatar
+      };
+
+    try {
+      localStorage.setItem(
+        'sesionActiva',
+        'true'
       );
 
-    localStorage.setItem(
-      'sesionActiva',
-      'true'
-    );
+      this.usuarioActualService
+        .establecerUsuario(
+          usuarioSesion
+        );
 
-    this.router
-      .navigate([
-        usuarioEncontrado.dashboard
-      ])
-      .then((navegacionExitosa) => {
-        if (!navegacionExitosa) {
+      this.router
+        .navigateByUrl(
+          usuarioEncontrado.dashboard
+        )
+        .then(
+          navegacionExitosa => {
+            if (!navegacionExitosa) {
+              this.error =
+                'No fue posible abrir el panel del usuario.';
+
+              this.cargando = false;
+            }
+          }
+        )
+        .catch(() => {
           this.error =
-            'No fue posible abrir el panel del usuario.';
-        }
-      })
-      .catch(() => {
-        this.error =
-          'Ocurrió un error al iniciar sesión.';
-      })
-      .finally(() => {
-        this.cargando = false;
-      });
+            'Ocurrió un error al abrir el panel.';
+
+          this.cargando = false;
+        });
+    } catch {
+      this.error =
+        'No fue posible iniciar la sesión.';
+
+      this.cargando = false;
+    }
   }
 
   alternarContrasena(): void {
@@ -185,29 +217,20 @@ export class Login {
   ): void {
     const usuario =
       this.usuarios.find(
-        (item) => item.rol === rol
+        item =>
+          item.rol === rol
       );
 
     if (!usuario) {
       return;
     }
 
-    this.correo = usuario.correo;
+    this.correo =
+      usuario.correo;
+
     this.contrasena =
       usuario.contrasena;
 
     this.error = '';
   }
-
-  obtenerSexoUsuarioPrueba(
-    rol: UserRole
-  ): SexoUsuario | null {
-    const usuario =
-      this.usuarios.find(
-        (item) => item.rol === rol
-      );
-
-    return usuario?.sexo ?? null;
-  }
 }
-
