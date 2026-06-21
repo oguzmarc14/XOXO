@@ -9,11 +9,13 @@ import usuariosRoutes from "./routes/usuarios.routes.js"
 import authRoutes from "./routes/auth.routes.js"
 import ventasRoutes from "./routes/ventas.routes.js"
 import alertasRoutes from "./routes/alertas.routes.js"
+import cors from "cors"
 
 dotenv.config();
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 app.use("/tiendas", tiendasRoutes);
