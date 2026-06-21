@@ -95,6 +95,22 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const ventas = await Ventas.find()
+      .populate("tiendaId")
+      .populate("productos.productoId")
+      .sort({ fecha: -1 });
+
+    return res.status(200).json(ventas);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error al obtener ventas",
+      error: error.message,
+    });
+  }
+});
+
 export default router;
 
 //recibo los datos de la venta
