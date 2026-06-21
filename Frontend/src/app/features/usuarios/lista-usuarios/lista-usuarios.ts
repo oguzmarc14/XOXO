@@ -1,29 +1,38 @@
 import { CommonModule } from '@angular/common';
-
-import {
-  Component,
-  OnInit
-} from '@angular/core';
-
-import {
-  FormsModule
-} from '@angular/forms';
-
-import {
-  Router
-} from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 import {
   SexoUsuario,
   UserRole
 } from '../../../core/models/usuario.model';
 
-type EstadoUsuario =
-  | 'activo'
-  | 'inactivo';
+type EstadoUsuario = 'activo' | 'inactivo';
+
+interface UsuarioBackend {
+  _id: string;
+  nombre: string;
+  usuario: string;
+  correo?: string;
+  telefono?: string;
+  sexo?: SexoUsuario;
+  password?: string;
+  rol: 'ADMIN' | 'GERENTE' | 'CAJERO';
+  tiendaId?: {
+    _id: string;
+    nombre?: string;
+    nombreTienda?: string;
+    sucursal?: string;
+  } | null;
+  activo: boolean;
+  ultimoAcceso?: string;
+  fechaCreacion: string;
+}
 
 interface UsuarioListado {
-  id: number;
+  id: string;
   nombre: string;
   sexo: SexoUsuario;
   correo: string;
@@ -58,159 +67,19 @@ export class ListaUsuarios implements OnInit {
   usuariosFiltrados: UsuarioListado[] = [];
 
   mensajeExito = '';
-
   modalEliminarAbierto = false;
 
-  usuarioSeleccionado:
-    UsuarioListado | null = null;
+  usuarioSeleccionado: UsuarioListado | null = null;
 
-  private readonly usuariosBase:
-    UsuarioListado[] = [
-      {
-        id: 1,
-        nombre: 'María López',
-        sexo: 'mujer',
-        correo: 'cajero@xoxo.com',
-        rol: 'cajero',
-        cargo: 'Cajera',
-        sucursal:
-          'Sucursal #027 - Centro',
-        avatar: '/Cajera.png',
-        telefono: '449 123 4561',
-        estado: 'activo',
-        ultimoAcceso:
-          '2026-06-19T10:30:00',
-        fechaRegistro:
-          '2026-01-15T09:00:00'
-      },
-      {
-        id: 2,
-        nombre: 'Laura Hernández',
-        sexo: 'mujer',
-        correo: 'gerente@xoxo.com',
-        rol: 'gerente',
-        cargo: 'Gerente',
-        sucursal:
-          'Sucursal #027 - Centro',
-        avatar: '/GerenteF.png',
-        telefono: '449 123 4562',
-        estado: 'activo',
-        ultimoAcceso:
-          '2026-06-19T10:18:00',
-        fechaRegistro:
-          '2026-01-10T11:15:00'
-      },
-      {
-        id: 3,
-        nombre: 'Carlos Ramírez',
-        sexo: 'hombre',
-        correo: 'admin@xoxo.com',
-        rol: 'admin',
-        cargo: 'Administrador',
-        sucursal:
-          'Administración general',
-        avatar: '/Administrador.png',
-        telefono: '449 123 4563',
-        estado: 'activo',
-        ultimoAcceso:
-          '2026-06-19T09:55:00',
-        fechaRegistro:
-          '2026-01-05T08:30:00'
-      },
-      {
-        id: 4,
-        nombre: 'Juan Martínez',
-        sexo: 'hombre',
-        correo: 'juan.martinez@xoxo.com',
-        rol: 'cajero',
-        cargo: 'Cajero',
-        sucursal:
-          'Sucursal #043 - Norte',
-        avatar: '/Cajero.png',
-        telefono: '449 123 4564',
-        estado: 'activo',
-        ultimoAcceso:
-          '2026-06-18T18:20:00',
-        fechaRegistro:
-          '2026-02-08T10:00:00'
-      },
-      {
-        id: 5,
-        nombre: 'Andrea Torres',
-        sexo: 'mujer',
-        correo: 'andrea.torres@xoxo.com',
-        rol: 'gerente',
-        cargo: 'Gerente',
-        sucursal:
-          'Sucursal #115 - Sur',
-        avatar: '/GerenteF.png',
-        telefono: '449 123 4565',
-        estado: 'activo',
-        ultimoAcceso:
-          '2026-06-18T17:45:00',
-        fechaRegistro:
-          '2026-02-14T12:10:00'
-      },
-      {
-        id: 6,
-        nombre: 'Roberto Sánchez',
-        sexo: 'hombre',
-        correo: 'roberto.sanchez@xoxo.com',
-        rol: 'gerente',
-        cargo: 'Gerente',
-        sucursal:
-          'Sucursal #043 - Norte',
-        avatar: '/GerenteM.png',
-        telefono: '449 123 4566',
-        estado: 'inactivo',
-        ultimoAcceso:
-          '2026-05-30T13:25:00',
-        fechaRegistro:
-          '2026-02-20T09:40:00'
-      },
-      {
-        id: 7,
-        nombre: 'Fernanda Ruiz',
-        sexo: 'mujer',
-        correo: 'fernanda.ruiz@xoxo.com',
-        rol: 'cajero',
-        cargo: 'Cajera',
-        sucursal:
-          'Sucursal #115 - Sur',
-        avatar: '/Cajera.png',
-        telefono: '449 123 4567',
-        estado: 'activo',
-        ultimoAcceso:
-          '2026-06-18T16:15:00',
-        fechaRegistro:
-          '2026-03-02T14:20:00'
-      },
-      {
-        id: 8,
-        nombre: 'Miguel Castillo',
-        sexo: 'hombre',
-        correo: 'miguel.castillo@xoxo.com',
-        rol: 'cajero',
-        cargo: 'Cajero',
-        sucursal:
-          'Sucursal #027 - Centro',
-        avatar: '/Cajero.png',
-        telefono: '449 123 4568',
-        estado: 'inactivo',
-        ultimoAcceso:
-          '2026-05-22T11:40:00',
-        fechaRegistro:
-          '2026-03-15T08:55:00'
-      }
-    ];
+  private readonly apiUrl = 'http://localhost:3000/usuarios';
 
   constructor(
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     this.cargarUsuarios();
-    this.aplicarFiltros();
   }
 
   get totalUsuarios(): number {
@@ -218,103 +87,64 @@ export class ListaUsuarios implements OnInit {
   }
 
   get usuariosActivos(): number {
-    return this.usuarios.filter(
-      usuario =>
-        usuario.estado === 'activo'
-    ).length;
+    return this.usuarios.filter(usuario => usuario.estado === 'activo').length;
   }
 
   get usuariosInactivos(): number {
-    return this.usuarios.filter(
-      usuario =>
-        usuario.estado === 'inactivo'
-    ).length;
+    return this.usuarios.filter(usuario => usuario.estado === 'inactivo').length;
   }
 
   get totalCajeros(): number {
-    return this.usuarios.filter(
-      usuario =>
-        usuario.rol === 'cajero'
-    ).length;
+    return this.usuarios.filter(usuario => usuario.rol === 'cajero').length;
   }
 
   get totalGerentes(): number {
-    return this.usuarios.filter(
-      usuario =>
-        usuario.rol === 'gerente'
-    ).length;
+    return this.usuarios.filter(usuario => usuario.rol === 'gerente').length;
   }
 
   get totalAdministradores(): number {
-    return this.usuarios.filter(
-      usuario =>
-        usuario.rol === 'admin'
-    ).length;
+    return this.usuarios.filter(usuario => usuario.rol === 'admin').length;
   }
 
   get sucursales(): string[] {
     return [
       ...new Set(
-        this.usuarios.map(
-          usuario => usuario.sucursal
-        )
+        this.usuarios.map(usuario => usuario.sucursal)
       )
     ].sort();
   }
 
   aplicarFiltros(): void {
-    const texto =
-      this.normalizarTexto(
-        this.busqueda
+    const texto = this.normalizarTexto(this.busqueda);
+
+    this.usuariosFiltrados = this.usuarios.filter(usuario => {
+      const coincideBusqueda =
+        !texto ||
+        this.normalizarTexto(usuario.nombre).includes(texto) ||
+        this.normalizarTexto(usuario.correo).includes(texto) ||
+        this.normalizarTexto(usuario.cargo).includes(texto) ||
+        this.normalizarTexto(usuario.sucursal).includes(texto) ||
+        this.normalizarTexto(usuario.telefono).includes(texto);
+
+      const coincideRol =
+        this.rolSeleccionado === 'todos' ||
+        usuario.rol === this.rolSeleccionado;
+
+      const coincideEstado =
+        this.estadoSeleccionado === 'todos' ||
+        usuario.estado === this.estadoSeleccionado;
+
+      const coincideSucursal =
+        this.sucursalSeleccionada === 'todas' ||
+        usuario.sucursal === this.sucursalSeleccionada;
+
+      return (
+        coincideBusqueda &&
+        coincideRol &&
+        coincideEstado &&
+        coincideSucursal
       );
-
-    this.usuariosFiltrados =
-      this.usuarios.filter(
-        usuario => {
-          const coincideBusqueda =
-            !texto ||
-            this.normalizarTexto(
-              usuario.nombre
-            ).includes(texto) ||
-            this.normalizarTexto(
-              usuario.correo
-            ).includes(texto) ||
-            this.normalizarTexto(
-              usuario.cargo
-            ).includes(texto) ||
-            this.normalizarTexto(
-              usuario.sucursal
-            ).includes(texto) ||
-            this.normalizarTexto(
-              usuario.telefono
-            ).includes(texto);
-
-          const coincideRol =
-            this.rolSeleccionado ===
-              'todos' ||
-            usuario.rol ===
-              this.rolSeleccionado;
-
-          const coincideEstado =
-            this.estadoSeleccionado ===
-              'todos' ||
-            usuario.estado ===
-              this.estadoSeleccionado;
-
-          const coincideSucursal =
-            this.sucursalSeleccionada ===
-              'todas' ||
-            usuario.sucursal ===
-              this.sucursalSeleccionada;
-
-          return (
-            coincideBusqueda &&
-            coincideRol &&
-            coincideEstado &&
-            coincideSucursal
-          );
-        }
-      );
+    });
   }
 
   limpiarFiltros(): void {
@@ -327,34 +157,22 @@ export class ListaUsuarios implements OnInit {
   }
 
   crearUsuario(): void {
-    this.router.navigate([
-      '/crear-usuario'
-    ]);
+    this.router.navigate(['/crear-usuario']);
   }
 
-  editarUsuario(
-    usuario: UsuarioListado
-  ): void {
+  editarUsuario(usuario: UsuarioListado): void {
     localStorage.setItem(
       'xoxo_usuario_editar',
       JSON.stringify(usuario)
     );
-
-    /*
-      Cuando exista el componente de edición,
-      aquí podrá navegarse a /editar-usuario.
-    */
   }
 
-  cambiarEstado(
-    usuario: UsuarioListado
-  ): void {
+  cambiarEstado(usuario: UsuarioListado): void {
     usuario.estado =
       usuario.estado === 'activo'
         ? 'inactivo'
         : 'activo';
 
-    this.guardarUsuarios();
     this.aplicarFiltros();
 
     this.mensajeExito =
@@ -365,22 +183,14 @@ export class ListaUsuarios implements OnInit {
     this.ocultarMensaje();
   }
 
-  abrirEliminar(
-    usuario: UsuarioListado
-  ): void {
-    this.usuarioSeleccionado =
-      usuario;
-
-    this.modalEliminarAbierto =
-      true;
+  abrirEliminar(usuario: UsuarioListado): void {
+    this.usuarioSeleccionado = usuario;
+    this.modalEliminarAbierto = true;
   }
 
   cerrarEliminar(): void {
-    this.modalEliminarAbierto =
-      false;
-
-    this.usuarioSeleccionado =
-      null;
+    this.modalEliminarAbierto = false;
+    this.usuarioSeleccionado = null;
   }
 
   confirmarEliminar(): void {
@@ -388,26 +198,19 @@ export class ListaUsuarios implements OnInit {
       return;
     }
 
-    this.usuarios =
-      this.usuarios.filter(
-        usuario =>
-          usuario.id !==
-          this.usuarioSeleccionado?.id
-      );
+    this.usuarios = this.usuarios.filter(
+      usuario => usuario.id !== this.usuarioSeleccionado?.id
+    );
 
-    this.guardarUsuarios();
     this.aplicarFiltros();
 
-    this.mensajeExito =
-      'El usuario fue eliminado correctamente.';
+    this.mensajeExito = 'El usuario fue eliminado correctamente.';
 
     this.cerrarEliminar();
     this.ocultarMensaje();
   }
 
-  obtenerTextoRol(
-    usuario: UsuarioListado
-  ): string {
+  obtenerTextoRol(usuario: UsuarioListado): string {
     if (usuario.rol === 'admin') {
       return usuario.sexo === 'mujer'
         ? 'Administradora'
@@ -423,9 +226,7 @@ export class ListaUsuarios implements OnInit {
       : 'Cajero';
   }
 
-  obtenerClaseRol(
-    rol: UserRole
-  ): string {
+  obtenerClaseRol(rol: UserRole): string {
     if (rol === 'admin') {
       return 'admin';
     }
@@ -441,89 +242,82 @@ export class ListaUsuarios implements OnInit {
     event: Event,
     usuario: UsuarioListado
   ): void {
-    const imagen =
-      event.target as HTMLImageElement;
+    const imagen = event.target as HTMLImageElement;
 
-    imagen.src =
-      this.obtenerAvatar(
-        usuario.rol,
-        usuario.sexo
-      );
+    imagen.src = this.obtenerAvatar(
+      usuario.rol,
+      usuario.sexo
+    );
   }
 
   private cargarUsuarios(): void {
-    const informacion =
-      localStorage.getItem(
-        'xoxo_usuarios'
-      );
-
-    if (!informacion) {
-      this.usuarios = [
-        ...this.usuariosBase
-      ];
-
-      this.guardarUsuarios();
-
-      return;
-    }
-
-    try {
-      const usuariosLocales =
-        JSON.parse(
-          informacion
-        ) as UsuarioListado[];
-
-      const mapaUsuarios =
-        new Map<
-          number,
-          UsuarioListado
-        >();
-
-      this.usuariosBase.forEach(
-        usuario => {
-          mapaUsuarios.set(
-            usuario.id,
-            usuario
+    this.http.get<UsuarioBackend[]>(this.apiUrl)
+      .subscribe({
+        next: usuariosBackend => {
+          this.usuarios = usuariosBackend.map(usuario =>
+            this.mapearUsuarioBackend(usuario)
           );
+
+          this.aplicarFiltros();
+        },
+        error: error => {
+          console.error('Error al cargar usuarios:', error);
+
+          this.usuarios = [];
+          this.aplicarFiltros();
         }
-      );
-
-      usuariosLocales.forEach(
-        usuario => {
-          mapaUsuarios.set(
-            usuario.id,
-            {
-              ...usuario,
-              avatar:
-                usuario.avatar ||
-                this.obtenerAvatar(
-                  usuario.rol,
-                  usuario.sexo
-                )
-            }
-          );
-        }
-      );
-
-      this.usuarios = [
-        ...mapaUsuarios.values()
-      ];
-    } catch {
-      this.usuarios = [
-        ...this.usuariosBase
-      ];
-
-      this.guardarUsuarios();
-    }
+      });
   }
 
-  private guardarUsuarios(): void {
-    localStorage.setItem(
-      'xoxo_usuarios',
-      JSON.stringify(
-        this.usuarios
-      )
+  private mapearUsuarioBackend(
+    usuario: UsuarioBackend
+  ): UsuarioListado {
+    const rol = usuario.rol.toLowerCase() as UserRole;
+
+    const sexo: SexoUsuario =
+      usuario.sexo || 'hombre';
+
+    return {
+      id: usuario._id,
+      nombre: usuario.nombre,
+      sexo,
+      correo: usuario.correo || usuario.usuario,
+      rol,
+      cargo: this.obtenerCargoDesdeRol(rol),
+      sucursal: this.obtenerNombreSucursal(usuario),
+      avatar: this.obtenerAvatar(rol, sexo),
+      telefono: usuario.telefono || 'Sin teléfono',
+      estado: usuario.activo ? 'activo' : 'inactivo',
+      ultimoAcceso: usuario.ultimoAcceso || usuario.fechaCreacion,
+      fechaRegistro: usuario.fechaCreacion
+    };
+  }
+
+  private obtenerNombreSucursal(
+    usuario: UsuarioBackend
+  ): string {
+    if (!usuario.tiendaId) {
+      return 'Sin sucursal';
+    }
+
+    return (
+      usuario.tiendaId.nombre ||
+      usuario.tiendaId.nombreTienda ||
+      usuario.tiendaId.sucursal ||
+      'Sucursal asignada'
     );
+  }
+
+  private obtenerCargoDesdeRol(rol: UserRole): string {
+    if (rol === 'admin') {
+      return 'Administrador';
+    }
+
+    if (rol === 'gerente') {
+      return 'Gerente';
+    }
+
+    return 'Cajero';
   }
 
   private obtenerAvatar(
@@ -547,17 +341,12 @@ export class ListaUsuarios implements OnInit {
       : '/Cajero.png';
   }
 
-  private normalizarTexto(
-    texto: string
-  ): string {
+  private normalizarTexto(texto: string): string {
     return texto
       .trim()
       .toLowerCase()
       .normalize('NFD')
-      .replace(
-        /[\u0300-\u036f]/g,
-        ''
-      );
+      .replace(/[\u0300-\u036f]/g, '');
   }
 
   private ocultarMensaje(): void {

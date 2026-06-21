@@ -2,122 +2,86 @@
   <!-- Resumen -->
   <section class="summary-grid">
     <article class="summary-card featured">
-      <div class="summary-icon">
-        👥
-      </div>
+      <div class="summary-icon">👥</div>
 
       <div>
-        <span>
-          Usuarios registrados
-        </span>
+        <span> Usuarios registrados </span>
 
         <strong>
           {{ totalUsuarios }}
         </strong>
 
-        <small>
-          Cuentas del sistema
-        </small>
+        <small> Cuentas del sistema </small>
       </div>
     </article>
 
     <article class="summary-card active">
-      <div class="summary-icon">
-        ✓
-      </div>
+      <div class="summary-icon">✓</div>
 
       <div>
-        <span>
-          Usuarios activos
-        </span>
+        <span> Usuarios activos </span>
 
         <strong>
           {{ usuariosActivos }}
         </strong>
 
-        <small>
-          Con acceso permitido
-        </small>
+        <small> Con acceso permitido </small>
       </div>
     </article>
 
     <article class="summary-card inactive">
-      <div class="summary-icon">
-        ⏸
-      </div>
+      <div class="summary-icon">⏸</div>
 
       <div>
-        <span>
-          Usuarios inactivos
-        </span>
+        <span> Usuarios inactivos </span>
 
         <strong>
           {{ usuariosInactivos }}
         </strong>
 
-        <small>
-          Acceso suspendido
-        </small>
+        <small> Acceso suspendido </small>
       </div>
     </article>
 
     <article class="summary-card cashiers">
-      <div class="summary-icon">
-        🧾
-      </div>
+      <div class="summary-icon">🧾</div>
 
       <div>
-        <span>
-          Cajeros
-        </span>
+        <span> Cajeros </span>
 
         <strong>
           {{ totalCajeros }}
         </strong>
 
-        <small>
-          Personal de ventas
-        </small>
+        <small> Personal de ventas </small>
       </div>
     </article>
 
     <article class="summary-card managers">
-      <div class="summary-icon">
-        🏪
-      </div>
+      <div class="summary-icon">🏪</div>
 
       <div>
-        <span>
-          Gerentes
-        </span>
+        <span> Gerentes </span>
 
         <strong>
           {{ totalGerentes }}
         </strong>
 
-        <small>
-          Responsables de sucursal
-        </small>
+        <small> Responsables de sucursal </small>
       </div>
     </article>
 
     <article class="summary-card admins">
-      <div class="summary-icon">
-        🛡️
-      </div>
+      <div class="summary-icon">🛡️</div>
 
       <div>
-        <span>
-          Administradores
-        </span>
+        <span> Administradores </span>
 
         <strong>
           {{ totalAdministradores }}
         </strong>
 
-        <small>
-          Acceso general
-        </small>
+        <small> Acceso general </small>
       </div>
     </article>
   </section>
@@ -126,24 +90,13 @@
   <section class="filters-section">
     <div class="section-heading">
       <div>
-        <h2>
-          Gestión de usuarios
-        </h2>
+        <h2>Gestión de usuarios</h2>
 
-        <p>
-          Consulta, registra y administra las cuentas
-          que tienen acceso al sistema.
-        </p>
+        <p>Consulta, registra y administra las cuentas que tienen acceso al sistema.</p>
       </div>
 
-      <button
-        class="create-button"
-        type="button"
-        (click)="crearUsuario()"
-      >
-        <span aria-hidden="true">
-          +
-        </span>
+      <button class="create-button" type="button" (click)="crearUsuario()">
+        <span aria-hidden="true"> + </span>
 
         Crear usuario
       </button>
@@ -151,14 +104,10 @@
 
     <div class="filters-grid">
       <div class="form-group search-group">
-        <label for="busqueda">
-          Buscar usuario
-        </label>
+        <label for="busqueda"> Buscar usuario </label>
 
         <div class="search-control">
-          <span aria-hidden="true">
-            🔍
-          </span>
+          <span aria-hidden="true"> 🔍 </span>
 
           <input
             id="busqueda"
@@ -171,97 +120,49 @@
       </div>
 
       <div class="form-group">
-        <label for="rol">
-          Tipo de usuario
-        </label>
+        <label for="rol"> Tipo de usuario </label>
 
-        <select
-          id="rol"
-          [(ngModel)]="rolSeleccionado"
-          (ngModelChange)="aplicarFiltros()"
-        >
-          <option value="todos">
-            Todos
-          </option>
+        <select id="rol" [(ngModel)]="rolSeleccionado" (ngModelChange)="aplicarFiltros()">
+          <option value="todos">Todos</option>
 
-          <option value="cajero">
-            Cajeros
-          </option>
+          <option value="cajero">Cajeros</option>
 
-          <option value="gerente">
-            Gerentes
-          </option>
+          <option value="gerente">Gerentes</option>
 
-          <option value="admin">
-            Administradores
-          </option>
+          <option value="admin">Administradores</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="estado">
-          Estado
-        </label>
+        <label for="estado"> Estado </label>
 
-        <select
-          id="estado"
-          [(ngModel)]="estadoSeleccionado"
-          (ngModelChange)="aplicarFiltros()"
-        >
-          <option value="todos">
-            Todos
-          </option>
+        <select id="estado" [(ngModel)]="estadoSeleccionado" (ngModelChange)="aplicarFiltros()">
+          <option value="todos">Todos</option>
 
-          <option value="activo">
-            Activos
-          </option>
+          <option value="activo">Activos</option>
 
-          <option value="inactivo">
-            Inactivos
-          </option>
+          <option value="inactivo">Inactivos</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="sucursal">
-          Sucursal
-        </label>
+        <label for="sucursal"> Sucursal </label>
 
-        <select
-          id="sucursal"
-          [(ngModel)]="sucursalSeleccionada"
-          (ngModelChange)="aplicarFiltros()"
-        >
-          <option value="todas">
-            Todas
-          </option>
+        <select id="sucursal" [(ngModel)]="sucursalSeleccionada" (ngModelChange)="aplicarFiltros()">
+          <option value="todas">Todas</option>
 
-          <option
-            *ngFor="
-              let sucursal of sucursales
-            "
-            [value]="sucursal"
-          >
+          <option *ngFor="let sucursal of sucursales" [value]="sucursal">
             {{ sucursal }}
           </option>
         </select>
       </div>
 
-      <button
-        class="clear-button"
-        type="button"
-        (click)="limpiarFiltros()"
-      >
-        Limpiar filtros
-      </button>
+      <button class="clear-button" type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
     </div>
   </section>
 
   <!-- Mensaje -->
-  <div
-    class="message success"
-    *ngIf="mensajeExito"
-  >
+  <div class="message success" *ngIf="mensajeExito">
     <span>✓</span>
 
     <p>
@@ -273,9 +174,7 @@
   <section class="users-section">
     <div class="list-heading">
       <div>
-        <h2>
-          Usuarios registrados
-        </h2>
+        <h2>Usuarios registrados</h2>
 
         <p>
           {{ usuariosFiltrados.length }}
@@ -283,81 +182,41 @@
         </p>
       </div>
 
-      <span class="results-badge">
-        Directorio actualizado
-      </span>
+      <span class="results-badge"> Directorio actualizado </span>
     </div>
 
-    <div
-      class="users-grid"
-      *ngIf="
-        usuariosFiltrados.length > 0;
-        else sinUsuarios
-      "
-    >
+    <div class="users-grid" *ngIf="usuariosFiltrados.length > 0; else sinUsuarios">
       <article
         class="user-card"
-        *ngFor="
-          let usuario of usuariosFiltrados
-        "
-        [class.user-inactive]="
-          usuario.estado === 'inactivo'
-        "
+        *ngFor="let usuario of usuariosFiltrados"
+        [class.user-inactive]="usuario.estado === 'inactivo'"
       >
         <div class="user-card-header">
           <div class="avatar-wrapper">
             <img
               [src]="usuario.avatar"
               [alt]="'Avatar de ' + usuario.nombre"
-              (error)="
-                manejarErrorImagen(
-                  $event,
-                  usuario
-                )
-              "
+              (error)="manejarErrorImagen($event, usuario)"
             />
 
             <span
               class="connection-status"
-              [class.active]="
-                usuario.estado === 'activo'
-              "
-              [class.inactive]="
-                usuario.estado === 'inactivo'
-              "
+              [class.active]="usuario.estado === 'activo'"
+              [class.inactive]="usuario.estado === 'inactivo'"
             ></span>
           </div>
 
           <div class="user-badges">
-            <span
-              class="role-badge"
-              [ngClass]="
-                obtenerClaseRol(
-                  usuario.rol
-                )
-              "
-            >
-              {{
-                obtenerTextoRol(
-                  usuario
-                )
-              }}
+            <span class="role-badge" [ngClass]="obtenerClaseRol(usuario.rol)">
+              {{ obtenerTextoRol(usuario) }}
             </span>
 
             <span
               class="status-badge"
-              [class.active]="
-                usuario.estado === 'activo'
-              "
-              [class.inactive]="
-                usuario.estado === 'inactivo'
-              "
+              [class.active]="usuario.estado === 'activo'"
+              [class.inactive]="usuario.estado === 'inactivo'"
             >
-              {{
-                usuario.estado === 'activo'
-                  ? 'Activo'
-                  : 'Inactivo'
-              }}
+              {{ usuario.estado === 'activo' ? 'Activo' : 'Inactivo' }}
             </span>
           </div>
         </div>
@@ -374,9 +233,7 @@
 
         <div class="user-contact">
           <div>
-            <span aria-hidden="true">
-              ✉
-            </span>
+            <span aria-hidden="true"> ✉ </span>
 
             <p>
               {{ usuario.correo }}
@@ -384,9 +241,7 @@
           </div>
 
           <div>
-            <span aria-hidden="true">
-              ☎
-            </span>
+            <span aria-hidden="true"> ☎ </span>
 
             <p>
               {{ usuario.telefono }}
@@ -394,9 +249,7 @@
           </div>
 
           <div>
-            <span aria-hidden="true">
-              🏪
-            </span>
+            <span aria-hidden="true"> 🏪 </span>
 
             <p>
               {{ usuario.sucursal }}
@@ -406,54 +259,34 @@
 
         <div class="user-dates">
           <div>
-            <span>
-              Último acceso
-            </span>
+            <span> Último acceso </span>
 
             <strong>
-              {{
-                usuario.ultimoAcceso
-                  | date:'dd/MM/yyyy HH:mm'
-              }}
+              {{ usuario.ultimoAcceso | date: 'dd/MM/yyyy HH:mm' }}
             </strong>
           </div>
 
           <div>
-            <span>
-              Registro
-            </span>
+            <span> Registro </span>
 
             <strong>
-              {{
-                usuario.fechaRegistro
-                  | date:'dd/MM/yyyy'
-              }}
+              {{ usuario.fechaRegistro | date: 'dd/MM/yyyy' }}
             </strong>
           </div>
         </div>
 
         <div class="user-actions">
-          <button
-            class="edit-button"
-            type="button"
-            (click)="editarUsuario(usuario)"
-          >
+          <button class="edit-button" type="button" (click)="editarUsuario(usuario)">
             ✏️ Editar
           </button>
 
           <button
             class="status-button"
             type="button"
-            [class.activate]="
-              usuario.estado === 'inactivo'
-            "
+            [class.activate]="usuario.estado === 'inactivo'"
             (click)="cambiarEstado(usuario)"
           >
-            {{
-              usuario.estado === 'activo'
-                ? '⏸ Desactivar'
-                : '✓ Activar'
-            }}
+            {{ usuario.estado === 'activo' ? '⏸ Desactivar' : '✓ Activar' }}
           </button>
 
           <button
@@ -470,33 +303,18 @@
 
     <ng-template #sinUsuarios>
       <div class="empty-state">
-        <div class="empty-icon">
-          👤
-        </div>
+        <div class="empty-icon">👤</div>
 
-        <h3>
-          No se encontraron usuarios
-        </h3>
+        <h3>No se encontraron usuarios</h3>
 
-        <p>
-          Modifica los filtros o registra una nueva
-          cuenta de usuario.
-        </p>
+        <p>Modifica los filtros o registra una nueva cuenta de usuario.</p>
 
         <div class="empty-actions">
-          <button
-            class="empty-secondary"
-            type="button"
-            (click)="limpiarFiltros()"
-          >
+          <button class="empty-secondary" type="button" (click)="limpiarFiltros()">
             Limpiar filtros
           </button>
 
-          <button
-            class="empty-primary"
-            type="button"
-            (click)="crearUsuario()"
-          >
+          <button class="empty-primary" type="button" (click)="crearUsuario()">
             Crear usuario
           </button>
         </div>
@@ -508,44 +326,26 @@
 <!-- Modal de eliminación -->
 <div
   class="modal-backdrop"
-  *ngIf="
-    modalEliminarAbierto &&
-    usuarioSeleccionado
-  "
+  *ngIf="modalEliminarAbierto && usuarioSeleccionado"
   (click)="cerrarEliminar()"
 >
-  <section
-    class="delete-modal"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="delete-icon">
-      🗑️
-    </div>
+  <section class="delete-modal" (click)="$event.stopPropagation()">
+    <div class="delete-icon">🗑️</div>
 
-    <h2>
-      Eliminar usuario
-    </h2>
+    <h2>Eliminar usuario</h2>
 
     <p>
       ¿Seguro que deseas eliminar la cuenta de
       <strong>
-        {{ usuarioSeleccionado.nombre }}
-      </strong>?
+        {{ usuarioSeleccionado.nombre }} </strong
+      >?
     </p>
 
     <div class="user-to-delete">
       <img
         [src]="usuarioSeleccionado.avatar"
-        [alt]="
-          'Avatar de ' +
-          usuarioSeleccionado.nombre
-        "
-        (error)="
-          manejarErrorImagen(
-            $event,
-            usuarioSeleccionado
-          )
-        "
+        [alt]="'Avatar de ' + usuarioSeleccionado.nombre"
+        (error)="manejarErrorImagen($event, usuarioSeleccionado)"
       />
 
       <div>
@@ -554,11 +354,7 @@
         </strong>
 
         <small>
-          {{
-            obtenerTextoRol(
-              usuarioSeleccionado
-            )
-          }}
+          {{ obtenerTextoRol(usuarioSeleccionado) }}
           ·
           {{ usuarioSeleccionado.sucursal }}
         </small>
@@ -566,24 +362,14 @@
     </div>
 
     <div class="delete-warning">
-      Esta acción eliminará la cuenta del listado
-      almacenado en este navegador.
+      Esta acción eliminará la cuenta del sistema y se actualizará la información en la base de
+      datos.
     </div>
 
     <div class="modal-actions">
-      <button
-        class="modal-cancel"
-        type="button"
-        (click)="cerrarEliminar()"
-      >
-        Cancelar
-      </button>
+      <button class="modal-cancel" type="button" (click)="cerrarEliminar()">Cancelar</button>
 
-      <button
-        class="modal-delete"
-        type="button"
-        (click)="confirmarEliminar()"
-      >
+      <button class="modal-delete" type="button" (click)="confirmarEliminar()">
         Eliminar usuario
       </button>
     </div>
