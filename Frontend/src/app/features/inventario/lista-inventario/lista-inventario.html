@@ -1,115 +1,70 @@
 <main class="inventory-page">
-  <!-- Resumen -->
   <section class="summary-grid">
     <article class="summary-card featured">
-      <div class="summary-icon">
-        📦
-      </div>
+      <div class="summary-icon">📦</div>
 
       <div>
-        <span>Productos registrados</span>
-
-        <strong>
-          {{ totalProductos }}
-        </strong>
-
-        <small>
-          Productos distintos
-        </small>
+        <span>Productos en inventario</span>
+        <strong>{{ totalProductos }}</strong>
+        <small>Registros reales de MongoDB</small>
       </div>
     </article>
 
     <article class="summary-card">
-      <div class="summary-icon">
-        🧮
-      </div>
+      <div class="summary-icon">🧮</div>
 
       <div>
         <span>Unidades disponibles</span>
-
-        <strong>
-          {{ totalUnidades }}
-        </strong>
-
-        <small>
-          Existencias acumuladas
-        </small>
+        <strong>{{ totalUnidades }}</strong>
+        <small>Existencias acumuladas</small>
       </div>
     </article>
 
     <article class="summary-card warning">
-      <div class="summary-icon">
-        ⚠️
-      </div>
+      <div class="summary-icon">⚠️</div>
 
       <div>
         <span>Stock bajo</span>
-
-        <strong>
-          {{ productosStockBajo }}
-        </strong>
-
-        <small>
-          Requieren reabastecimiento
-        </small>
+        <strong>{{ productosStockBajo }}</strong>
+        <small>Requieren reabastecimiento</small>
       </div>
     </article>
 
     <article class="summary-card danger">
-      <div class="summary-icon">
-        ✖
-      </div>
+      <div class="summary-icon">✖</div>
 
       <div>
         <span>Productos agotados</span>
-
-        <strong>
-          {{ productosAgotados }}
-        </strong>
-
-        <small>
-          Sin unidades disponibles
-        </small>
+        <strong>{{ productosAgotados }}</strong>
+        <small>Sin piezas disponibles</small>
       </div>
     </article>
 
     <article class="summary-card value">
-      <div class="summary-icon">
-        💰
-      </div>
+      <div class="summary-icon">💰</div>
 
       <div>
         <span>Valor del inventario</span>
-
         <strong>
-          {{
-            valorInventario
-              | currency:'MXN':'symbol':'1.2-2'
-          }}
+          {{ valorInventario | currency:'MXN':'symbol':'1.2-2' }}
         </strong>
-
-        <small>
-          Valor estimado disponible
-        </small>
+        <small>Valor estimado disponible</small>
       </div>
     </article>
   </section>
 
-  <!-- Filtros -->
   <section class="filters-section">
     <div class="section-heading">
       <div>
         <h2>Consultar inventario</h2>
 
         <p>
-          Busca productos y filtra las existencias
-          disponibles por sucursal.
+          Busca productos y filtra existencias por tienda, categoría o nivel de stock.
         </p>
       </div>
 
       <div class="heading-actions">
         <a
-          *ngIf="puedeVerMovimientos"
           class="secondary-link"
           routerLink="/movimientos-inventario"
         >
@@ -117,7 +72,6 @@
         </a>
 
         <a
-          *ngIf="puedeAdministrar"
           class="primary-link"
           routerLink="/lista-productos"
         >
@@ -128,19 +82,15 @@
 
     <div class="filters-grid">
       <div class="form-group search-group">
-        <label for="busqueda">
-          Buscar producto
-        </label>
+        <label for="busqueda">Buscar producto</label>
 
         <div class="search-control">
-          <span aria-hidden="true">
-            🔍
-          </span>
+          <span aria-hidden="true">🔍</span>
 
           <input
             id="busqueda"
             type="search"
-            placeholder="Código, nombre, categoría o sucursal"
+            placeholder="Nombre, categoría o tienda"
             [(ngModel)]="busqueda"
             (ngModelChange)="aplicarFiltros()"
           />
@@ -148,18 +98,14 @@
       </div>
 
       <div class="form-group">
-        <label for="categoria">
-          Categoría
-        </label>
+        <label for="categoria">Categoría</label>
 
         <select
           id="categoria"
           [(ngModel)]="categoriaSeleccionada"
           (ngModelChange)="aplicarFiltros()"
         >
-          <option value="todas">
-            Todas
-          </option>
+          <option value="todas">Todas</option>
 
           <option
             *ngFor="let categoria of categorias"
@@ -171,18 +117,14 @@
       </div>
 
       <div class="form-group">
-        <label for="sucursal">
-          Sucursal
-        </label>
+        <label for="sucursal">Tienda</label>
 
         <select
           id="sucursal"
           [(ngModel)]="sucursalSeleccionada"
           (ngModelChange)="aplicarFiltros()"
         >
-          <option value="todas">
-            Todas
-          </option>
+          <option value="todas">Todas</option>
 
           <option
             *ngFor="let sucursal of sucursales"
@@ -194,30 +136,17 @@
       </div>
 
       <div class="form-group">
-        <label for="estado">
-          Nivel de existencias
-        </label>
+        <label for="estado">Nivel de existencias</label>
 
         <select
           id="estado"
           [(ngModel)]="estadoSeleccionado"
           (ngModelChange)="aplicarFiltros()"
         >
-          <option value="todos">
-            Todos
-          </option>
-
-          <option value="disponible">
-            Disponible
-          </option>
-
-          <option value="bajo">
-            Stock bajo
-          </option>
-
-          <option value="agotado">
-            Agotado
-          </option>
+          <option value="todos">Todos</option>
+          <option value="disponible">Disponible</option>
+          <option value="bajo">Stock bajo</option>
+          <option value="agotado">Agotado</option>
         </select>
       </div>
 
@@ -231,7 +160,6 @@
     </div>
   </section>
 
-  <!-- Tabla -->
   <section class="inventory-section">
     <div class="table-heading">
       <div>
@@ -249,63 +177,57 @@
     </div>
 
     <div
+      class="message error"
+      *ngIf="mensajeError"
+    >
+      <span>!</span>
+      <p>{{ mensajeError }}</p>
+    </div>
+
+    <div
+      class="empty-state"
+      *ngIf="cargando"
+    >
+      <div class="empty-icon">⏳</div>
+
+      <h3>Cargando inventario</h3>
+
+      <p>Consultando productos, tiendas y existencias.</p>
+    </div>
+
+    <div
       class="table-container"
-      *ngIf="
-        productosFiltrados.length > 0;
-        else inventarioVacio
-      "
+      *ngIf="!cargando && productosFiltrados.length > 0; else inventarioVacio"
     >
       <table>
         <thead>
           <tr>
             <th>Producto</th>
-            <th>Código</th>
             <th>Categoría</th>
-            <th>Sucursal</th>
+            <th>Tienda</th>
             <th>Existencia</th>
             <th>Mínimo</th>
             <th>Precio</th>
             <th>Estado</th>
-            <th>Actualización</th>
           </tr>
         </thead>
 
         <tbody>
-          <tr
-            *ngFor="
-              let producto of productosFiltrados
-            "
-          >
+          <tr *ngFor="let producto of productosFiltrados">
             <td>
               <div class="product-cell">
                 <div class="product-avatar">
-                  {{
-                    producto.categoria === 'Playeras'
-                      ? '👕'
-                      : producto.categoria === 'Sudaderas'
-                        ? '🧥'
-                        : producto.categoria === 'Accesorios'
-                          ? '👜'
-                          : '🎁'
-                  }}
+                  {{ obtenerIconoCategoria(producto.categoria) }}
                 </div>
 
                 <div>
-                  <strong>
-                    {{ producto.nombre }}
-                  </strong>
+                  <strong>{{ producto.nombre }}</strong>
 
                   <span>
-                    ID {{ producto.id }}
+                    ID {{ producto.productoId }}
                   </span>
                 </div>
               </div>
-            </td>
-
-            <td>
-              <span class="product-code">
-                {{ producto.codigo }}
-              </span>
             </td>
 
             <td>
@@ -314,9 +236,7 @@
 
             <td>
               <div class="branch-cell">
-                <span aria-hidden="true">
-                  🏪
-                </span>
+                <span aria-hidden="true">🏪</span>
 
                 <span>
                   {{ producto.sucursal }}
@@ -327,12 +247,8 @@
             <td>
               <strong
                 class="stock-number"
-                [class.stock-warning]="
-                  producto.estado === 'bajo'
-                "
-                [class.stock-danger]="
-                  producto.estado === 'agotado'
-                "
+                [class.stock-warning]="producto.estado === 'bajo'"
+                [class.stock-danger]="producto.estado === 'agotado'"
               >
                 {{ producto.existencia }}
               </strong>
@@ -343,49 +259,18 @@
             </td>
 
             <td>
-              {{
-                producto.precio
-                  | currency:'MXN':'symbol':'1.2-2'
-              }}
+              {{ producto.precio | currency:'MXN':'symbol':'1.2-2' }}
             </td>
 
             <td>
               <span
                 class="status-badge"
-                [ngClass]="
-                  obtenerClaseEstado(
-                    producto.estado
-                  )
-                "
+                [ngClass]="obtenerClaseEstado(producto.estado)"
               >
-                <span
-                  class="status-dot"
-                ></span>
+                <span class="status-dot"></span>
 
-                {{
-                  obtenerTextoEstado(
-                    producto.estado
-                  )
-                }}
+                {{ obtenerTextoEstado(producto.estado) }}
               </span>
-            </td>
-
-            <td>
-              <div class="date-cell">
-                <strong>
-                  {{
-                    producto.ultimaActualizacion
-                      | date:'dd/MM/yyyy'
-                  }}
-                </strong>
-
-                <span>
-                  {{
-                    producto.ultimaActualizacion
-                      | date:'HH:mm'
-                  }}
-                </span>
-              </div>
             </td>
           </tr>
         </tbody>
@@ -393,18 +278,16 @@
     </div>
 
     <ng-template #inventarioVacio>
-      <div class="empty-state">
-        <div class="empty-icon">
-          🔍
-        </div>
+      <div
+        class="empty-state"
+        *ngIf="!cargando"
+      >
+        <div class="empty-icon">🔍</div>
 
-        <h3>
-          No se encontraron productos
-        </h3>
+        <h3>No se encontraron productos</h3>
 
         <p>
-          Modifica los filtros para consultar otros
-          registros del inventario.
+          Modifica los filtros o registra inventario para las tiendas.
         </p>
 
         <button
