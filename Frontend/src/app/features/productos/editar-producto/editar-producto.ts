@@ -16,11 +16,9 @@ export class EditarProducto implements OnInit {
   productoOriginal: Producto | null = null;
 
   codigo: number | null = null;
-  codigo: number | null = null;
   nombre = '';
   categoria = '';
   precio: number | null = null;
-  stockMinimo: number | null = null;
   stockMinimo: number | null = null;
 
   guardando = false;
@@ -153,7 +151,6 @@ export class EditarProducto implements OnInit {
 
     this.productosService.update(this.productoOriginal._id, {
       codigo: Number(this.codigo),
-      codigo: Number(this.codigo),
       nombre: this.nombre.trim(),
       categoria: this.categoria,
       precio: Number(this.precio),
@@ -205,7 +202,6 @@ export class EditarProducto implements OnInit {
   }
 
   private cargarFormulario(producto: Producto): void {
-    this.codigo = producto.codigo;
     this.codigo = producto.codigo;
     this.nombre = producto.nombre;
     this.categoria = producto.categoria;
