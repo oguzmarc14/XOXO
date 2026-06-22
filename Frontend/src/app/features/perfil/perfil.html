@@ -61,7 +61,7 @@
     </strong>
 
     <p>
-      {{ correo || 'Correo no registrado' }}
+      {{ usuario || 'usuario no registrado' }}
     </p>
 
     <small>
@@ -129,17 +129,17 @@
       </div>
 
       <div class="form-group">
-        <label for="correo">
-          Correo electrónico
+        <label for="text">
+          Usuario
         </label>
 
         <input
-          id="correo"
-          name="correo"
-          type="email"
+          id="user"
+          name="user"
+          type="text"
           maxlength="100"
-          placeholder="correo@xoxo.com"
-          [(ngModel)]="correo"
+          placeholder="user"
+          [(ngModel)]="user"
           [disabled]="guardando"
           required
         />

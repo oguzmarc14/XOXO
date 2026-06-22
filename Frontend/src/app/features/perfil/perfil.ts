@@ -37,7 +37,7 @@ export class Perfil implements OnInit {
   usuario!: Usuario;
 
   nombre = '';
-  correo = '';
+  user = '';
   sexo: SexoUsuario = 'hombre';
   cargo = '';
   sucursal = '';
@@ -154,16 +154,16 @@ export class Perfil implements OnInit {
       return;
     }
 
-    if (!this.correo.trim()) {
+    if (!this.user.trim()) {
       this.mensajeError =
-        'El correo electrónico es obligatorio.';
+        'El Usuario es obligatorio.';
 
       return;
     }
 
-    if (!this.correoValido(this.correo)) {
+    if (!this.correoValido(this.user)) {
       this.mensajeError =
-        'Ingresa un correo electrónico válido.';
+        'Ingresa un Usuario válido.';
 
       return;
     }
@@ -201,11 +201,11 @@ export class Perfil implements OnInit {
             nombre:
               this.nombre.trim(),
 
-            correo:
-              this.correo
+            user:
+              this.user
                 .trim()
                 .toLowerCase(),
-
+            
             sexo:
               this.sexo,
 
@@ -259,8 +259,8 @@ export class Perfil implements OnInit {
     this.nombre =
       this.usuario.nombre;
 
-    this.correo =
-      this.usuario.correo;
+    this.user =
+      this.usuario.user;
 
     this.sexo =
       this.usuario.sexo;

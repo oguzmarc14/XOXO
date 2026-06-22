@@ -171,7 +171,7 @@ export class UsuarioActualService {
 
     localStorage.setItem(
       'correo',
-      usuario.correo
+      usuario.user
     );
 
     localStorage.setItem(
@@ -252,7 +252,7 @@ export class UsuarioActualService {
 
       sexo,
 
-      correo:
+      user:
         localStorage.getItem('correo') ||
         'usuario@xoxo.com',
 
@@ -333,7 +333,7 @@ export class UsuarioActualService {
       id: 0,
       nombre: 'Usuario XoXO',
       sexo: 'hombre',
-      correo: 'usuario@xoxo.com',
+      user: 'usuario',
       rol: 'cajero',
       cargo: 'Cajero',
       sucursal:
