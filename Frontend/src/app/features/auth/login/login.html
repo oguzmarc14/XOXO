@@ -10,7 +10,7 @@
 
         <h1>Bienvenido a XoXO</h1>
 
-        <p>Inicia sesión para acceder al panel correspondiente a tu tipo de usuario.</p>
+        <p>Inicia sesión para acceder al sistema de XoXO</p>
       </div>
     </div>
 
@@ -19,8 +19,6 @@
         <span class="eyebrow"> Acceso al sistema </span>
 
         <h2>Iniciar sesión</h2>
-
-        <p>Ingresa tu correo electrónico y contraseña.</p>
       </header>
 
       <form class="login-form" (ngSubmit)="iniciarSesion()" #loginForm="ngForm">
@@ -88,48 +86,6 @@
           {{ cargando ? 'Ingresando...' : 'Iniciar sesión' }}
         </button>
       </form>
-
-      <section class="test-users">
-        <div class="test-users-heading">
-          <span>Usuarios de prueba</span>
-
-          <small> Selecciona uno para completar los datos. </small>
-        </div>
-
-        <div class="test-users-grid">
-          <button type="button" [disabled]="cargando" (click)="seleccionarUsuarioPrueba('CAJERO')">
-            <span class="test-user-icon"> 🧾 </span>
-
-            <div>
-              <strong>Cajero</strong>
-              <small>cajero@xoxo.com</small>
-            </div>
-          </button>
-
-          <button type="button" [disabled]="cargando" (click)="seleccionarUsuarioPrueba('GERENTE')">
-            <span class="test-user-icon"> 📊 </span>
-
-            <div>
-              <strong>Gerente</strong>
-              <small>gerente@xoxo.com</small>
-            </div>
-          </button>
-
-          <button type="button" [disabled]="cargando" (click)="seleccionarUsuarioPrueba('ADMIN')">
-            <span class="test-user-icon"> ⚙ </span>
-
-            <div>
-              <strong>Administrador</strong>
-              <small>admin@xoxo.com</small>
-            </div>
-          </button>
-        </div>
-
-        <p class="test-password">
-          Contraseña para las cuentas de prueba:
-          <strong>1234</strong>
-        </p>
-      </section>
     </div>
   </section>
 

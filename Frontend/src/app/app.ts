@@ -1,5 +1,5 @@
-
 import { CommonModule } from '@angular/common';
+
 import {
   Component,
   OnDestroy,
@@ -59,29 +59,46 @@ export class App implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private usuarioActualService: UsuarioActualService
+    private usuarioActualService:
+      UsuarioActualService
   ) {}
 
   ngOnInit(): void {
+    /*
+      Escucha los cambios del usuario actual.
+
+      Cuando el login utiliza
+      establecerUsuario(), este observable
+      recibe inmediatamente el usuario.
+    */
     this.usuarioSubscription =
-      this.usuarioActualService.usuario$
-        .subscribe((usuario) => {
+      this.usuarioActualService
+        .usuario$
+        .subscribe(usuario => {
           const sesionActiva =
-            localStorage.getItem('sesionActiva') === 'true';
+            localStorage.getItem(
+              'sesionActiva'
+            ) === 'true';
 
           this.usuario =
-            sesionActiva && usuario.id !== 0
+            sesionActiva &&
+            usuario.id !== 0
               ? usuario
               : null;
 
           this.actualizarVista();
         });
 
+    /*
+      Cada vez que cambia la ruta,
+      se vuelve a comprobar si debe
+      mostrarse la navegación.
+    */
     this.routerSubscription =
       this.router.events
         .pipe(
           filter(
-            (evento) =>
+            evento =>
               evento instanceof NavigationEnd
           )
         )
@@ -94,8 +111,11 @@ export class App implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.usuarioSubscription?.unsubscribe();
-    this.routerSubscription?.unsubscribe();
+    this.usuarioSubscription
+      ?.unsubscribe();
+
+    this.routerSubscription
+      ?.unsubscribe();
   }
 
   revisarPerfil(): void {
@@ -112,20 +132,22 @@ export class App implements OnInit, OnDestroy {
       cajero: '/cajero/perfil'
     };
 
-    const ruta =
-      rutasPerfil[this.usuario.rol];
-
-    this.router.navigate([ruta]);
+    this.router.navigate([
+      rutasPerfil[this.usuario.rol]
+    ]);
   }
 
   cerrarSesion(): void {
-    this.usuarioActualService.cerrarSesion();
+    this.usuarioActualService
+      .cerrarSesion();
 
     this.usuario = null;
     this.mostrarNavegacion = false;
     this.menuMovilAbierto = false;
 
-    this.router.navigate(['/login']);
+    this.router.navigate([
+      '/login'
+    ]);
   }
 
   alternarMenuMovil(): void {
@@ -144,6 +166,7 @@ export class App implements OnInit, OnDestroy {
 
     this.usuario = {
       ...this.usuario,
+
       avatar:
         this.usuarioActualService
           .obtenerAvatarPorRolYSexo(
@@ -168,6 +191,14 @@ export class App implements OnInit, OnDestroy {
         'sesionActiva'
       ) === 'true';
 
+    /*
+      La navegación solamente se muestra
+      cuando:
+
+      1. No está en el login.
+      2. Existe una sesión activa.
+      3. Existe un usuario cargado.
+    */
     this.mostrarNavegacion =
       !esPantallaLogin &&
       sesionActiva &&
@@ -180,8 +211,9 @@ export class App implements OnInit, OnDestroy {
     url: string
   ): void {
     if (
-      url.includes('dashboard-gerente') ||
-      url.includes('/gerente/inicio')
+      url.includes(
+        'dashboard-gerente'
+      )
     ) {
       this.titulo =
         'Panel de gestión de la sucursal';
@@ -195,10 +227,12 @@ export class App implements OnInit, OnDestroy {
     }
 
     if (
-      url.includes('dashboard-cajero') ||
-      url.includes('/cajero/inicio')
+      url.includes(
+        'dashboard-cajero'
+      )
     ) {
-      this.titulo = 'Panel Cajero';
+      this.titulo =
+        'Panel Cajero';
 
       this.subtitulo =
         this.usuario?.sucursal
@@ -209,8 +243,9 @@ export class App implements OnInit, OnDestroy {
     }
 
     if (
-      url.includes('dashboard-admin') ||
-      url.includes('/admin/inicio')
+      url.includes(
+        'dashboard-admin'
+      )
     ) {
       this.titulo =
         'Panel Administrador';
@@ -221,8 +256,11 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    if (url.includes('/perfil')) {
-      this.titulo = 'Mi perfil';
+    if (
+      url.includes('/perfil')
+    ) {
+      this.titulo =
+        'Mi perfil';
 
       this.subtitulo =
         'Consulta y actualiza los datos de tu cuenta';
@@ -230,7 +268,11 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    if (url.includes('historial-ventas')) {
+    if (
+      url.includes(
+        'historial-ventas'
+      )
+    ) {
       this.titulo =
         'Historial de ventas';
 
@@ -240,49 +282,38 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    if (url.includes('nueva-venta')) {
+    if (
+      url.includes(
+        'nueva-venta'
+      )
+    ) {
       this.titulo =
-        'Gestión de ventas';
+        'Nueva venta';
 
       this.subtitulo =
-        'Registra o cancela operaciones de venta';
-
-      return;
-    }
-
-    if (url.includes('abrir-turno')) {
-      this.titulo =
-        'Apertura de turno';
-
-      this.subtitulo =
-        'Registra el fondo inicial de caja';
-
-      return;
-    }
-
-    if (url.includes('cerrar-turno')) {
-      this.titulo =
-        'Cierre de turno';
-
-      this.subtitulo =
-        'Registra y verifica el cierre de caja';
-
-      return;
-    }
-
-    if (url.includes('historial-turnos')) {
-      this.titulo =
-        'Historial de turnos';
-
-      this.subtitulo =
-        'Consulta las aperturas y cierres registrados';
+        'Registra una nueva operación';
 
       return;
     }
 
     if (
-      url.includes('movimientos') &&
-      url.includes('inventario')
+      url.includes(
+        'lista-inventario'
+      )
+    ) {
+      this.titulo =
+        'Listado de inventario';
+
+      this.subtitulo =
+        'Consulta las existencias disponibles';
+
+      return;
+    }
+
+    if (
+      url.includes(
+        'movimientos-inventario'
+      )
     ) {
       this.titulo =
         'Movimientos de inventario';
@@ -293,18 +324,13 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    if (url.includes('inventario')) {
-      this.titulo = 'Inventario';
-
-      this.subtitulo =
-        'Consulta y administra las existencias';
-
-      return;
-    }
-
-    if (url.includes('productos')) {
+    if (
+      url.includes(
+        'lista-productos'
+      )
+    ) {
       this.titulo =
-        'Gestión de productos';
+        'Productos';
 
       this.subtitulo =
         'Consulta y administra el catálogo';
@@ -312,43 +338,41 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    if (url.includes('crear-usuario')) {
-      this.titulo = 'Crear usuario';
+    if (
+      url.includes(
+        'crear-producto'
+      )
+    ) {
+      this.titulo =
+        'Crear producto';
 
       this.subtitulo =
-        'Registra una nueva cuenta de acceso';
-
-      return;
-    }
-
-    if (url.includes('editar-usuario')) {
-      this.titulo = 'Editar usuario';
-
-      this.subtitulo =
-        'Actualiza los datos de la cuenta';
+        'Registra un producto en el catálogo';
 
       return;
     }
 
     if (
-      url.includes('lista-usuarios') ||
-      url.includes('/usuarios')
+      url.includes(
+        'editar-producto'
+      )
     ) {
       this.titulo =
-        'Gestión de usuarios';
+        'Editar producto';
 
       this.subtitulo =
-        'Consulta y administra las cuentas del sistema';
+        'Actualiza la información del producto';
 
       return;
     }
 
     if (
-      url.includes('tiendas') ||
-      url.includes('sucursales')
+      url.includes(
+        'lista-tiendas'
+      )
     ) {
       this.titulo =
-        'Gestión de tiendas';
+        'Sucursales';
 
       this.subtitulo =
         'Consulta y administra las sucursales';
@@ -356,44 +380,80 @@ export class App implements OnInit, OnDestroy {
       return;
     }
 
-    if (url.includes('eventos')) {
-      this.titulo = 'Eventos';
+    if (
+      url.includes(
+        'crear-tienda'
+      )
+    ) {
+      this.titulo =
+        'Crear sucursal';
 
       this.subtitulo =
-        'Consulta y administra los eventos';
+        'Registra una nueva sucursal';
 
       return;
     }
 
-    if (url.includes('reportes')) {
-      this.titulo = 'Reportes';
+    if (
+      url.includes(
+        'lista-usuarios'
+      )
+    ) {
+      this.titulo =
+        'Usuarios';
 
       this.subtitulo =
-        'Consulta indicadores y resultados';
+        'Consulta y administra las cuentas';
 
       return;
     }
 
-    this.titulo =
-      this.obtenerTituloPorRol();
+    if (
+      url.includes(
+        'crear-usuario'
+      )
+    ) {
+      this.titulo =
+        'Crear usuario';
+
+      this.subtitulo =
+        'Registra una nueva cuenta';
+
+      return;
+    }
+
+    if (
+      url.includes(
+        'abrir-turno'
+      )
+    ) {
+      this.titulo =
+        'Abrir turno';
+
+      this.subtitulo =
+        'Inicia las operaciones de caja';
+
+      return;
+    }
+
+    if (
+      url.includes(
+        'cerrar-turno'
+      )
+    ) {
+      this.titulo =
+        'Cerrar turno';
+
+      this.subtitulo =
+        'Finaliza las operaciones de caja';
+
+      return;
+    }
+
+    this.titulo = 'XoXO';
 
     this.subtitulo =
-      this.usuario?.sucursal || '';
-  }
-
-  private obtenerTituloPorRol(): string {
-    if (!this.usuario) {
-      return '';
-    }
-
-    if (this.usuario.rol === 'admin') {
-      return 'Panel Administrador';
-    }
-
-    if (this.usuario.rol === 'gerente') {
-      return 'Panel Gerente';
-    }
-
-    return 'Panel Cajero';
+      this.usuario?.sucursal ||
+      'Sistema administrativo';
   }
 }

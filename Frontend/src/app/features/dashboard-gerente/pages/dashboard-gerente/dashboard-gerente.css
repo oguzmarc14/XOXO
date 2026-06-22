@@ -11,12 +11,24 @@
   box-sizing: border-box;
 }
 
+.dashboard-shell {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+}
+
+.dashboard-page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+}
+
 .dashboard-content {
   width: 100%;
   min-width: 0;
   padding: 10px 30px 34px;
 }
-
 /* Estado del turno */
 
 .turno-banner {
