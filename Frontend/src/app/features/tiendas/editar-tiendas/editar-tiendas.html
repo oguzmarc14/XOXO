@@ -1,0 +1,168 @@
+<main class="create-store-page">
+  <section class="page-introduction">
+    <div>
+      <span class="eyebrow">Administración de tiendas</span>
+
+      <h2>Editar tienda</h2>
+
+      <p>
+        Modifica únicamente los campos existentes en la base de datos.
+      </p>
+    </div>
+
+    <button
+      class="back-button"
+      type="button"
+      (click)="volverAlListado()"
+    >
+      <span aria-hidden="true">←</span>
+      Volver al listado
+    </button>
+  </section>
+
+  <section
+    class="store-form-card"
+    *ngIf="!cargando"
+  >
+    <div class="section-heading">
+      <div>
+        <h2>Información de la tienda</h2>
+
+        <p>
+          ID: {{ tiendaId }}
+        </p>
+      </div>
+
+      <span class="capacity-label">
+        Editando registro
+      </span>
+    </div>
+
+    <form
+      class="store-form"
+      (ngSubmit)="guardarCambios()"
+    >
+      <div class="form-section">
+        <div class="form-section-heading">
+          <span class="section-number">1</span>
+
+          <div>
+            <h3>Datos de tienda</h3>
+
+            <p>
+              Estos campos se guardarán en MongoDB.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="nombre">Nombre *</label>
+
+            <input
+              id="nombre"
+              name="nombre"
+              type="text"
+              maxlength="100"
+              placeholder="Nombre de la tienda"
+              [(ngModel)]="nombre"
+              [disabled]="guardando"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="ciudad">Ciudad *</label>
+
+            <input
+              id="ciudad"
+              name="ciudad"
+              type="text"
+              maxlength="80"
+              placeholder="Ciudad"
+              [(ngModel)]="ciudad"
+              [disabled]="guardando"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="telefono">Teléfono *</label>
+
+            <input
+              id="telefono"
+              name="telefono"
+              type="tel"
+              maxlength="20"
+              placeholder="Teléfono"
+              [(ngModel)]="telefono"
+              [disabled]="guardando"
+              required
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="direccion">Dirección *</label>
+
+            <textarea
+              id="direccion"
+              name="direccion"
+              rows="3"
+              maxlength="220"
+              placeholder="Dirección"
+              [(ngModel)]="direccion"
+              [disabled]="guardando"
+              required
+            ></textarea>
+
+            <small class="character-count">
+              {{ direccion.length }}/220 caracteres
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="message error"
+        *ngIf="mensajeError"
+      >
+        <span>!</span>
+        <p>{{ mensajeError }}</p>
+      </div>
+
+      <div
+        class="message success"
+        *ngIf="mensajeExito"
+      >
+        <span>✓</span>
+        <p>{{ mensajeExito }}</p>
+      </div>
+
+      <div class="form-actions">
+        <button
+          class="cancel-button"
+          type="button"
+          [disabled]="guardando"
+          (click)="volverAlListado()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          class="save-button"
+          type="submit"
+          [disabled]="guardando"
+        >
+          {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section
+    class="store-form-card"
+    *ngIf="cargando"
+  >
+    <p>Cargando tienda...</p>
+  </section>
+</main>

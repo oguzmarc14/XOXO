@@ -1,54 +1,24 @@
 <main class="turno-content">
-  <!-- Formulario para abrir turno -->
-  <section
-    class="turno-card"
-    *ngIf="!turnoActual.activo; else turnoYaActivo"
-  >
+  <section class="turno-card">
     <div class="card-heading">
-      <div class="heading-icon">
-        🕐
-      </div>
+      <div class="heading-icon">🕐</div>
 
       <div>
-        <span class="eyebrow">
-          Inicio de operaciones
-        </span>
+        <span class="eyebrow">Inicio de operaciones</span>
 
         <h1>Abrir turno</h1>
 
-        <p>
-          Registra el monto disponible en caja antes de
-          comenzar las operaciones.
-        </p>
+        <p>Registra el usuario, la tienda y el fondo inicial del turno.</p>
       </div>
     </div>
 
-    <form
-      class="turno-form"
-      (ngSubmit)="abrirTurno()"
-    >
+    <form class="turno-form" (ngSubmit)="abrirTurno()">
       <div class="info-grid">
-        <div class="info-item">
-          <span>Responsable</span>
-
-          <strong>
-            {{ turnoActual.usuario }}
-          </strong>
-        </div>
-
-        <div class="info-item">
-          <span>Sucursal</span>
-
-          <strong>
-            {{ turnoActual.sucursal }}
-          </strong>
-        </div>
-
         <div class="info-item">
           <span>Fecha</span>
 
           <strong>
-            {{ fechaActual | date:'dd/MM/yyyy' }}
+            {{ fechaActual | date: 'dd/MM/yyyy' }}
           </strong>
         </div>
 
@@ -56,15 +26,59 @@
           <span>Hora</span>
 
           <strong>
-            {{ fechaActual | date:'HH:mm' }}
+            {{ fechaActual | date: 'HH:mm' }}
           </strong>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="montoInicial">
-          Fondo inicial de caja
-        </label>
+        <label for="usuarioId"> Usuario * </label>
+
+        <select
+          id="usuarioId"
+          name="usuarioId"
+          [(ngModel)]="usuarioId"
+          [disabled]="enviando"
+          required
+        >
+          <option value="">Selecciona un usuario</option>
+
+          <option *ngFor="let usuario of usuarios" [value]="usuario._id">
+            {{ usuario.nombre }} - {{ usuario.rol }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="tiendaId"> Tienda * </label>
+
+        <select id="tiendaId" name="tiendaId" [(ngModel)]="tiendaId" [disabled]="enviando" required>
+          <option value="">Selecciona una tienda</option>
+
+          <option *ngFor="let tienda of tiendas" [value]="tienda._id">
+            {{ tienda.nombre }} - {{ tienda.ciudad }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="numeroCaja"> Número de caja * </label>
+
+        <input
+          id="numeroCaja"
+          name="numeroCaja"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="Ej. 1"
+          [(ngModel)]="numeroCaja"
+          [disabled]="enviando"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="montoInicial"> Fondo inicial de caja * </label>
 
         <div class="money-input">
           <span>$</span>
@@ -82,106 +96,24 @@
           />
         </div>
 
-        <small>
-          Ingresa el efectivo disponible al iniciar el turno.
-        </small>
+        <small> Ingresa el efectivo disponible al iniciar el turno. </small>
       </div>
 
-      <p
-        class="error-message"
-        *ngIf="mensajeError"
-      >
+      <p class="error-message" *ngIf="mensajeError">
         {{ mensajeError }}
       </p>
 
-      <div class="form-actions">
-        <a
-          class="secondary-button"
-          [routerLink]="dashboardRuta"
-        >
-          Cancelar
-        </a>
+      <p class="success-message" *ngIf="mensajeExito">
+        {{ mensajeExito }}
+      </p>
 
-        <button
-          class="primary-button"
-          type="submit"
-          [disabled]="enviando"
-        >
-          {{
-            enviando
-              ? 'Abriendo...'
-              : 'Abrir turno'
-          }}
+      <div class="form-actions">
+        <a class="secondary-button" [routerLink]="dashboardRuta"> Cancelar </a>
+
+        <button class="primary-button" type="submit" [disabled]="enviando">
+          {{ enviando ? 'Abriendo...' : 'Abrir turno' }}
         </button>
       </div>
     </form>
   </section>
-
-  <!-- Turno ya abierto -->
-  <ng-template #turnoYaActivo>
-    <section class="turno-card status-card">
-      <div class="status-icon success">
-        ✓
-      </div>
-
-      <h1>
-        El turno ya está abierto
-      </h1>
-
-      <p>
-        Existe un turno activo en
-        <strong>
-          {{ turnoActual.sucursal }}
-        </strong>.
-      </p>
-
-      <div class="active-details">
-        <div>
-          <span>Responsable</span>
-
-          <strong>
-            {{ turnoActual.usuario }}
-          </strong>
-        </div>
-
-        <div>
-          <span>Apertura</span>
-
-          <strong>
-            {{
-              turnoActual.fechaApertura
-                | date:'dd/MM/yyyy HH:mm'
-            }}
-          </strong>
-        </div>
-
-        <div>
-          <span>Fondo inicial</span>
-
-          <strong>
-            ${{
-              turnoActual.montoInicial
-                | number:'1.2-2'
-            }}
-          </strong>
-        </div>
-      </div>
-
-      <div class="form-actions centered">
-        <a
-          class="secondary-button"
-          [routerLink]="dashboardRuta"
-        >
-          Volver al dashboard
-        </a>
-
-        <a
-          class="danger-button"
-          routerLink="/cerrar-turno"
-        >
-          Cerrar turno
-        </a>
-      </div>
-    </section>
-  </ng-template>
 </main>

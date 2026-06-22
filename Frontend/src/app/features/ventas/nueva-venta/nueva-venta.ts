@@ -1,40 +1,38 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit
-} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  ActivatedRoute,
-  RouterLink
-} from '@angular/router';
+import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
-import {
-  ProductoVenta,
-  Venta
-} from '../../../core/models/venta.model';
-
-import { PermissionService } from '../../../core/services/permission';
-import { TurnoService } from '../../../core/services/turno';
-import { VentasService } from '../../../core/services/ventas';
-
-import { Sidebar } from '../../../shared/components/sidebar/sidebar';
-import { Topbar } from '../../../shared/components/topbar/topbar';
-
-type ModoVenta = 'registrar' | 'cancelar';
-type MetodoPago = 'efectivo' | 'tarjeta';
-
-interface ProductoCatalogo {
-  id: number;
-  codigo: string;
+interface TiendaBackend {
+  _id: string;
   nombre: string;
-  categoria: string;
-  precio: number;
-  stock: number;
-  icono: string;
+  ciudad: string;
 }
 
-interface ProductoCarrito extends ProductoCatalogo {
+interface ProductoBackend {
+  _id: string;
+  nombre: string;
+  precio: number;
+  categoria: string;
+}
+
+interface InventarioBackend {
+  _id: string;
+  tiendaId: string;
+  productoId: string;
+  piezas: number;
+}
+
+interface ProductoVenta {
+  productoId: string;
+  nombre: string;
+  precio: number;
+  categoria: string;
+  stock: number;
+}
+
+interface ProductoCarrito extends ProductoVenta {
   cantidad: number;
   subtotal: number;
 }
@@ -45,180 +43,61 @@ interface ProductoCarrito extends ProductoCatalogo {
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
+    RouterLink
   ],
   templateUrl: './nueva-venta.html',
   styleUrl: './nueva-venta.css'
 })
 export class NuevaVenta implements OnInit {
-  modoActivo: ModoVenta = 'registrar';
-
+  tiendaId = '';
   busquedaProducto = '';
   categoriaSeleccionada = 'todas';
 
-  metodoPago: MetodoPago = 'efectivo';
-  montoRecibido: number | null = null;
+  productos: ProductoVenta[] = [];
+  carrito: ProductoCarrito[] = [];
 
   mensajeErrorVenta = '';
   mensajeExitoVenta = '';
-  ultimaVenta: Venta | null = null;
 
-  folioBusqueda = '';
-  ventaEncontrada: Venta | null = null;
-  motivoCancelacion = '';
-  mensajeErrorCancelacion = '';
-  mensajeExitoCancelacion = '';
+  tiendas: TiendaBackend[] = [];
 
-  carrito: ProductoCarrito[] = [];
+  cargandoProductos = false;
+  registrandoVenta = false;
 
-  productos: ProductoCatalogo[] = [
-    {
-      id: 1,
-      codigo: 'XO-001',
-      nombre: 'Playera XoXO negra',
-      categoria: 'Ropa',
-      precio: 249,
-      stock: 18,
-      icono: '👕'
-    },
-    {
-      id: 2,
-      codigo: 'XO-002',
-      nombre: 'Playera XoXO vino',
-      categoria: 'Ropa',
-      precio: 249,
-      stock: 12,
-      icono: '👕'
-    },
-    {
-      id: 3,
-      codigo: 'XO-003',
-      nombre: 'Sudadera XoXO',
-      categoria: 'Ropa',
-      precio: 599,
-      stock: 7,
-      icono: '🧥'
-    },
-    {
-      id: 4,
-      codigo: 'XO-004',
-      nombre: 'Gorra XoXO',
-      categoria: 'Accesorios',
-      precio: 189,
-      stock: 15,
-      icono: '🧢'
-    },
-    {
-      id: 5,
-      codigo: 'XO-005',
-      nombre: 'Bolsa XoXO',
-      categoria: 'Accesorios',
-      precio: 329,
-      stock: 9,
-      icono: '👜'
-    },
-    {
-      id: 6,
-      codigo: 'XO-006',
-      nombre: 'Taza XoXO',
-      categoria: 'Hogar',
-      precio: 129,
-      stock: 22,
-      icono: '☕'
-    },
-    {
-      id: 7,
-      codigo: 'XO-007',
-      nombre: 'Termo XoXO',
-      categoria: 'Hogar',
-      precio: 279,
-      stock: 11,
-      icono: '🥤'
-    },
-    {
-      id: 8,
-      codigo: 'XO-008',
-      nombre: 'Llavero XoXO',
-      categoria: 'Accesorios',
-      precio: 79,
-      stock: 35,
-      icono: '🔑'
-    }
-  ];
+  private readonly tiendasApi = 'http://localhost:3000/tiendas';
+  private readonly productosApi = 'http://localhost:3000/productos';
+  private readonly inventarioApi = 'http://localhost:3000/inventario';
+  private readonly ventasApi = 'http://localhost:3000/ventas';
 
   constructor(
-    private ventasService: VentasService,
-    private permissionService: PermissionService,
-    private turnoService: TurnoService,
-    private route: ActivatedRoute
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
-    this.configurarModoInicial();
-  }
-
-  get sucursal(): string {
-    return (
-      localStorage.getItem('sucursal') ||
-      'Sucursal no asignada'
-    );
-  }
-
-  get turnoActivo(): boolean {
-    return this.turnoService.turnoEstaActivo();
-  }
-
-  get puedeRegistrar(): boolean {
-    return this.permissionService.tienePermiso(
-      'VENTAS_CREAR'
-    );
-  }
-
-  get puedeCancelar(): boolean {
-    return this.permissionService.tienePermiso(
-      'VENTAS_CANCELAR'
-    );
-  }
-
-  get puedeDevolver(): boolean {
-    return this.permissionService.tienePermiso(
-      'VENTAS_DEVOLVER'
-    );
-  }
-
-  get puedeVerHistorial(): boolean {
-    return this.permissionService.tienePermiso(
-      'VENTAS_HISTORIAL_VER'
-    );
+    this.cargarTiendas();
   }
 
   get categorias(): string[] {
     return [
       'todas',
       ...new Set(
-        this.productos.map(
-          (producto) => producto.categoria
-        )
+        this.productos.map(producto => producto.categoria)
       )
     ];
   }
 
-  get productosFiltrados(): ProductoCatalogo[] {
-    const texto = this.busquedaProducto
-      .trim()
-      .toLowerCase();
+  get productosFiltrados(): ProductoVenta[] {
+    const texto = this.normalizarTexto(this.busquedaProducto);
 
-    return this.productos.filter((producto) => {
+    return this.productos.filter(producto => {
       const coincideBusqueda =
         !texto ||
-        producto.nombre.toLowerCase().includes(texto) ||
-        producto.codigo.toLowerCase().includes(texto) ||
-        producto.categoria.toLowerCase().includes(texto);
+        this.normalizarTexto(producto.nombre).includes(texto) ||
+        this.normalizarTexto(producto.categoria).includes(texto);
 
       const coincideCategoria =
         this.categoriaSeleccionada === 'todas' ||
-        producto.categoria ===
-          this.categoriaSeleccionada;
+        producto.categoria === this.categoriaSeleccionada;
 
       return coincideBusqueda && coincideCategoria;
     });
@@ -226,104 +105,123 @@ export class NuevaVenta implements OnInit {
 
   get cantidadArticulos(): number {
     return this.carrito.reduce(
-      (total, producto) =>
-        total + producto.cantidad,
-      0
-    );
-  }
-
-  get subtotalVenta(): number {
-    return this.carrito.reduce(
-      (total, producto) =>
-        total + producto.subtotal,
+      (total, producto) => total + producto.cantidad,
       0
     );
   }
 
   get totalVenta(): number {
-    return this.subtotalVenta;
-  }
-
-  get cambio(): number {
-    if (
-      this.metodoPago !== 'efectivo' ||
-      this.montoRecibido === null
-    ) {
-      return 0;
-    }
-
-    return Math.max(
-      this.montoRecibido - this.totalVenta,
+    return this.carrito.reduce(
+      (total, producto) => total + producto.subtotal,
       0
     );
   }
 
-  cambiarModo(modo: ModoVenta): void {
-    if (
-      modo === 'registrar' &&
-      !this.puedeRegistrar
-    ) {
-      this.mensajeErrorVenta =
-        'No tienes permiso para registrar ventas.';
-      return;
-    }
-
-    if (
-      modo === 'cancelar' &&
-      !this.puedeCancelar
-    ) {
-      this.mensajeErrorCancelacion =
-        'No tienes permiso para cancelar ventas.';
-      return;
-    }
-
-    this.modoActivo = modo;
-    this.limpiarMensajes();
+  cargarTiendas(): void {
+    this.http.get<TiendaBackend[]>(this.tiendasApi)
+      .subscribe({
+        next: tiendas => {
+          this.tiendas = tiendas;
+        },
+        error: error => {
+          console.error('Error al cargar tiendas:', error);
+          this.mensajeErrorVenta = 'No fue posible cargar las tiendas.';
+        }
+      });
   }
 
-  agregarProducto(
-    producto: ProductoCatalogo
-  ): void {
+  cargarProductosPorTienda(): void {
+    this.limpiarVenta();
+
+    if (!this.tiendaId) {
+      this.productos = [];
+      return;
+    }
+
+    this.cargandoProductos = true;
+
+    this.http.get<ProductoBackend[]>(this.productosApi)
+      .subscribe({
+        next: productosBackend => {
+          this.http.get<InventarioBackend[]>(this.inventarioApi)
+            .subscribe({
+              next: inventarioBackend => {
+                const inventarioTienda =
+                  inventarioBackend.filter(
+                    item => item.tiendaId === this.tiendaId
+                  );
+
+                this.productos =
+                  inventarioTienda
+                    .map(item => {
+                      const producto =
+                        productosBackend.find(
+                          prod => prod._id === item.productoId
+                        );
+
+                      if (!producto) {
+                        return null;
+                      }
+
+                      return {
+                        productoId: producto._id,
+                        nombre: producto.nombre,
+                        precio: producto.precio,
+                        categoria: producto.categoria,
+                        stock: item.piezas
+                      };
+                    })
+                    .filter(
+                      (producto): producto is ProductoVenta =>
+                        producto !== null
+                    );
+
+                this.cargandoProductos = false;
+              },
+              error: error => {
+                console.error('Error al cargar inventario:', error);
+                this.mensajeErrorVenta = 'No fue posible cargar el inventario.';
+                this.cargandoProductos = false;
+              }
+            });
+        },
+        error: error => {
+          console.error('Error al cargar productos:', error);
+          this.mensajeErrorVenta = 'No fue posible cargar los productos.';
+          this.cargandoProductos = false;
+        }
+      });
+  }
+
+  agregarProducto(producto: ProductoVenta): void {
     this.mensajeErrorVenta = '';
     this.mensajeExitoVenta = '';
 
-    if (!this.puedeRegistrar) {
-      this.mensajeErrorVenta =
-        'No tienes permiso para registrar ventas.';
-      return;
-    }
-
-    if (!this.turnoActivo) {
-      this.mensajeErrorVenta =
-        'Debes tener un turno activo para registrar ventas.';
+    if (!this.tiendaId) {
+      this.mensajeErrorVenta = 'Selecciona una tienda.';
       return;
     }
 
     if (producto.stock <= 0) {
-      this.mensajeErrorVenta =
-        'El producto seleccionado no tiene existencias.';
+      this.mensajeErrorVenta = 'Este producto no tiene stock disponible.';
       return;
     }
 
-    const productoExistente = this.carrito.find(
-      (item) => item.id === producto.id
-    );
+    const productoExistente =
+      this.carrito.find(
+        item => item.productoId === producto.productoId
+      );
 
     if (productoExistente) {
-      if (
-        productoExistente.cantidad >=
-        producto.stock
-      ) {
+      if (productoExistente.cantidad >= producto.stock) {
         this.mensajeErrorVenta =
-          'No hay más existencias disponibles.';
+          `Solo hay ${producto.stock} pieza(s) disponibles.`;
         return;
       }
 
       productoExistente.cantidad++;
-
       productoExistente.subtotal =
-        productoExistente.precio *
-        productoExistente.cantidad;
+        productoExistente.cantidad * productoExistente.precio;
 
       return;
     }
@@ -335,302 +233,97 @@ export class NuevaVenta implements OnInit {
     });
   }
 
-  aumentarCantidad(
-    producto: ProductoCarrito
-  ): void {
-    this.mensajeErrorVenta = '';
-
-    if (
-      producto.cantidad >= producto.stock
-    ) {
+  aumentarCantidad(producto: ProductoCarrito): void {
+    if (producto.cantidad >= producto.stock) {
       this.mensajeErrorVenta =
-        `Solo hay ${producto.stock} unidades disponibles.`;
+        `Solo hay ${producto.stock} pieza(s) disponibles.`;
       return;
     }
 
     producto.cantidad++;
-
-    producto.subtotal =
-      producto.precio * producto.cantidad;
+    producto.subtotal = producto.cantidad * producto.precio;
   }
 
-  disminuirCantidad(
-    producto: ProductoCarrito
-  ): void {
+  disminuirCantidad(producto: ProductoCarrito): void {
     if (producto.cantidad <= 1) {
-      this.eliminarProducto(producto.id);
+      this.eliminarProducto(producto.productoId);
       return;
     }
 
     producto.cantidad--;
-
-    producto.subtotal =
-      producto.precio * producto.cantidad;
+    producto.subtotal = producto.cantidad * producto.precio;
   }
 
-  eliminarProducto(productoId: number): void {
-    this.carrito = this.carrito.filter(
-      (producto) => producto.id !== productoId
-    );
+  eliminarProducto(productoId: string): void {
+    this.carrito =
+      this.carrito.filter(
+        producto => producto.productoId !== productoId
+      );
   }
 
   vaciarCarrito(): void {
     this.carrito = [];
-    this.montoRecibido = null;
     this.mensajeErrorVenta = '';
     this.mensajeExitoVenta = '';
-    this.ultimaVenta = null;
-  }
-
-  seleccionarMetodoPago(
-    metodo: MetodoPago
-  ): void {
-    this.metodoPago = metodo;
-
-    if (metodo === 'tarjeta') {
-      this.montoRecibido = null;
-    }
-
-    this.mensajeErrorVenta = '';
   }
 
   registrarVenta(): void {
     this.mensajeErrorVenta = '';
     this.mensajeExitoVenta = '';
-    this.ultimaVenta = null;
 
-    if (!this.puedeRegistrar) {
-      this.mensajeErrorVenta =
-        'No tienes permiso para registrar ventas.';
-      return;
-    }
-
-    if (!this.turnoActivo) {
-      this.mensajeErrorVenta =
-        'No se puede registrar una venta sin un turno activo.';
+    if (!this.tiendaId) {
+      this.mensajeErrorVenta = 'Selecciona una tienda.';
       return;
     }
 
     if (this.carrito.length === 0) {
-      this.mensajeErrorVenta =
-        'Agrega al menos un producto a la venta.';
+      this.mensajeErrorVenta = 'Agrega al menos un producto.';
       return;
     }
 
-    if (
-      this.metodoPago === 'efectivo' &&
-      (
-        this.montoRecibido === null ||
-        this.montoRecibido < this.totalVenta
-      )
-    ) {
-      this.mensajeErrorVenta =
-        'El monto recibido debe ser igual o mayor al total.';
-      return;
-    }
+    const venta = {
+      tiendaId: this.tiendaId,
+      productos: this.carrito.map(producto => ({
+        productoId: producto.productoId,
+        cantidad: producto.cantidad
+      }))
+    };
 
-    const productosVenta: ProductoVenta[] =
-      this.carrito.map((producto) => ({
-        id: producto.id,
-        nombre: producto.nombre,
-        precio: producto.precio,
-        cantidad: producto.cantidad,
-        subtotal: producto.subtotal
-      }));
+    this.registrandoVenta = true;
 
-    try {
-      const ventaRegistrada =
-        this.ventasService.registrarVenta(
-          productosVenta,
-          this.metodoPago
-        );
-
-      this.descontarExistencias();
-
-      this.ultimaVenta = ventaRegistrada;
-
-      this.mensajeExitoVenta =
-        `Venta ${ventaRegistrada.folio} registrada correctamente.`;
-
-      this.carrito = [];
-      this.montoRecibido = null;
-      this.metodoPago = 'efectivo';
-    } catch (error) {
-      this.mensajeErrorVenta =
-        error instanceof Error
-          ? error.message
-          : 'No fue posible registrar la venta.';
-    }
-  }
-
-  buscarVentaParaCancelar(): void {
-    this.mensajeErrorCancelacion = '';
-    this.mensajeExitoCancelacion = '';
-    this.ventaEncontrada = null;
-    this.motivoCancelacion = '';
-
-    if (!this.puedeCancelar) {
-      this.mensajeErrorCancelacion =
-        'No tienes permiso para cancelar ventas.';
-      return;
-    }
-
-    if (!this.folioBusqueda.trim()) {
-      this.mensajeErrorCancelacion =
-        'Ingresa el folio de la venta.';
-      return;
-    }
-
-    const venta =
-      this.ventasService.obtenerVentaPorFolio(
-        this.folioBusqueda
-      );
-
-    if (!venta) {
-      this.mensajeErrorCancelacion =
-        'No se encontró una venta con ese folio.';
-      return;
-    }
-
-    this.ventaEncontrada = venta;
-
-    if (venta.estado === 'cancelada') {
-      this.mensajeErrorCancelacion =
-        'La venta seleccionada ya fue cancelada.';
-      return;
-    }
-
-    if (venta.estado === 'devuelta') {
-      this.mensajeErrorCancelacion =
-        'No se puede cancelar una venta devuelta.';
-    }
-  }
-
-  cancelarVenta(): void {
-    this.mensajeErrorCancelacion = '';
-    this.mensajeExitoCancelacion = '';
-
-    if (!this.puedeCancelar) {
-      this.mensajeErrorCancelacion =
-        'No tienes permiso para cancelar ventas.';
-      return;
-    }
-
-    if (!this.ventaEncontrada) {
-      this.mensajeErrorCancelacion =
-        'Primero debes buscar una venta.';
-      return;
-    }
-
-    if (
-      this.ventaEncontrada.estado !==
-      'completada'
-    ) {
-      this.mensajeErrorCancelacion =
-        'Solo se pueden cancelar ventas completadas.';
-      return;
-    }
-
-    if (!this.motivoCancelacion.trim()) {
-      this.mensajeErrorCancelacion =
-        'Escribe el motivo de la cancelación.';
-      return;
-    }
-
-    const confirmacion = window.confirm(
-      `¿Confirmas la cancelación de la venta ${this.ventaEncontrada.folio}?`
-    );
-
-    if (!confirmacion) {
-      return;
-    }
-
-    try {
-      const ventaCancelada =
-        this.ventasService.cancelarVenta(
-          this.ventaEncontrada.id,
-          this.motivoCancelacion
-        );
-
-      this.ventaEncontrada = ventaCancelada;
-
-      this.mensajeExitoCancelacion =
-        `La venta ${ventaCancelada.folio} fue cancelada correctamente.`;
-
-      this.motivoCancelacion = '';
-    } catch (error) {
-      this.mensajeErrorCancelacion =
-        error instanceof Error
-          ? error.message
-          : 'No fue posible cancelar la venta.';
-    }
-  }
-
-  limpiarCancelacion(): void {
-    this.folioBusqueda = '';
-    this.ventaEncontrada = null;
-    this.motivoCancelacion = '';
-    this.mensajeErrorCancelacion = '';
-    this.mensajeExitoCancelacion = '';
-  }
-
-  obtenerTextoEstado(
-    estado: Venta['estado']
-  ): string {
-    if (estado === 'completada') {
-      return 'Completada';
-    }
-
-    if (estado === 'cancelada') {
-      return 'Cancelada';
-    }
-
-    return 'Devuelta';
-  }
-
-  private configurarModoInicial(): void {
-    const modoSolicitado =
-      this.route.snapshot.queryParamMap.get('modo');
-
-    if (
-      modoSolicitado === 'cancelar' &&
-      this.puedeCancelar
-    ) {
-      this.modoActivo = 'cancelar';
-      return;
-    }
-
-    if (this.puedeRegistrar) {
-      this.modoActivo = 'registrar';
-      return;
-    }
-
-    if (this.puedeCancelar) {
-      this.modoActivo = 'cancelar';
-    }
-  }
-
-  private descontarExistencias(): void {
-    this.carrito.forEach(
-      (productoCarrito) => {
-        const productoCatalogo =
-          this.productos.find(
-            (producto) =>
-              producto.id === productoCarrito.id
-          );
-
-        if (productoCatalogo) {
-          productoCatalogo.stock -=
-            productoCarrito.cantidad;
+    this.http.post(this.ventasApi, venta)
+      .subscribe({
+        next: () => {
+          this.mensajeExitoVenta = 'Venta registrada correctamente.';
+          this.carrito = [];
+          this.cargarProductosPorTienda();
+        },
+        error: error => {
+          console.error('Error al registrar venta:', error);
+          this.mensajeErrorVenta =
+            error.error?.message ||
+            'No fue posible registrar la venta.';
+        },
+        complete: () => {
+          this.registrandoVenta = false;
         }
-      }
-    );
+      });
   }
 
-  private limpiarMensajes(): void {
+  private limpiarVenta(): void {
+    this.carrito = [];
+    this.productos = [];
+    this.busquedaProducto = '';
+    this.categoriaSeleccionada = 'todas';
     this.mensajeErrorVenta = '';
     this.mensajeExitoVenta = '';
-    this.mensajeErrorCancelacion = '';
-    this.mensajeExitoCancelacion = '';
+  }
+
+  private normalizarTexto(texto: string): string {
+    return texto
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
   }
 }

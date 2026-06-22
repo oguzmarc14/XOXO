@@ -23,6 +23,7 @@ import { ListaProductos } from './features/productos/lista-productos/lista-produ
 /* Tiendas */
 import { CrearTienda } from './features/tiendas/crear-tienda/crear-tienda';
 import { ListaTiendas } from './features/tiendas/lista-tiendas/lista-tiendas';
+import { EditarTiendas } from './features/tiendas/editar-tiendas/editar-tiendas';
 
 /* Turnos */
 import { AbrirTurno } from './features/turnos/abrir-turno/abrir-turno';
@@ -109,6 +110,10 @@ export const routes: Routes = [
     path: 'lista-tiendas',
     component: ListaTiendas
   },
+  {
+  path: 'editar-tiendas/:id',
+  component: EditarTiendas
+},
 
   /* Turnos */
   {

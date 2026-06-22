@@ -1,188 +1,47 @@
 <main class="stores-page">
-  <!-- Resumen -->
   <section class="summary-grid">
     <article class="summary-card featured">
-      <div class="summary-icon">
-        🏪
-      </div>
+      <div class="summary-icon">🏪</div>
 
       <div>
-        <span>
-          Sucursales registradas
-        </span>
-
-        <strong>
-          {{ totalTiendas }}
-        </strong>
-
-        <small>
-          Máximo permitido:
-          {{ limiteSucursales }}
-        </small>
-      </div>
-    </article>
-
-    <article class="summary-card active">
-      <div class="summary-icon">
-        ✓
-      </div>
-
-      <div>
-        <span>
-          Sucursales activas
-        </span>
-
-        <strong>
-          {{ tiendasActivas }}
-        </strong>
-
-        <small>
-          Disponibles para operar
-        </small>
-      </div>
-    </article>
-
-    <article class="summary-card inactive">
-      <div class="summary-icon">
-        ⏸
-      </div>
-
-      <div>
-        <span>
-          Sucursales inactivas
-        </span>
-
-        <strong>
-          {{ tiendasInactivas }}
-        </strong>
-
-        <small>
-          Fuera de operación
-        </small>
-      </div>
-    </article>
-
-    <article class="summary-card employees">
-      <div class="summary-icon">
-        👥
-      </div>
-
-      <div>
-        <span>
-          Personal registrado
-        </span>
-
-        <strong>
-          {{ totalEmpleados }}
-        </strong>
-
-        <small>
-          Empleados en sucursales
-        </small>
-      </div>
-    </article>
-
-    <article class="summary-card capacity">
-      <div class="summary-icon">
-        📊
-      </div>
-
-      <div>
-        <span>
-          Espacios disponibles
-        </span>
-
-        <strong>
-          {{ espaciosDisponibles }}
-        </strong>
-
-        <small>
-          {{ porcentajeCapacidad }}%
-          de capacidad utilizada
-        </small>
+        <span>Tiendas registradas</span>
+        <strong>{{ totalTiendas }}</strong>
+        <small>Datos desde MongoDB</small>
       </div>
     </article>
   </section>
 
-  <!-- Límite -->
-  <section class="capacity-section">
-    <div class="capacity-information">
-      <div>
-        <span class="capacity-label">
-          Capacidad de sucursales
-        </span>
-
-        <strong>
-          {{ totalTiendas }} de
-          {{ limiteSucursales }}
-          registradas
-        </strong>
-      </div>
-
-      <span class="capacity-percentage">
-        {{ porcentajeCapacidad }}%
-      </span>
-    </div>
-
-    <div class="capacity-bar">
-      <span
-        [style.width.%]="porcentajeCapacidad"
-      ></span>
-    </div>
-
-    <p>
-      El sistema permite registrar un máximo de
-      <strong>200 sucursales</strong>.
-    </p>
-  </section>
-
-  <!-- Filtros -->
   <section class="filters-section">
     <div class="section-heading">
       <div>
-        <h2>
-          Gestión de sucursales
-        </h2>
+        <h2>Gestión de tiendas</h2>
 
         <p>
-          Consulta y administra las tiendas
-          registradas en el sistema.
+          Consulta las tiendas registradas en la base de datos.
         </p>
       </div>
 
       <button
         class="create-button"
         type="button"
-        [disabled]="!puedeCrearTienda"
         (click)="crearTienda()"
       >
-        <span aria-hidden="true">
-          +
-        </span>
-
-        {{
-          puedeCrearTienda
-            ? 'Crear sucursal'
-            : 'Límite alcanzado'
-        }}
+        <span aria-hidden="true">+</span>
+        Crear tienda
       </button>
     </div>
 
     <div class="filters-grid">
       <div class="form-group search-group">
-        <label for="busqueda">
-          Buscar sucursal
-        </label>
+        <label for="busqueda">Buscar tienda</label>
 
         <div class="search-control">
-          <span aria-hidden="true">
-            🔍
-          </span>
+          <span aria-hidden="true">🔍</span>
 
           <input
             id="busqueda"
             type="search"
-            placeholder="Número, nombre, ciudad, dirección o gerente"
+            placeholder="Nombre, ciudad, dirección o teléfono"
             [(ngModel)]="busqueda"
             (ngModelChange)="aplicarFiltros()"
           />
@@ -190,50 +49,20 @@
       </div>
 
       <div class="form-group">
-        <label for="estado">
-          Estado operativo
-        </label>
+        <label for="ciudad">Ciudad</label>
 
         <select
-          id="estado"
-          [(ngModel)]="estadoSeleccionado"
+          id="ciudad"
+          [(ngModel)]="ciudadSeleccionada"
           (ngModelChange)="aplicarFiltros()"
         >
-          <option value="todas">
-            Todas
-          </option>
-
-          <option value="activa">
-            Activas
-          </option>
-
-          <option value="inactiva">
-            Inactivas
-          </option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="ubicacion">
-          Estado
-        </label>
-
-        <select
-          id="ubicacion"
-          [(ngModel)]="ubicacionSeleccionada"
-          (ngModelChange)="aplicarFiltros()"
-        >
-          <option value="todas">
-            Todos
-          </option>
+          <option value="todas">Todas</option>
 
           <option
-            *ngFor="
-              let ubicacion of ubicaciones
-            "
-            [value]="ubicacion"
+            *ngFor="let ciudad of ciudades"
+            [value]="ciudad"
           >
-            {{ ubicacion }}
+            {{ ciudad }}
           </option>
         </select>
       </div>
@@ -253,87 +82,56 @@
     *ngIf="mensajeExito"
   >
     <span>✓</span>
-
-    <p>
-      {{ mensajeExito }}
-    </p>
+    <p>{{ mensajeExito }}</p>
   </div>
 
-  <!-- Listado -->
+  <div
+    class="message error"
+    *ngIf="mensajeError"
+  >
+    <span>!</span>
+    <p>{{ mensajeError }}</p>
+  </div>
+
   <section class="stores-section">
     <div class="list-heading">
       <div>
-        <h2>
-          Sucursales registradas
-        </h2>
+        <h2>Tiendas registradas</h2>
 
         <p>
           {{ tiendasFiltradas.length }}
-          sucursal(es) encontrada(s)
+          tienda(s) encontrada(s)
         </p>
       </div>
 
       <span class="limit-badge">
-        Límite: {{ limiteSucursales }}
+        Backend conectado
       </span>
     </div>
 
     <div
       class="stores-grid"
-      *ngIf="
-        tiendasFiltradas.length > 0;
-        else sinTiendas
-      "
+      *ngIf="tiendasFiltradas.length > 0; else sinTiendas"
     >
       <article
         class="store-card"
-        *ngFor="
-          let tienda of tiendasFiltradas
-        "
-        [class.store-inactive]="
-          tienda.estado === 'inactiva'
-        "
+        *ngFor="let tienda of tiendasFiltradas"
       >
         <div class="store-card-header">
-          <div class="store-icon">
-            🏪
-          </div>
+          <div class="store-icon">🏪</div>
 
           <div class="store-statuses">
-            <span
-              class="status-badge"
-              [class.active]="
-                tienda.estado === 'activa'
-              "
-              [class.inactive]="
-                tienda.estado === 'inactiva'
-              "
-            >
-              {{
-                tienda.estado === 'activa'
-                  ? 'Activa'
-                  : 'Inactiva'
-              }}
-            </span>
-
             <span class="store-number">
-              #{{
-                obtenerNumeroSucursal(
-                  tienda
-                )
-              }}
+              ID: {{ tienda._id }}
             </span>
           </div>
         </div>
 
         <div class="store-information">
-          <h3>
-            {{ tienda.nombre }}
-          </h3>
+          <h3>{{ tienda.nombre }}</h3>
 
           <p class="store-location">
-            📍 {{ tienda.ciudad }},
-            {{ tienda.estadoUbicacion }}
+            📍 {{ tienda.ciudad }}
           </p>
 
           <p class="store-address">
@@ -349,47 +147,6 @@
               {{ tienda.telefono }}
             </strong>
           </div>
-
-          <div>
-            <span>Empleados</span>
-
-            <strong>
-              {{ tienda.empleados }}
-            </strong>
-          </div>
-        </div>
-
-        <div class="manager-section">
-          <div class="manager-avatar">
-            {{
-              obtenerIniciales(
-                tienda.gerente
-              )
-            }}
-          </div>
-
-          <div>
-            <span>
-              Gerente responsable
-            </span>
-
-            <strong>
-              {{ tienda.gerente }}
-            </strong>
-          </div>
-        </div>
-
-        <div class="store-registration">
-          <span>
-            Registrada:
-          </span>
-
-          <strong>
-            {{
-              tienda.fechaRegistro
-                | date:'dd/MM/yyyy'
-            }}
-          </strong>
         </div>
 
         <div class="store-actions">
@@ -402,24 +159,9 @@
           </button>
 
           <button
-            class="status-button"
-            type="button"
-            [class.activate]="
-              tienda.estado === 'inactiva'
-            "
-            (click)="cambiarEstado(tienda)"
-          >
-            {{
-              tienda.estado === 'activa'
-                ? '⏸ Desactivar'
-                : '✓ Activar'
-            }}
-          </button>
-
-          <button
             class="delete-button"
             type="button"
-            aria-label="Eliminar sucursal"
+            aria-label="Eliminar tienda"
             (click)="abrirEliminar(tienda)"
           >
             🗑️
@@ -430,17 +172,12 @@
 
     <ng-template #sinTiendas>
       <div class="empty-state">
-        <div class="empty-icon">
-          🏪
-        </div>
+        <div class="empty-icon">🏪</div>
 
-        <h3>
-          No se encontraron sucursales
-        </h3>
+        <h3>No se encontraron tiendas</h3>
 
         <p>
-          Modifica los filtros o registra una nueva
-          sucursal.
+          Modifica los filtros o registra una nueva tienda.
         </p>
 
         <div class="empty-actions">
@@ -455,10 +192,9 @@
           <button
             class="empty-primary"
             type="button"
-            [disabled]="!puedeCrearTienda"
             (click)="crearTienda()"
           >
-            Crear sucursal
+            Crear tienda
           </button>
         </div>
       </div>
@@ -466,61 +202,38 @@
   </section>
 </main>
 
-<!-- Modal de eliminación -->
 <div
   class="modal-backdrop"
-  *ngIf="
-    modalEliminarAbierto &&
-    tiendaSeleccionada
-  "
+  *ngIf="modalEliminarAbierto && tiendaSeleccionada"
   (click)="cerrarEliminar()"
 >
   <section
     class="delete-modal"
     (click)="$event.stopPropagation()"
   >
-    <div class="delete-icon">
-      🗑️
-    </div>
+    <div class="delete-icon">🗑️</div>
 
-    <h2>
-      Eliminar sucursal
-    </h2>
+    <h2>Eliminar tienda</h2>
 
     <p>
       ¿Seguro que deseas eliminar
-      <strong>
-        {{ tiendaSeleccionada.nombre }}
-      </strong>?
+      <strong>{{ tiendaSeleccionada.nombre }}</strong>?
     </p>
 
     <div class="store-to-delete">
-      <span>
-        🏪
-      </span>
+      <span>🏪</span>
 
       <div>
-        <strong>
-          Sucursal #{{
-            obtenerNumeroSucursal(
-              tiendaSeleccionada
-            )
-          }}
-        </strong>
+        <strong>{{ tiendaSeleccionada.nombre }}</strong>
 
         <small>
-          {{ tiendaSeleccionada.ciudad }},
-          {{
-            tiendaSeleccionada
-              .estadoUbicacion
-          }}
+          {{ tiendaSeleccionada.ciudad }}
         </small>
       </div>
     </div>
 
     <div class="delete-warning">
-      Esta acción eliminará la sucursal del listado
-      almacenado en este navegador.
+      Esta acción eliminará la tienda de la base de datos.
     </div>
 
     <div class="modal-actions">
@@ -537,7 +250,7 @@
         type="button"
         (click)="confirmarEliminar()"
       >
-        Eliminar sucursal
+        Eliminar tienda
       </button>
     </div>
   </section>
