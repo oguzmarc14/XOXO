@@ -43,7 +43,7 @@ interface ProductoCarrito extends ProductoVenta {
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink
+
   ],
   templateUrl: './nueva-venta.html',
   styleUrl: './nueva-venta.css'

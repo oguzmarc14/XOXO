@@ -16,9 +16,11 @@ export class EditarProducto implements OnInit {
   productoOriginal: Producto | null = null;
 
   codigo: number | null = null;
+  codigo: number | null = null;
   nombre = '';
   categoria = '';
   precio: number | null = null;
+  stockMinimo: number | null = null;
   stockMinimo: number | null = null;
 
   guardando = false;
@@ -84,6 +86,7 @@ export class EditarProducto implements OnInit {
 
     return (
       Number(this.codigo) !== this.productoOriginal.codigo ||
+      Number(this.codigo) !== this.productoOriginal.codigo ||
       this.nombre.trim() !== this.productoOriginal.nombre ||
       this.categoria !== this.productoOriginal.categoria ||
       Number(this.precio) !== this.productoOriginal.precio ||
@@ -136,6 +139,11 @@ export class EditarProducto implements OnInit {
       return;
     }
 
+    if (this.stockMinimo === null || Number(this.stockMinimo) < 0) {
+      this.mensajeError = 'El stock mínimo no puede ser negativo.';
+      return;
+    }
+
     if (!this.hayCambios) {
       this.mensajeError = 'No se detectaron cambios para guardar.';
       return;
@@ -144,6 +152,7 @@ export class EditarProducto implements OnInit {
     this.guardando = true;
 
     this.productosService.update(this.productoOriginal._id, {
+      codigo: Number(this.codigo),
       codigo: Number(this.codigo),
       nombre: this.nombre.trim(),
       categoria: this.categoria,
@@ -196,6 +205,7 @@ export class EditarProducto implements OnInit {
   }
 
   private cargarFormulario(producto: Producto): void {
+    this.codigo = producto.codigo;
     this.codigo = producto.codigo;
     this.nombre = producto.nombre;
     this.categoria = producto.categoria;

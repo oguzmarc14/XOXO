@@ -4,5 +4,6 @@ export interface Producto {
   nombre: string;
   precio: number;
   categoria: string;
-  stockMinimo?: number;
+  stockMinimo: number;
+  tiendaId?: string;
 }

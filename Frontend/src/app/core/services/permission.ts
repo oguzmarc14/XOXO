@@ -52,10 +52,6 @@ export class PermissionService {
         'INVENTARIO_EDITAR',
         'INVENTARIO_MOVIMIENTOS_VER',
 
-        'TURNOS_VER',
-        'TURNOS_ABRIR',
-        'TURNOS_CERRAR',
-
         'PRODUCTOS_VER',
         'PRODUCTOS_GESTIONAR',
 

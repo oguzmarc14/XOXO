@@ -194,6 +194,15 @@ export class UsuarioActualService {
       usuario.avatar
     );
 
+    if (usuario.tiendaId) {
+      localStorage.setItem(
+        'tiendaId',
+        usuario.tiendaId
+      );
+    } else {
+      localStorage.removeItem('tiendaId');
+    }
+
     this.usuarioSubject.next(usuario);
   }
 
@@ -265,6 +274,10 @@ export class UsuarioActualService {
       sucursal:
         localStorage.getItem('sucursal') ||
         'Sucursal no asignada',
+
+      tiendaId:
+        localStorage.getItem('tiendaId') ||
+        undefined,
 
       avatar:
         this.obtenerAvatarPorRolYSexo(

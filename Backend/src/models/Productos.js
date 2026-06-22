@@ -27,6 +27,12 @@ const productosSchema = new mongoose.Schema({
     required: true,
     default: 5,
   },
+
+  tiendaId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tiendas",
+    required: false,
+  },
 });
 
 export default mongoose.model("Productos", productosSchema);

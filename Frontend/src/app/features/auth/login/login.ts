@@ -155,6 +155,11 @@ export class Login {
               data.usuario.tiendaId
             ),
 
+          tiendaId:
+            this.extraerTiendaId(
+              data.usuario.tiendaId
+            ),
+
           avatar:
             this.usuarioActualService
               .obtenerAvatarPorRolYSexo(
@@ -356,6 +361,23 @@ export class Login {
     }
 
     return '/dashboard-cajero';
+  }
+
+  private extraerTiendaId(
+    tienda:
+      | TiendaLogin
+      | string
+      | null
+      | undefined
+  ): string | undefined {
+    if (!tienda) return undefined;
+    if (typeof tienda === 'object' && tienda._id) {
+      return tienda._id;
+    }
+    if (typeof tienda === 'string') {
+      return tienda;
+    }
+    return undefined;
   }
 
   private convertirId(
