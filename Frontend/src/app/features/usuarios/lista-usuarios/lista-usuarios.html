@@ -1,17 +1,12 @@
 <main class="users-page">
-  <!-- Resumen -->
   <section class="summary-grid">
     <article class="summary-card featured">
       <div class="summary-icon">👥</div>
 
       <div>
-        <span> Usuarios registrados </span>
-
-        <strong>
-          {{ totalUsuarios }}
-        </strong>
-
-        <small> Cuentas del sistema </small>
+        <span>Usuarios registrados</span>
+        <strong>{{ totalUsuarios }}</strong>
+        <small>Cuentas del sistema</small>
       </div>
     </article>
 
@@ -19,13 +14,9 @@
       <div class="summary-icon">✓</div>
 
       <div>
-        <span> Usuarios activos </span>
-
-        <strong>
-          {{ usuariosActivos }}
-        </strong>
-
-        <small> Con acceso permitido </small>
+        <span>Usuarios activos</span>
+        <strong>{{ usuariosActivos }}</strong>
+        <small>Con acceso permitido</small>
       </div>
     </article>
 
@@ -33,13 +24,9 @@
       <div class="summary-icon">⏸</div>
 
       <div>
-        <span> Usuarios inactivos </span>
-
-        <strong>
-          {{ usuariosInactivos }}
-        </strong>
-
-        <small> Acceso suspendido </small>
+        <span>Usuarios inactivos</span>
+        <strong>{{ usuariosInactivos }}</strong>
+        <small>Acceso suspendido</small>
       </div>
     </article>
 
@@ -47,13 +34,9 @@
       <div class="summary-icon">🧾</div>
 
       <div>
-        <span> Cajeros </span>
-
-        <strong>
-          {{ totalCajeros }}
-        </strong>
-
-        <small> Personal de ventas </small>
+        <span>Cajeros</span>
+        <strong>{{ totalCajeros }}</strong>
+        <small>Personal de ventas</small>
       </div>
     </article>
 
@@ -61,13 +44,9 @@
       <div class="summary-icon">🏪</div>
 
       <div>
-        <span> Gerentes </span>
-
-        <strong>
-          {{ totalGerentes }}
-        </strong>
-
-        <small> Responsables de sucursal </small>
+        <span>Gerentes</span>
+        <strong>{{ totalGerentes }}</strong>
+        <small>Responsables de tienda</small>
       </div>
     </article>
 
@@ -75,44 +54,44 @@
       <div class="summary-icon">🛡️</div>
 
       <div>
-        <span> Administradores </span>
-
-        <strong>
-          {{ totalAdministradores }}
-        </strong>
-
-        <small> Acceso general </small>
+        <span>Administradores</span>
+        <strong>{{ totalAdministradores }}</strong>
+        <small>Acceso general</small>
       </div>
     </article>
   </section>
 
-  <!-- Filtros -->
   <section class="filters-section">
     <div class="section-heading">
       <div>
         <h2>Gestión de usuarios</h2>
 
-        <p>Consulta, registra y administra las cuentas que tienen acceso al sistema.</p>
+        <p>
+          Consulta, registra y administra las cuentas que tienen acceso al sistema.
+        </p>
       </div>
 
-      <button class="create-button" type="button" (click)="crearUsuario()">
-        <span aria-hidden="true"> + </span>
-
+      <button
+        class="create-button"
+        type="button"
+        (click)="crearUsuario()"
+      >
+        <span aria-hidden="true">+</span>
         Crear usuario
       </button>
     </div>
 
     <div class="filters-grid">
       <div class="form-group search-group">
-        <label for="busqueda"> Buscar usuario </label>
+        <label for="busqueda">Buscar usuario</label>
 
         <div class="search-control">
-          <span aria-hidden="true"> 🔍 </span>
+          <span aria-hidden="true">🔍</span>
 
           <input
             id="busqueda"
             type="search"
-            placeholder="Nombre, correo, cargo, teléfono o sucursal"
+            placeholder="Nombre, usuario, rol o tienda"
             [(ngModel)]="busqueda"
             (ngModelChange)="aplicarFiltros()"
           />
@@ -120,57 +99,79 @@
       </div>
 
       <div class="form-group">
-        <label for="rol"> Tipo de usuario </label>
+        <label for="rol">Tipo de usuario</label>
 
-        <select id="rol" [(ngModel)]="rolSeleccionado" (ngModelChange)="aplicarFiltros()">
+        <select
+          id="rol"
+          [(ngModel)]="rolSeleccionado"
+          (ngModelChange)="aplicarFiltros()"
+        >
           <option value="todos">Todos</option>
-
           <option value="cajero">Cajeros</option>
-
           <option value="gerente">Gerentes</option>
-
           <option value="admin">Administradores</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="estado"> Estado </label>
+        <label for="estado">Estado</label>
 
-        <select id="estado" [(ngModel)]="estadoSeleccionado" (ngModelChange)="aplicarFiltros()">
+        <select
+          id="estado"
+          [(ngModel)]="estadoSeleccionado"
+          (ngModelChange)="aplicarFiltros()"
+        >
           <option value="todos">Todos</option>
-
           <option value="activo">Activos</option>
-
           <option value="inactivo">Inactivos</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="sucursal"> Sucursal </label>
+        <label for="tienda">Tienda</label>
 
-        <select id="sucursal" [(ngModel)]="sucursalSeleccionada" (ngModelChange)="aplicarFiltros()">
+        <select
+          id="tienda"
+          [(ngModel)]="tiendaSeleccionada"
+          (ngModelChange)="aplicarFiltros()"
+        >
           <option value="todas">Todas</option>
 
-          <option *ngFor="let sucursal of sucursales" [value]="sucursal">
-            {{ sucursal }}
+          <option
+            *ngFor="let tienda of tiendas"
+            [value]="tienda"
+          >
+            {{ tienda }}
           </option>
         </select>
       </div>
 
-      <button class="clear-button" type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
+      <button
+        class="clear-button"
+        type="button"
+        (click)="limpiarFiltros()"
+      >
+        Limpiar filtros
+      </button>
     </div>
   </section>
 
-  <!-- Mensaje -->
-  <div class="message success" *ngIf="mensajeExito">
+  <div
+    class="message success"
+    *ngIf="mensajeExito"
+  >
     <span>✓</span>
-
-    <p>
-      {{ mensajeExito }}
-    </p>
+    <p>{{ mensajeExito }}</p>
   </div>
 
-  <!-- Listado -->
+  <div
+    class="message error"
+    *ngIf="mensajeError"
+  >
+    <span>!</span>
+    <p>{{ mensajeError }}</p>
+  </div>
+
   <section class="users-section">
     <div class="list-heading">
       <div>
@@ -182,10 +183,15 @@
         </p>
       </div>
 
-      <span class="results-badge"> Directorio actualizado </span>
+      <span class="results-badge">
+        Backend conectado
+      </span>
     </div>
 
-    <div class="users-grid" *ngIf="usuariosFiltrados.length > 0; else sinUsuarios">
+    <div
+      class="users-grid"
+      *ngIf="usuariosFiltrados.length > 0; else sinUsuarios"
+    >
       <article
         class="user-card"
         *ngFor="let usuario of usuariosFiltrados"
@@ -207,7 +213,10 @@
           </div>
 
           <div class="user-badges">
-            <span class="role-badge" [ngClass]="obtenerClaseRol(usuario.rol)">
+            <span
+              class="role-badge"
+              [ngClass]="obtenerClaseRol(usuario.rol)"
+            >
               {{ obtenerTextoRol(usuario) }}
             </span>
 
@@ -222,61 +231,61 @@
         </div>
 
         <div class="user-identity">
-          <h3>
-            {{ usuario.nombre }}
-          </h3>
+          <h3>{{ usuario.nombre }}</h3>
 
-          <span>
-            {{ usuario.cargo }}
-          </span>
+          <span>{{ usuario.cargo }}</span>
         </div>
 
         <div class="user-contact">
           <div>
-            <span aria-hidden="true"> ✉ </span>
+            <span aria-hidden="true">👤</span>
 
             <p>
-              {{ usuario.correo }}
+              Usuario: {{ usuario.usuario }}
             </p>
           </div>
 
           <div>
-            <span aria-hidden="true"> ☎ </span>
+            <span aria-hidden="true">🏪</span>
 
             <p>
-              {{ usuario.telefono }}
+              {{ usuario.tienda }}
             </p>
           </div>
 
           <div>
-            <span aria-hidden="true"> 🏪 </span>
+            <span aria-hidden="true">🆔</span>
 
             <p>
-              {{ usuario.sucursal }}
+              ID tienda: {{ usuario.tiendaId || 'Sin ID' }}
             </p>
           </div>
         </div>
 
         <div class="user-dates">
           <div>
-            <span> Último acceso </span>
+            <span>Registro</span>
 
             <strong>
-              {{ usuario.ultimoAcceso | date: 'dd/MM/yyyy HH:mm' }}
+              {{ usuario.fechaRegistro | date:'dd/MM/yyyy' }}
             </strong>
           </div>
 
           <div>
-            <span> Registro </span>
+            <span>Estado</span>
 
             <strong>
-              {{ usuario.fechaRegistro | date: 'dd/MM/yyyy' }}
+              {{ usuario.estado === 'activo' ? 'Activo' : 'Inactivo' }}
             </strong>
           </div>
         </div>
 
         <div class="user-actions">
-          <button class="edit-button" type="button" (click)="editarUsuario(usuario)">
+          <button
+            class="edit-button"
+            type="button"
+            (click)="editarUsuario(usuario)"
+          >
             ✏️ Editar
           </button>
 
@@ -307,14 +316,24 @@
 
         <h3>No se encontraron usuarios</h3>
 
-        <p>Modifica los filtros o registra una nueva cuenta de usuario.</p>
+        <p>
+          Modifica los filtros o registra una nueva cuenta de usuario.
+        </p>
 
         <div class="empty-actions">
-          <button class="empty-secondary" type="button" (click)="limpiarFiltros()">
+          <button
+            class="empty-secondary"
+            type="button"
+            (click)="limpiarFiltros()"
+          >
             Limpiar filtros
           </button>
 
-          <button class="empty-primary" type="button" (click)="crearUsuario()">
+          <button
+            class="empty-primary"
+            type="button"
+            (click)="crearUsuario()"
+          >
             Crear usuario
           </button>
         </div>
@@ -323,22 +342,22 @@
   </section>
 </main>
 
-<!-- Modal de eliminación -->
 <div
   class="modal-backdrop"
   *ngIf="modalEliminarAbierto && usuarioSeleccionado"
   (click)="cerrarEliminar()"
 >
-  <section class="delete-modal" (click)="$event.stopPropagation()">
+  <section
+    class="delete-modal"
+    (click)="$event.stopPropagation()"
+  >
     <div class="delete-icon">🗑️</div>
 
     <h2>Eliminar usuario</h2>
 
     <p>
       ¿Seguro que deseas eliminar la cuenta de
-      <strong>
-        {{ usuarioSeleccionado.nombre }} </strong
-      >?
+      <strong>{{ usuarioSeleccionado.nombre }}</strong>?
     </p>
 
     <div class="user-to-delete">
@@ -350,13 +369,13 @@
 
       <div>
         <strong>
-          {{ usuarioSeleccionado.correo }}
+          {{ usuarioSeleccionado.usuario }}
         </strong>
 
         <small>
           {{ obtenerTextoRol(usuarioSeleccionado) }}
           ·
-          {{ usuarioSeleccionado.sucursal }}
+          {{ usuarioSeleccionado.tienda }}
         </small>
       </div>
     </div>
@@ -367,9 +386,19 @@
     </div>
 
     <div class="modal-actions">
-      <button class="modal-cancel" type="button" (click)="cerrarEliminar()">Cancelar</button>
+      <button
+        class="modal-cancel"
+        type="button"
+        (click)="cerrarEliminar()"
+      >
+        Cancelar
+      </button>
 
-      <button class="modal-delete" type="button" (click)="confirmarEliminar()">
+      <button
+        class="modal-delete"
+        type="button"
+        (click)="confirmarEliminar()"
+      >
         Eliminar usuario
       </button>
     </div>

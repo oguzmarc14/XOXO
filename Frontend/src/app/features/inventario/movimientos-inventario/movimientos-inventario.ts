@@ -1,388 +1,199 @@
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
-import {
-  Component,
-  OnInit
-} from '@angular/core';
-
-import {
-  FormsModule
-} from '@angular/forms';
-
-import {
-  RouterLink
-} from '@angular/router';
-
-import {
-  Usuario
-} from '../../../core/models/usuario.model';
-
-import {
-  UsuarioActualService
-} from '../../../core/services/usuario-actual';
-
-type TipoMovimiento =
-  | 'entrada'
-  | 'salida'
-  | 'ajuste';
-
-interface MovimientoInventario {
-  id: number;
-  folio: string;
-  fecha: Date;
-  hora: string;
-  tipo: TipoMovimiento;
-  producto: string;
-  codigoProducto: string;
-  sucursal: string;
-  cantidad: number;
-  existenciaAnterior: number;
-  existenciaNueva: number;
-  responsable: string;
-  motivo: string;
+interface ProductoBackend {
+  _id: string;
+  nombre: string;
+  precio: number;
+  categoria: string;
+  stockMinimo?: number;
 }
 
-interface ProductoMovimiento {
-  id: number;
-  codigo: string;
+interface TiendaBackend {
+  _id: string;
   nombre: string;
-  existencia: number;
+  direccion: string;
+  ciudad: string;
+  telefono: string;
+}
+
+interface InventarioBackend {
+  _id: string;
+  tiendaId: string;
+  productoId: string;
+  piezas: number;
+}
+
+interface InventarioListado {
+  _id: string;
+  tiendaId: string;
+  productoId: string;
+  tienda: string;
+  producto: string;
+  categoria: string;
+  precio: number;
+  piezas: number;
 }
 
 @Component({
   selector: 'app-movimientos-inventario',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterLink
-  ],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './movimientos-inventario.html',
   styleUrl: './movimientos-inventario.css'
 })
-export class MovimientosInventario
-  implements OnInit {
-
-  usuario!: Usuario;
-
+export class MovimientosInventario implements OnInit {
   busqueda = '';
-  tipoSeleccionado = 'todos';
-  sucursalSeleccionada = 'todas';
-  fechaSeleccionada = '';
+  tiendaSeleccionada = 'todas';
+  productoSeleccionado = '';
+
+  tiendaId = '';
+  productoId = '';
+  piezas: number | null = null;
+
+  inventario: InventarioListado[] = [];
+  inventarioFiltrado: InventarioListado[] = [];
+
+  productos: ProductoBackend[] = [];
+  tiendas: TiendaBackend[] = [];
 
   modalMovimientoAbierto = false;
   guardando = false;
-
-  productoSeleccionadoId = 0;
-  tipoNuevoMovimiento:
-    TipoMovimiento = 'entrada';
-
-  cantidadMovimiento: number | null = null;
-  motivoMovimiento = '';
-  sucursalMovimiento = '';
+  cargando = false;
 
   mensajeError = '';
   mensajeExito = '';
 
-  productos: ProductoMovimiento[] = [
-    {
-      id: 1,
-      codigo: 'XO-PL-001',
-      nombre: 'Playera negra XoXO',
-      existencia: 18
-    },
-    {
-      id: 2,
-      codigo: 'XO-PL-002',
-      nombre: 'Playera blanca XoXO',
-      existencia: 4
-    },
-    {
-      id: 3,
-      codigo: 'XO-SD-001',
-      nombre: 'Sudadera vino',
-      existencia: 2
-    },
-    {
-      id: 4,
-      codigo: 'XO-SD-002',
-      nombre: 'Sudadera negra',
-      existencia: 12
-    },
-    {
-      id: 5,
-      codigo: 'XO-BL-001',
-      nombre: 'Bolsa XoXO edición especial',
-      existencia: 1
-    },
-    {
-      id: 6,
-      codigo: 'XO-GR-001',
-      nombre: 'Gorra bordada XoXO',
-      existencia: 0
-    }
-  ];
+  private readonly inventarioApi = 'http://localhost:3000/inventario';
+  private readonly productosApi = 'http://localhost:3000/productos';
+  private readonly tiendasApi = 'http://localhost:3000/tiendas';
 
-  movimientos: MovimientoInventario[] = [
-    {
-      id: 1,
-      folio: 'MOV-0008',
-      fecha: new Date('2026-06-19T16:45:00'),
-      hora: '16:45',
-      tipo: 'entrada',
-      producto: 'Playera negra XoXO',
-      codigoProducto: 'XO-PL-001',
-      sucursal: 'Sucursal #027 - Centro',
-      cantidad: 10,
-      existenciaAnterior: 8,
-      existenciaNueva: 18,
-      responsable: 'Laura Hernández',
-      motivo: 'Recepción de mercancía'
-    },
-    {
-      id: 2,
-      folio: 'MOV-0007',
-      fecha: new Date('2026-06-19T15:20:00'),
-      hora: '15:20',
-      tipo: 'salida',
-      producto: 'Playera blanca XoXO',
-      codigoProducto: 'XO-PL-002',
-      sucursal: 'Sucursal #027 - Centro',
-      cantidad: 2,
-      existenciaAnterior: 6,
-      existenciaNueva: 4,
-      responsable: 'María López',
-      motivo: 'Venta registrada'
-    },
-    {
-      id: 3,
-      folio: 'MOV-0006',
-      fecha: new Date('2026-06-19T13:40:00'),
-      hora: '13:40',
-      tipo: 'ajuste',
-      producto: 'Sudadera vino',
-      codigoProducto: 'XO-SD-001',
-      sucursal: 'Sucursal #027 - Centro',
-      cantidad: 1,
-      existenciaAnterior: 3,
-      existenciaNueva: 2,
-      responsable: 'Laura Hernández',
-      motivo: 'Producto dañado'
-    },
-    {
-      id: 4,
-      folio: 'MOV-0005',
-      fecha: new Date('2026-06-18T18:10:00'),
-      hora: '18:10',
-      tipo: 'entrada',
-      producto: 'Sudadera negra',
-      codigoProducto: 'XO-SD-002',
-      sucursal: 'Sucursal #043 - Norte',
-      cantidad: 8,
-      existenciaAnterior: 4,
-      existenciaNueva: 12,
-      responsable: 'Carlos Mendoza',
-      motivo: 'Reabastecimiento'
-    },
-    {
-      id: 5,
-      folio: 'MOV-0004',
-      fecha: new Date('2026-06-18T16:30:00'),
-      hora: '16:30',
-      tipo: 'salida',
-      producto: 'Bolsa XoXO edición especial',
-      codigoProducto: 'XO-BL-001',
-      sucursal: 'Sucursal #027 - Centro',
-      cantidad: 1,
-      existenciaAnterior: 2,
-      existenciaNueva: 1,
-      responsable: 'María López',
-      motivo: 'Venta registrada'
-    },
-    {
-      id: 6,
-      folio: 'MOV-0003',
-      fecha: new Date('2026-06-18T12:15:00'),
-      hora: '12:15',
-      tipo: 'ajuste',
-      producto: 'Gorra bordada XoXO',
-      codigoProducto: 'XO-GR-001',
-      sucursal: 'Sucursal #043 - Norte',
-      cantidad: 2,
-      existenciaAnterior: 2,
-      existenciaNueva: 0,
-      responsable: 'Carlos Mendoza',
-      motivo: 'Diferencia en conteo físico'
-    }
-  ];
-
-  movimientosFiltrados:
-    MovimientoInventario[] = [];
-
-  constructor(
-    private usuarioActualService:
-      UsuarioActualService
-  ) {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.usuario =
-      this.usuarioActualService
-        .obtenerUsuario();
-
-    this.sucursalMovimiento =
-      this.usuario.sucursal;
-
-    this.aplicarFiltros();
+    this.cargarDatos();
   }
 
-  get puedeRegistrarMovimiento(): boolean {
-    return (
-      this.usuario.rol === 'admin' ||
-      this.usuario.rol === 'gerente'
-    );
+  get totalRegistros(): number {
+    return this.inventario.length;
   }
 
-  get sucursales(): string[] {
-    return [
-      ...new Set(
-        this.movimientos.map(
-          movimiento => movimiento.sucursal
-        )
-      )
-    ].sort();
-  }
-
-  get totalMovimientos(): number {
-    return this.movimientos.length;
-  }
-
-  get totalEntradas(): number {
-    return this.movimientos
-      .filter(
-        movimiento =>
-          movimiento.tipo === 'entrada'
-      )
-      .reduce(
-        (total, movimiento) =>
-          total + movimiento.cantidad,
-        0
-      );
-  }
-
-  get totalSalidas(): number {
-    return this.movimientos
-      .filter(
-        movimiento =>
-          movimiento.tipo === 'salida'
-      )
-      .reduce(
-        (total, movimiento) =>
-          total + movimiento.cantidad,
-        0
-      );
-  }
-
-  get totalAjustes(): number {
-    return this.movimientos
-      .filter(
-        movimiento =>
-          movimiento.tipo === 'ajuste'
-      )
-      .reduce(
-        (total, movimiento) =>
-          total + movimiento.cantidad,
-        0
-      );
-  }
-
-  get unidadesMovidas(): number {
-    return this.movimientos.reduce(
-      (total, movimiento) =>
-        total + movimiento.cantidad,
+  get totalPiezas(): number {
+    return this.inventario.reduce(
+      (total, item) => total + item.piezas,
       0
     );
   }
 
-  get productoSeleccionado():
-    ProductoMovimiento | undefined {
-    return this.productos.find(
-      producto =>
-        producto.id ===
-        Number(this.productoSeleccionadoId)
+  get productosDistintos(): number {
+    return new Set(
+      this.inventario.map(item => item.productoId)
+    ).size;
+  }
+
+  get tiendasDistintas(): number {
+    return new Set(
+      this.inventario.map(item => item.tiendaId)
+    ).size;
+  }
+
+  get valorInventario(): number {
+    return this.inventario.reduce(
+      (total, item) => total + item.piezas * item.precio,
+      0
     );
   }
 
-  aplicarFiltros(): void {
-    const texto =
-      this.normalizarTexto(this.busqueda);
+  get tiendasFiltro(): string[] {
+    return [
+      ...new Set(
+        this.inventario.map(item => item.tienda)
+      )
+    ].sort();
+  }
 
-    this.movimientosFiltrados =
-      this.movimientos.filter(
-        movimiento => {
-          const coincideBusqueda =
-            !texto ||
-            this.normalizarTexto(
-              movimiento.folio
-            ).includes(texto) ||
-            this.normalizarTexto(
-              movimiento.producto
-            ).includes(texto) ||
-            this.normalizarTexto(
-              movimiento.codigoProducto
-            ).includes(texto) ||
-            this.normalizarTexto(
-              movimiento.responsable
-            ).includes(texto) ||
-            this.normalizarTexto(
-              movimiento.motivo
-            ).includes(texto);
+  cargarDatos(): void {
+    this.cargando = true;
+    this.mensajeError = '';
 
-          const coincideTipo =
-            this.tipoSeleccionado ===
-              'todos' ||
-            movimiento.tipo ===
-              this.tipoSeleccionado;
+    this.http.get<ProductoBackend[]>(this.productosApi).subscribe({
+      next: productos => {
+        this.productos = productos;
 
-          const coincideSucursal =
-            this.sucursalSeleccionada ===
-              'todas' ||
-            movimiento.sucursal ===
-              this.sucursalSeleccionada;
+        this.http.get<TiendaBackend[]>(this.tiendasApi).subscribe({
+          next: tiendas => {
+            this.tiendas = tiendas;
+            this.cargarInventario();
+          },
+          error: error => {
+            console.error(error);
+            this.mensajeError = 'No fue posible cargar las tiendas.';
+            this.cargando = false;
+          }
+        });
+      },
+      error: error => {
+        console.error(error);
+        this.mensajeError = 'No fue posible cargar los productos.';
+        this.cargando = false;
+      }
+    });
+  }
 
-          const coincideFecha =
-            !this.fechaSeleccionada ||
-            this.obtenerFechaISO(
-              movimiento.fecha
-            ) === this.fechaSeleccionada;
-
-          return (
-            coincideBusqueda &&
-            coincideTipo &&
-            coincideSucursal &&
-            coincideFecha
+  cargarInventario(): void {
+    this.http.get<InventarioBackend[]>(this.inventarioApi).subscribe({
+      next: inventarioBackend => {
+        this.inventario = inventarioBackend
+          .map(item => this.mapearInventario(item))
+          .filter(
+            (item): item is InventarioListado => item !== null
           );
-        }
-      );
+
+        this.aplicarFiltros();
+        this.cargando = false;
+      },
+      error: error => {
+        console.error(error);
+        this.mensajeError = 'No fue posible cargar el inventario.';
+        this.cargando = false;
+      }
+    });
+  }
+
+  aplicarFiltros(): void {
+    const texto = this.normalizarTexto(this.busqueda);
+
+    this.inventarioFiltrado = this.inventario.filter(item => {
+      const coincideBusqueda =
+        !texto ||
+        this.normalizarTexto(item.producto).includes(texto) ||
+        this.normalizarTexto(item.categoria).includes(texto) ||
+        this.normalizarTexto(item.tienda).includes(texto);
+
+      const coincideTienda =
+        this.tiendaSeleccionada === 'todas' ||
+        item.tienda === this.tiendaSeleccionada;
+
+      return coincideBusqueda && coincideTienda;
+    });
   }
 
   limpiarFiltros(): void {
     this.busqueda = '';
-    this.tipoSeleccionado = 'todos';
-    this.sucursalSeleccionada = 'todas';
-    this.fechaSeleccionada = '';
-
+    this.tiendaSeleccionada = 'todas';
     this.aplicarFiltros();
   }
 
   abrirModalMovimiento(): void {
-    this.limpiarFormularioMovimiento();
+    this.limpiarFormulario();
     this.modalMovimientoAbierto = true;
   }
 
   cerrarModalMovimiento(): void {
-    if (this.guardando) {
-      return;
-    }
+    if (this.guardando) return;
 
     this.modalMovimientoAbierto = false;
     this.mensajeError = '';
@@ -392,219 +203,106 @@ export class MovimientosInventario
     this.mensajeError = '';
     this.mensajeExito = '';
 
-    const producto =
-      this.productoSeleccionado;
+    if (!this.tiendaId) {
+      this.mensajeError = 'Selecciona una tienda.';
+      return;
+    }
 
-    if (!producto) {
-      this.mensajeError =
-        'Selecciona un producto.';
+    if (!this.productoId) {
+      this.mensajeError = 'Selecciona un producto.';
       return;
     }
 
     if (
-      !this.cantidadMovimiento ||
-      this.cantidadMovimiento <= 0
+      this.piezas === null ||
+      this.piezas === undefined ||
+      Number(this.piezas) < 0
     ) {
-      this.mensajeError =
-        'Ingresa una cantidad mayor a cero.';
+      this.mensajeError = 'Ingresa una cantidad válida de piezas.';
       return;
     }
 
-    if (!this.sucursalMovimiento.trim()) {
-      this.mensajeError =
-        'Selecciona o ingresa una sucursal.';
-      return;
-    }
-
-    if (!this.motivoMovimiento.trim()) {
-      this.mensajeError =
-        'El motivo del movimiento es obligatorio.';
-      return;
-    }
-
-    const cantidad =
-      Number(this.cantidadMovimiento);
-
-    const existenciaAnterior =
-      producto.existencia;
-
-    let existenciaNueva =
-      existenciaAnterior;
-
-    if (
-      this.tipoNuevoMovimiento ===
-      'entrada'
-    ) {
-      existenciaNueva =
-        existenciaAnterior + cantidad;
-    }
-
-    if (
-      this.tipoNuevoMovimiento ===
-      'salida'
-    ) {
-      if (cantidad > existenciaAnterior) {
-        this.mensajeError =
-          'La cantidad de salida supera la existencia disponible.';
-        return;
-      }
-
-      existenciaNueva =
-        existenciaAnterior - cantidad;
-    }
-
-    if (
-      this.tipoNuevoMovimiento ===
-      'ajuste'
-    ) {
-      existenciaNueva = cantidad;
-    }
+    const nuevoInventario = {
+      tiendaId: this.tiendaId,
+      productoId: this.productoId,
+      piezas: Number(this.piezas)
+    };
 
     this.guardando = true;
 
-    try {
-      const ahora = new Date();
+    this.http.post<InventarioBackend>(this.inventarioApi, nuevoInventario)
+      .subscribe({
+        next: () => {
+          this.mensajeExito = 'Inventario registrado correctamente.';
+          this.modalMovimientoAbierto = false;
+          this.cargarInventario();
+        },
+        error: error => {
+          console.error(error);
 
-      const movimiento:
-        MovimientoInventario = {
-          id:
-            this.movimientos.length + 1,
+          this.mensajeError =
+            error.error?.message ||
+            'No fue posible registrar el inventario.';
 
-          folio:
-            `MOV-${String(
-              this.movimientos.length + 9
-            ).padStart(4, '0')}`,
-
-          fecha: ahora,
-
-          hora:
-            ahora.toLocaleTimeString(
-              'es-MX',
-              {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-              }
-            ),
-
-          tipo:
-            this.tipoNuevoMovimiento,
-
-          producto:
-            producto.nombre,
-
-          codigoProducto:
-            producto.codigo,
-
-          sucursal:
-            this.sucursalMovimiento.trim(),
-
-          cantidad:
-            this.tipoNuevoMovimiento ===
-              'ajuste'
-              ? Math.abs(
-                  existenciaNueva -
-                  existenciaAnterior
-                )
-              : cantidad,
-
-          existenciaAnterior,
-
-          existenciaNueva,
-
-          responsable:
-            this.usuario.nombre,
-
-          motivo:
-            this.motivoMovimiento.trim()
-        };
-
-      producto.existencia =
-        existenciaNueva;
-
-      this.movimientos = [
-        movimiento,
-        ...this.movimientos
-      ];
-
-      this.aplicarFiltros();
-
-      this.mensajeExito =
-        'El movimiento se registró correctamente.';
-
-      this.modalMovimientoAbierto = false;
-    } finally {
-      this.guardando = false;
-    }
+          this.guardando = false;
+        },
+        complete: () => {
+          this.guardando = false;
+        }
+      });
   }
 
-  obtenerTextoTipo(
-    tipo: TipoMovimiento
-  ): string {
-    const textos:
-      Record<TipoMovimiento, string> = {
-        entrada: 'Entrada',
-        salida: 'Salida',
-        ajuste: 'Ajuste'
-      };
+  obtenerIconoCategoria(categoria: string): string {
+    const texto = this.normalizarTexto(categoria);
 
-    return textos[tipo];
+    if (texto.includes('bebida') || texto.includes('refresco') || texto.includes('agua')) return '🥤';
+    if (texto.includes('botana') || texto.includes('snack') || texto.includes('papas')) return '🍟';
+    if (texto.includes('dulce') || texto.includes('chocolate')) return '🍫';
+    if (texto.includes('pan') || texto.includes('galleta')) return '🍪';
+    if (texto.includes('leche') || texto.includes('lacteo')) return '🥛';
+    if (texto.includes('limpieza')) return '🧼';
+
+    return '📦';
   }
 
-  obtenerSignoCantidad(
-    movimiento: MovimientoInventario
-  ): string {
-    if (movimiento.tipo === 'entrada') {
-      return `+${movimiento.cantidad}`;
-    }
+  private mapearInventario(
+    item: InventarioBackend
+  ): InventarioListado | null {
+    const producto = this.productos.find(
+      prod => prod._id === item.productoId
+    );
 
-    if (movimiento.tipo === 'salida') {
-      return `-${movimiento.cantidad}`;
-    }
+    const tienda = this.tiendas.find(
+      sucursal => sucursal._id === item.tiendaId
+    );
 
-    return `${movimiento.cantidad}`;
+    if (!producto || !tienda) return null;
+
+    return {
+      _id: item._id,
+      tiendaId: item.tiendaId,
+      productoId: item.productoId,
+      tienda: `${tienda.nombre} - ${tienda.ciudad}`,
+      producto: producto.nombre,
+      categoria: producto.categoria,
+      precio: producto.precio,
+      piezas: item.piezas
+    };
   }
 
-  private limpiarFormularioMovimiento():
-    void {
-    this.productoSeleccionadoId = 0;
-    this.tipoNuevoMovimiento = 'entrada';
-    this.cantidadMovimiento = null;
-    this.motivoMovimiento = '';
-    this.sucursalMovimiento =
-      this.usuario.sucursal;
+  private limpiarFormulario(): void {
+    this.tiendaId = '';
+    this.productoId = '';
+    this.piezas = null;
     this.mensajeError = '';
+    this.mensajeExito = '';
   }
 
-  private obtenerFechaISO(
-    fecha: Date
-  ): string {
-    const anio =
-      fecha.getFullYear();
-
-    const mes =
-      String(
-        fecha.getMonth() + 1
-      ).padStart(2, '0');
-
-    const dia =
-      String(
-        fecha.getDate()
-      ).padStart(2, '0');
-
-    return `${anio}-${mes}-${dia}`;
-  }
-
-  private normalizarTexto(
-    texto: string
-  ): string {
+  private normalizarTexto(texto: string): string {
     return texto
       .trim()
       .toLowerCase()
       .normalize('NFD')
-      .replace(
-        /[\u0300-\u036f]/g,
-        ''
-      );
+      .replace(/[\u0300-\u036f]/g, '');
   }
 }
