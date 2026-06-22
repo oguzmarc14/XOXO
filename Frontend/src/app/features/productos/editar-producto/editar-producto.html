@@ -1,513 +1,242 @@
 <main class="edit-product-page">
-  <section
-    class="page-introduction"
-    *ngIf="productoEncontrado"
-  >
-    <div>
-      <span class="eyebrow">
-        Catálogo de productos
-      </span>
-
-      <h2>
-        Editar producto
-      </h2>
-
-      <p>
-        Actualiza la información, precio, existencias
-        y estado del producto seleccionado.
-      </p>
-    </div>
-
-    <button
-      class="back-button"
-      type="button"
-      (click)="volverAlListado()"
-    >
-      <span aria-hidden="true">
-        ←
-      </span>
-
-      Volver al listado
-    </button>
-  </section>
-
-  <!-- Producto no encontrado -->
-  <section
-    class="not-found-card"
-    *ngIf="!productoEncontrado"
-  >
-    <div class="not-found-icon">
-      ⚠️
-    </div>
-
-    <h2>
-      Producto no disponible
-    </h2>
-
-    <p>
-      {{ mensajeError }}
-    </p>
-
-    <button
-      type="button"
-      (click)="volverAlListado()"
-    >
-      Volver al listado de productos
-    </button>
-  </section>
-
-  <div
-    class="edit-product-layout"
-    *ngIf="productoEncontrado"
-  >
-    <!-- Formulario -->
-    <section class="product-form-card">
-      <div class="section-heading">
-        <div>
-          <h2>
-            Información del producto
-          </h2>
-
-          <p>
-            Modifica únicamente los datos que necesiten
-            actualizarse.
-          </p>
-        </div>
-
-        <span
-          class="changes-label"
-          [class.with-changes]="hayCambios"
-        >
-          {{
-            hayCambios
-              ? 'Cambios pendientes'
-              : 'Sin cambios'
-          }}
+  @if (productoEncontrado) {
+    <section class="page-introduction">
+      <div>
+        <span class="eyebrow">
+          Catálogo de productos
         </span>
+
+        <h2>
+          Editar producto
+        </h2>
+
+        <p>
+          Actualiza la información, precio y categoría
+          del producto seleccionado.
+        </p>
       </div>
 
-      <form
-        class="product-form"
-        (ngSubmit)="guardarCambios()"
+      <button
+        class="back-button"
+        type="button"
+        (click)="volverAlListado()"
       >
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="codigo">
-              Código del producto *
-            </label>
+        <span aria-hidden="true">←</span>
+        Volver al listado
+      </button>
+    </section>
+  }
 
-            <input
-              id="codigo"
-              name="codigo"
-              type="text"
-              maxlength="30"
-              placeholder="XO-PR-0001"
-              [(ngModel)]="codigo"
-              [disabled]="guardando"
-              required
-            />
+  @if (!productoEncontrado) {
+    <section class="not-found-card">
+      <div class="not-found-icon">⚠️</div>
 
-            <small>
-              El código debe ser único dentro del catálogo.
-            </small>
+      <h2>Producto no disponible</h2>
+
+      <p>{{ mensajeError }}</p>
+
+      <button type="button" (click)="volverAlListado()">
+        Volver al listado de productos
+      </button>
+    </section>
+  }
+
+  @if (productoEncontrado) {
+    <div class="edit-product-layout">
+      <!-- Formulario -->
+      <section class="product-form-card">
+        <div class="section-heading">
+          <div>
+            <h2>Información del producto</h2>
+
+            <p>
+              Modifica únicamente los datos que necesiten
+              actualizarse.
+            </p>
           </div>
 
-          <div class="form-group">
-            <label for="nombre">
-              Nombre del producto *
-            </label>
+          <span
+            class="changes-label"
+            [class.with-changes]="hayCambios"
+          >
+            {{ hayCambios ? 'Cambios pendientes' : 'Sin cambios' }}
+          </span>
+        </div>
 
-            <input
-              id="nombre"
-              name="nombre"
-              type="text"
-              maxlength="100"
-              placeholder="Nombre del producto"
-              [(ngModel)]="nombre"
-              [disabled]="guardando"
-              required
-            />
-          </div>
-
-          <div class="form-group full-width">
-            <label>
-              Categoría *
-            </label>
-
-            <div class="category-grid">
-              <button
-                *ngFor="let item of categorias"
-                type="button"
-                class="category-option"
-                [class.active]="
-                  categoria === item.nombre
-                "
-                [disabled]="guardando"
-                (click)="
-                  seleccionarCategoria(item)
-                "
-              >
-                <span class="category-icon">
-                  {{ item.icono }}
-                </span>
-
-                <span>
-                  {{ item.nombre }}
-                </span>
-
-                <span
-                  class="category-check"
-                  *ngIf="
-                    categoria === item.nombre
-                  "
-                >
-                  ✓
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <div class="form-group full-width">
-            <label for="descripcion">
-              Descripción *
-            </label>
-
-            <textarea
-              id="descripcion"
-              name="descripcion"
-              rows="4"
-              maxlength="300"
-              placeholder="Descripción del producto"
-              [(ngModel)]="descripcion"
-              [disabled]="guardando"
-              required
-            ></textarea>
-
-            <small class="character-count">
-              {{ descripcion.length }}/300 caracteres
-            </small>
-          </div>
-
-          <div class="form-group">
-            <label for="precio">
-              Precio de venta *
-            </label>
-
-            <div class="money-control">
-              <span>$</span>
+        <form
+          class="product-form"
+          (ngSubmit)="guardarCambios()"
+        >
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="nombre">
+                Nombre del producto *
+              </label>
 
               <input
-                id="precio"
-                name="precio"
-                type="number"
-                min="0.01"
-                step="0.01"
-                placeholder="0.00"
-                [(ngModel)]="precio"
+                id="nombre"
+                name="nombre"
+                type="text"
+                maxlength="100"
+                placeholder="Nombre del producto"
+                [(ngModel)]="nombre"
                 [disabled]="guardando"
                 required
               />
             </div>
+
+            <div class="form-group full-width">
+              <label>Categoría *</label>
+
+              <div class="category-grid">
+                @for (item of categorias; track item.nombre) {
+                  <button
+                    type="button"
+                    class="category-option"
+                    [class.active]="categoria === item.nombre"
+                    [disabled]="guardando"
+                    (click)="seleccionarCategoria(item)"
+                  >
+                    <span class="category-icon">
+                      {{ item.icono }}
+                    </span>
+
+                    <span>{{ item.nombre }}</span>
+
+                    @if (categoria === item.nombre) {
+                      <span class="category-check">✓</span>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="precio">
+                Precio de venta *
+              </label>
+
+              <div class="money-control">
+                <span>$</span>
+
+                <input
+                  id="precio"
+                  name="precio"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  [(ngModel)]="precio"
+                  [disabled]="guardando"
+                  required
+                />
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="stockInicial">
-              Existencia actual *
-            </label>
+          @if (mensajeError) {
+            <div class="message error">
+              <span>!</span>
+              <p>{{ mensajeError }}</p>
+            </div>
+          }
 
-            <input
-              id="stockInicial"
-              name="stockInicial"
-              type="number"
-              min="0"
-              step="1"
-              placeholder="0"
-              [(ngModel)]="stockInicial"
-              [disabled]="guardando"
-              required
-            />
+          @if (mensajeExito) {
+            <div class="message success">
+              <span>✓</span>
+              <p>{{ mensajeExito }}</p>
+            </div>
+          }
 
-            <small>
-              Unidades actualmente disponibles.
-            </small>
-          </div>
+          <div class="form-actions">
+            <button
+              class="restore-button"
+              type="button"
+              [disabled]="guardando || !hayCambios"
+              (click)="restaurarDatos()"
+            >
+              Restaurar datos
+            </button>
 
-          <div class="form-group">
-            <label for="stockMinimo">
-              Stock mínimo *
-            </label>
-
-            <input
-              id="stockMinimo"
-              name="stockMinimo"
-              type="number"
-              min="0"
-              step="1"
-              placeholder="0"
-              [(ngModel)]="stockMinimo"
-              [disabled]="guardando"
-              required
-            />
-
-            <small>
-              Nivel utilizado para generar alertas.
-            </small>
-          </div>
-
-          <div class="form-group">
-            <label>
-              Estado del producto
-            </label>
-
-            <div class="status-options">
-              <button
-                type="button"
-                class="status-option active-option"
-                [class.selected]="
-                  estado === 'activo'
-                "
-                [disabled]="guardando"
-                (click)="
-                  seleccionarEstado('activo')
-                "
+            <div>
+              <a
+                class="cancel-button"
+                routerLink="/lista-productos"
               >
-                <span class="status-point"></span>
-
-                <div>
-                  <strong>
-                    Activo
-                  </strong>
-
-                  <small>
-                    Disponible para venta
-                  </small>
-                </div>
-              </button>
+                Cancelar
+              </a>
 
               <button
-                type="button"
-                class="status-option inactive-option"
-                [class.selected]="
-                  estado === 'inactivo'
-                "
-                [disabled]="guardando"
-                (click)="
-                  seleccionarEstado('inactivo')
-                "
+                class="save-button"
+                type="submit"
+                [disabled]="guardando || !hayCambios"
               >
-                <span class="status-point"></span>
-
-                <div>
-                  <strong>
-                    Inactivo
-                  </strong>
-
-                  <small>
-                    Oculto en ventas
-                  </small>
-                </div>
+                {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
               </button>
             </div>
           </div>
+        </form>
+      </section>
+
+      <!-- Vista previa -->
+      <aside class="product-preview-card">
+        <div class="preview-heading">
+          <span>Vista previa actualizada</span>
+
+          <small>
+            Revisa el resultado antes de guardar
+          </small>
         </div>
 
-        <div
-          class="message error"
-          *ngIf="mensajeError"
-        >
-          <span>!</span>
-
-          <p>
-            {{ mensajeError }}
-          </p>
-        </div>
-
-        <div
-          class="message success"
-          *ngIf="mensajeExito"
-        >
-          <span>✓</span>
-
-          <p>
-            {{ mensajeExito }}
-          </p>
-        </div>
-
-        <div class="form-actions">
-          <button
-            class="restore-button"
-            type="button"
-            [disabled]="
-              guardando ||
-              !hayCambios
-            "
-            (click)="restaurarDatos()"
-          >
-            Restaurar datos
-          </button>
-
-          <div>
-            <a
-              class="cancel-button"
-              routerLink="/lista-productos"
-            >
-              Cancelar
-            </a>
-
-            <button
-              class="save-button"
-              type="submit"
-              [disabled]="
-                guardando ||
-                !hayCambios
-              "
-            >
-              {{
-                guardando
-                  ? 'Guardando...'
-                  : 'Guardar cambios'
-              }}
-            </button>
-          </div>
-        </div>
-      </form>
-    </section>
-
-    <!-- Vista previa -->
-    <aside class="product-preview-card">
-      <div class="preview-heading">
-        <span>
-          Vista previa actualizada
-        </span>
-
-        <small>
-          Revisa el resultado antes de guardar
-        </small>
-      </div>
-
-      <article
-        class="product-preview"
-        [class.inactive]="
-          estado === 'inactivo'
-        "
-      >
-        <div class="preview-top">
-          <div class="product-icon">
-            {{ icono }}
+        <article class="product-preview">
+          <div class="preview-top">
+            <div class="product-icon">
+              {{ iconoCategoria }}
+            </div>
           </div>
 
-          <span
-            class="product-status"
-            [class.inactive]="
-              estado === 'inactivo'
-            "
-          >
-            {{
-              estado === 'activo'
-                ? 'Activo'
-                : 'Inactivo'
-            }}
-          </span>
-        </div>
+          <h3>{{ nombreVistaPrevia }}</h3>
 
-        <span class="preview-code">
-          {{ codigo || 'XO-PR-0000' }}
-        </span>
-
-        <h3>
-          {{ nombreVistaPrevia }}
-        </h3>
-
-        <span class="preview-category">
-          {{ categoriaVistaPrevia }}
-        </span>
-
-        <p>
-          {{ descripcionVistaPrevia }}
-        </p>
-
-        <div class="preview-price">
-          <span>
-            Precio de venta
+          <span class="preview-category">
+            {{ categoriaVistaPrevia }}
           </span>
 
-          <strong>
-            {{
-              precioVistaPrevia
-                | currency:'MXN':'symbol':'1.2-2'
-            }}
-          </strong>
-        </div>
-
-        <div class="preview-stock">
-          <div>
-            <span>
-              Existencia
-            </span>
+          <div class="preview-price">
+            <span>Precio de venta</span>
 
             <strong>
-              {{ stockVistaPrevia }}
-              unidades
+              {{ precioVistaPrevia | currency:'MXN':'symbol':'1.2-2' }}
             </strong>
           </div>
+        </article>
 
-          <span
-            class="stock-badge"
-            [ngClass]="estadoStock"
-          >
-            {{ textoEstadoStock }}
-          </span>
-        </div>
-      </article>
-
-      <div class="preview-information">
-        <div>
-          <span>
-            Stock mínimo
+        <div
+          class="change-summary"
+          [class.with-changes]="hayCambios"
+        >
+          <span aria-hidden="true">
+            {{ hayCambios ? '✏️' : '✓' }}
           </span>
 
-          <strong>
-            {{ stockMinimoVistaPrevia }}
-          </strong>
+          <div>
+            <strong>
+              {{
+                hayCambios
+                  ? 'Hay cambios pendientes'
+                  : 'Información sin modificar'
+              }}
+            </strong>
+
+            <p>
+              {{
+                hayCambios
+                  ? 'Guarda los cambios para actualizar el producto.'
+                  : 'El formulario coincide con los datos guardados.'
+              }}
+            </p>
+          </div>
         </div>
-
-        <div>
-          <span>
-            Categoría
-          </span>
-
-          <strong>
-            {{ categoriaVistaPrevia }}
-          </strong>
-        </div>
-      </div>
-
-      <div
-        class="change-summary"
-        [class.with-changes]="hayCambios"
-      >
-        <span aria-hidden="true">
-          {{ hayCambios ? '✏️' : '✓' }}
-        </span>
-
-        <div>
-          <strong>
-            {{
-              hayCambios
-                ? 'Hay cambios pendientes'
-                : 'Información sin modificar'
-            }}
-          </strong>
-
-          <p>
-            {{
-              hayCambios
-                ? 'Guarda los cambios para actualizar el producto.'
-                : 'El formulario coincide con los datos guardados.'
-            }}
-          </p>
-        </div>
-      </div>
-    </aside>
-  </div>
+      </aside>
+    </div>
+  }
 </main>

@@ -18,78 +18,6 @@
         </small>
       </div>
     </article>
-
-    <article class="summary-card active">
-      <div class="summary-icon">
-        ✓
-      </div>
-
-      <div>
-        <span>Productos activos</span>
-
-        <strong>
-          {{ productosActivos }}
-        </strong>
-
-        <small>
-          Disponibles para venta
-        </small>
-      </div>
-    </article>
-
-    <article class="summary-card inactive">
-      <div class="summary-icon">
-        ⏸
-      </div>
-
-      <div>
-        <span>Productos inactivos</span>
-
-        <strong>
-          {{ productosInactivos }}
-        </strong>
-
-        <small>
-          Fuera del catálogo
-        </small>
-      </div>
-    </article>
-
-    <article class="summary-card warning">
-      <div class="summary-icon">
-        ⚠️
-      </div>
-
-      <div>
-        <span>Stock bajo</span>
-
-        <strong>
-          {{ productosStockBajo }}
-        </strong>
-
-        <small>
-          Requieren atención
-        </small>
-      </div>
-    </article>
-
-    <article class="summary-card danger">
-      <div class="summary-icon">
-        ✖
-      </div>
-
-      <div>
-        <span>Productos agotados</span>
-
-        <strong>
-          {{ productosAgotados }}
-        </strong>
-
-        <small>
-          Sin existencias
-        </small>
-      </div>
-    </article>
   </section>
 
   <!-- Filtros -->
@@ -111,10 +39,7 @@
         type="button"
         (click)="crearProducto()"
       >
-        <span aria-hidden="true">
-          +
-        </span>
-
+        <span aria-hidden="true">+</span>
         Crear producto
       </button>
     </div>
@@ -126,14 +51,12 @@
         </label>
 
         <div class="search-control">
-          <span aria-hidden="true">
-            🔍
-          </span>
+          <span aria-hidden="true">🔍</span>
 
           <input
             id="busqueda"
             type="search"
-            placeholder="Código, nombre, categoría o descripción"
+            placeholder="Nombre o categoría"
             [(ngModel)]="busqueda"
             (ngModelChange)="aplicarFiltros()"
           />
@@ -150,68 +73,13 @@
           [(ngModel)]="categoriaSeleccionada"
           (ngModelChange)="aplicarFiltros()"
         >
-          <option value="todas">
-            Todas
-          </option>
+          <option value="todas">Todas</option>
 
-          <option
-            *ngFor="let categoria of categorias"
-            [value]="categoria"
-          >
-            {{ categoria }}
-          </option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="estado">
-          Estado
-        </label>
-
-        <select
-          id="estado"
-          [(ngModel)]="estadoSeleccionado"
-          (ngModelChange)="aplicarFiltros()"
-        >
-          <option value="todos">
-            Todos
-          </option>
-
-          <option value="activo">
-            Activos
-          </option>
-
-          <option value="inactivo">
-            Inactivos
-          </option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="stock">
-          Existencias
-        </label>
-
-        <select
-          id="stock"
-          [(ngModel)]="stockSeleccionado"
-          (ngModelChange)="aplicarFiltros()"
-        >
-          <option value="todos">
-            Todos
-          </option>
-
-          <option value="disponible">
-            Disponible
-          </option>
-
-          <option value="bajo">
-            Stock bajo
-          </option>
-
-          <option value="agotado">
-            Agotado
-          </option>
+          @for (categoria of categorias; track categoria) {
+            <option [value]="categoria">
+              {{ categoria }}
+            </option>
+          }
         </select>
       </div>
 
@@ -225,293 +93,173 @@
     </div>
   </section>
 
-  <div
-    class="message success"
-    *ngIf="mensajeExito"
-  >
-    <span>✓</span>
+  @if (mensajeExito) {
+    <div class="message success">
+      <span>✓</span>
+      <p>{{ mensajeExito }}</p>
+    </div>
+  }
 
-    <p>
-      {{ mensajeExito }}
-    </p>
-  </div>
+  @if (mensajeError) {
+    <div class="message error">
+      <span>!</span>
+      <p>{{ mensajeError }}</p>
+    </div>
+  }
+
+  @if (cargando) {
+    <div class="empty-state">
+      <div class="empty-icon">⏳</div>
+      <h3>Cargando productos...</h3>
+    </div>
+  }
 
   <!-- Listado -->
-  <section class="products-section">
-    <div class="table-heading">
-      <div>
-        <h2>
-          Productos registrados
-        </h2>
-
-        <p>
-          {{ productosFiltrados.length }}
-          producto(s) encontrado(s)
-        </p>
-      </div>
-
-      <div class="catalog-value">
-        <span>
-          Valor estimado
-        </span>
-
-        <strong>
-          {{
-            valorCatalogo
-              | currency:'MXN':'symbol':'1.2-2'
-          }}
-        </strong>
-      </div>
-    </div>
-
-    <div
-      class="products-grid"
-      *ngIf="
-        productosFiltrados.length > 0;
-        else sinProductos
-      "
-    >
-      <article
-        class="product-card"
-        *ngFor="
-          let producto of productosFiltrados
-        "
-        [class.product-inactive]="
-          producto.estado === 'inactivo'
-        "
-      >
-        <div class="product-card-top">
-          <div class="product-icon">
-            {{ producto.icono }}
-          </div>
-
-          <div class="product-badges">
-            <span
-              class="status-badge"
-              [class.active]="
-                producto.estado === 'activo'
-              "
-              [class.inactive]="
-                producto.estado === 'inactivo'
-              "
-            >
-              {{
-                producto.estado === 'activo'
-                  ? 'Activo'
-                  : 'Inactivo'
-              }}
-            </span>
-
-            <span
-              class="stock-badge"
-              [ngClass]="
-                obtenerEstadoStock(producto)
-              "
-            >
-              {{
-                obtenerTextoStock(producto)
-              }}
-            </span>
-          </div>
-        </div>
-
-        <div class="product-information">
-          <span class="product-code">
-            {{ producto.codigo }}
-          </span>
-
-          <h3>
-            {{ producto.nombre }}
-          </h3>
-
-          <span class="product-category">
-            {{ producto.categoria }}
-          </span>
+  @if (!cargando) {
+    <section class="products-section">
+      <div class="table-heading">
+        <div>
+          <h2>Productos registrados</h2>
 
           <p>
-            {{ producto.descripcion }}
+            {{ productosFiltrados.length }}
+            producto(s) encontrado(s)
           </p>
         </div>
-
-        <div class="product-data">
-          <div>
-            <span>Precio</span>
-
-            <strong>
-              {{
-                producto.precio
-                  | currency:'MXN':'symbol':'1.2-2'
-              }}
-            </strong>
-          </div>
-
-          <div>
-            <span>Existencia</span>
-
-            <strong>
-              {{ producto.stockInicial }}
-            </strong>
-          </div>
-
-          <div>
-            <span>Mínimo</span>
-
-            <strong>
-              {{ producto.stockMinimo }}
-            </strong>
-          </div>
-        </div>
-
-        <div class="product-created">
-          <span>
-            Registrado:
-          </span>
-
-          <strong>
-            {{
-              producto.fechaCreacion
-                | date:'dd/MM/yyyy'
-            }}
-          </strong>
-        </div>
-
-        <div class="product-actions">
-          <button
-            class="edit-button"
-            type="button"
-            (click)="editarProducto(producto)"
-          >
-            ✏️ Editar
-          </button>
-
-          <button
-            class="status-button"
-            type="button"
-            [class.activate]="
-              producto.estado === 'inactivo'
-            "
-            (click)="cambiarEstado(producto)"
-          >
-            {{
-              producto.estado === 'activo'
-                ? '⏸ Desactivar'
-                : '✓ Activar'
-            }}
-          </button>
-
-          <button
-            class="delete-button"
-            type="button"
-            aria-label="Eliminar producto"
-            (click)="abrirEliminar(producto)"
-          >
-            🗑️
-          </button>
-        </div>
-      </article>
-    </div>
-
-    <ng-template #sinProductos>
-      <div class="empty-state">
-        <div class="empty-icon">
-          🔍
-        </div>
-
-        <h3>
-          No se encontraron productos
-        </h3>
-
-        <p>
-          Modifica los filtros o registra un producto nuevo.
-        </p>
-
-        <div class="empty-actions">
-          <button
-            class="empty-secondary"
-            type="button"
-            (click)="limpiarFiltros()"
-          >
-            Limpiar filtros
-          </button>
-
-          <button
-            class="empty-primary"
-            type="button"
-            (click)="crearProducto()"
-          >
-            Crear producto
-          </button>
-        </div>
       </div>
-    </ng-template>
-  </section>
+
+      @if (productosFiltrados.length > 0) {
+        <div class="products-grid">
+          @for (producto of productosFiltrados; track producto._id) {
+            <article class="product-card">
+              <div class="product-card-top">
+                <div class="product-icon">📦</div>
+
+                <div class="product-badges">
+                  <span class="status-badge active">
+                    {{ producto.categoria }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="product-information">
+                <h3>{{ producto.nombre }}</h3>
+                <span class="product-category">{{ producto.categoria }}</span>
+              </div>
+
+              <div class="product-data">
+                <div>
+                  <span>Precio</span>
+
+                  <strong>
+                    {{ producto.precio | currency:'MXN':'symbol':'1.2-2' }}
+                  </strong>
+                </div>
+              </div>
+
+              <div class="product-actions">
+                <button
+                  class="edit-button"
+                  type="button"
+                  (click)="editarProducto(producto)"
+                >
+                  ✏️ Editar
+                </button>
+
+                <button
+                  class="delete-button"
+                  type="button"
+                  aria-label="Eliminar producto"
+                  (click)="abrirEliminar(producto)"
+                >
+                  🗑️
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+
+          <h3>No se encontraron productos</h3>
+
+          <p>
+            Modifica los filtros o registra un producto nuevo.
+          </p>
+
+          <div class="empty-actions">
+            <button
+              class="empty-secondary"
+              type="button"
+              (click)="limpiarFiltros()"
+            >
+              Limpiar filtros
+            </button>
+
+            <button
+              class="empty-primary"
+              type="button"
+              (click)="crearProducto()"
+            >
+              Crear producto
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+  }
 </main>
 
 <!-- Confirmación de eliminación -->
-<div
-  class="modal-backdrop"
-  *ngIf="
-    modalEliminarAbierto &&
-    productoSeleccionado
-  "
-  (click)="cerrarEliminar()"
->
-  <section
-    class="delete-modal"
-    (click)="$event.stopPropagation()"
+@if (modalEliminarAbierto && productoSeleccionado) {
+  <div
+    class="modal-backdrop"
+    (click)="cerrarEliminar()"
   >
-    <div class="delete-icon">
-      🗑️
-    </div>
+    <section
+      class="delete-modal"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="delete-icon">🗑️</div>
 
-    <h2>
-      Eliminar producto
-    </h2>
+      <h2>Eliminar producto</h2>
 
-    <p>
-      ¿Seguro que deseas eliminar
-      <strong>
-        {{ productoSeleccionado.nombre }}
-      </strong>?
-    </p>
+      <p>
+        ¿Seguro que deseas eliminar
+        <strong>{{ productoSeleccionado.nombre }}</strong>?
+      </p>
 
-    <div class="product-to-delete">
-      <span>
-        {{ productoSeleccionado.icono }}
-      </span>
+      <div class="product-to-delete">
+        <span>📦</span>
 
-      <div>
-        <strong>
-          {{ productoSeleccionado.codigo }}
-        </strong>
-
-        <small>
-          {{ productoSeleccionado.categoria }}
-        </small>
+        <div>
+          <strong>{{ productoSeleccionado.nombre }}</strong>
+          <small>{{ productoSeleccionado.categoria }}</small>
+        </div>
       </div>
-    </div>
 
-    <div class="delete-warning">
-      Esta acción eliminará el producto del listado
-      almacenado en este navegador.
-    </div>
+      <div class="delete-warning">
+        Esta acción eliminará permanentemente el producto del catálogo.
+      </div>
 
-    <div class="modal-actions">
-      <button
-        class="modal-cancel"
-        type="button"
-        (click)="cerrarEliminar()"
-      >
-        Cancelar
-      </button>
+      <div class="modal-actions">
+        <button
+          class="modal-cancel"
+          type="button"
+          (click)="cerrarEliminar()"
+        >
+          Cancelar
+        </button>
 
-      <button
-        class="modal-delete"
-        type="button"
-        (click)="confirmarEliminar()"
-      >
-        Eliminar producto
-      </button>
-    </div>
-  </section>
-</div>
+        <button
+          class="modal-delete"
+          type="button"
+          (click)="confirmarEliminar()"
+        >
+          Eliminar producto
+        </button>
+      </div>
+    </section>
+  </div>
+}
