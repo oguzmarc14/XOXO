@@ -138,7 +138,7 @@ export class Login {
 
           sexo,
 
-          correo:
+          user:
             data.usuario.usuario,
 
           rol,

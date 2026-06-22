@@ -11,7 +11,7 @@ export interface Usuario {
   id: number;
   nombre: string;
   sexo: SexoUsuario;
-  correo: string;
+  user: string;
   rol: UserRole;
   cargo: string;
   sucursal: string;

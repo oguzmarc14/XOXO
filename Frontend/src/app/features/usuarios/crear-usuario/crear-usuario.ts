@@ -7,7 +7,10 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
-type UserRole = 'cajero' | 'gerente' | 'admin';
+type UserRole =
+  | 'cajero'
+  | 'gerente'
+  | 'admin';
 
 interface OpcionRol {
   valor: UserRole;
@@ -55,26 +58,32 @@ export class CrearUsuario implements OnInit {
 
   tiendas: TiendaBackend[] = [];
 
-  private readonly usuariosApi = 'http://localhost:3000/usuarios';
-  private readonly tiendasApi = 'http://localhost:3000/tiendas';
+  private readonly usuariosApi =
+    'http://localhost:3000/usuarios';
+
+  private readonly tiendasApi =
+    'http://localhost:3000/tiendas';
 
   readonly roles: OpcionRol[] = [
     {
       valor: 'cajero',
       nombre: 'Cajero',
-      descripcion: 'Registra ventas y administra su turno.',
+      descripcion:
+        'Registra ventas y administra su turno.',
       icono: '🧾'
     },
     {
       valor: 'gerente',
       nombre: 'Gerente',
-      descripcion: 'Supervisa la sucursal y sus operaciones.',
+      descripcion:
+        'Supervisa la sucursal y sus operaciones.',
       icono: '🏪'
     },
     {
       valor: 'admin',
       nombre: 'Administrador',
-      descripcion: 'Administra usuarios, tiendas y catálogo.',
+      descripcion:
+        'Administra usuarios, tiendas y catálogo.',
       icono: '🛡️'
     }
   ];
@@ -113,54 +122,93 @@ export class CrearUsuario implements OnInit {
   }
 
   get nombreVistaPrevia(): string {
-    return this.nombre.trim() || 'Nombre del usuario';
+    return (
+      this.nombre.trim() ||
+      'Nombre del usuario'
+    );
   }
 
   get usuarioVistaPrevia(): string {
-    return this.usuario.trim() || 'usuario';
+    return (
+      this.usuario.trim() ||
+      'usuario'
+    );
   }
 
   get tiendaVistaPrevia(): string {
-    const tienda = this.tiendas.find(
-      item => item._id === this.tiendaId
-    );
+    if (this.rol === 'admin') {
+      return 'No requiere tienda';
+    }
+
+    const tienda =
+      this.tiendas.find(
+        item =>
+          item._id === this.tiendaId
+      );
 
     if (!tienda) {
       return 'Tienda no seleccionada';
     }
 
-    return `${tienda.nombre} - ${tienda.ciudad}`;
+    return (
+      `${tienda.nombre} - ` +
+      `${tienda.ciudad}`
+    );
   }
 
   get rolTexto(): string {
     return this.cargo;
   }
 
-  seleccionarRol(rolSeleccionado: UserRole): void {
+  seleccionarRol(
+    rolSeleccionado: UserRole
+  ): void {
     this.rol = rolSeleccionado;
+
+    /*
+      Si cambia a administrador,
+      se elimina cualquier tienda
+      seleccionada anteriormente.
+    */
+    if (this.rol === 'admin') {
+      this.tiendaId = '';
+    }
+
     this.limpiarMensajes();
   }
 
   alternarContrasena(): void {
-    this.mostrarContrasena = !this.mostrarContrasena;
+    this.mostrarContrasena =
+      !this.mostrarContrasena;
   }
 
   alternarConfirmacion(): void {
-    this.mostrarConfirmacion = !this.mostrarConfirmacion;
+    this.mostrarConfirmacion =
+      !this.mostrarConfirmacion;
   }
 
   cargarTiendas(): void {
     this.cargandoTiendas = true;
 
-    this.http.get<TiendaBackend[]>(this.tiendasApi)
+    this.http
+      .get<TiendaBackend[]>(
+        this.tiendasApi
+      )
       .subscribe({
         next: tiendas => {
           this.tiendas = tiendas;
           this.cargandoTiendas = false;
         },
+
         error: error => {
-          console.error('Error al cargar tiendas:', error);
-          this.mensajeError = 'No fue posible cargar las tiendas.';
+          console.error(
+            'Error al cargar tiendas:',
+            error
+          );
+
+          this.mensajeError =
+            'No fue posible cargar las tiendas.';
+
           this.cargandoTiendas = false;
         }
       });
@@ -170,71 +218,138 @@ export class CrearUsuario implements OnInit {
     this.limpiarMensajes();
 
     if (!this.nombre.trim()) {
-      this.mensajeError = 'El nombre completo es obligatorio.';
+      this.mensajeError =
+        'El nombre completo es obligatorio.';
+
       return;
     }
 
-    if (this.nombre.trim().length < 3) {
-      this.mensajeError = 'El nombre debe contener al menos 3 caracteres.';
+    if (
+      this.nombre.trim().length < 3
+    ) {
+      this.mensajeError =
+        'El nombre debe contener al menos 3 caracteres.';
+
       return;
     }
 
     if (!this.usuario.trim()) {
-      this.mensajeError = 'El usuario es obligatorio.';
+      this.mensajeError =
+        'El usuario es obligatorio.';
+
       return;
     }
 
-    if (this.usuario.trim().length < 3) {
-      this.mensajeError = 'El usuario debe contener al menos 3 caracteres.';
+    if (
+      this.usuario.trim().length < 3
+    ) {
+      this.mensajeError =
+        'El usuario debe contener al menos 3 caracteres.';
+
       return;
     }
 
-    if (!this.tiendaId) {
-      this.mensajeError = 'Selecciona la tienda asignada.';
+    /*
+      La tienda solo es obligatoria
+      para gerente y cajero.
+    */
+    if (
+      this.rol !== 'admin' &&
+      !this.tiendaId
+    ) {
+      this.mensajeError =
+        'Selecciona la tienda asignada.';
+
       return;
     }
 
     if (!this.contrasena) {
-      this.mensajeError = 'La contraseña es obligatoria.';
+      this.mensajeError =
+        'La contraseña es obligatoria.';
+
       return;
     }
 
-    if (this.contrasena.length < 4) {
-      this.mensajeError = 'La contraseña debe tener al menos 4 caracteres.';
+    if (
+      this.contrasena.length < 4
+    ) {
+      this.mensajeError =
+        'La contraseña debe tener al menos 4 caracteres.';
+
       return;
     }
 
-    if (this.contrasena !== this.confirmarContrasena) {
-      this.mensajeError = 'Las contraseñas no coinciden.';
+    if (
+      this.contrasena !==
+      this.confirmarContrasena
+    ) {
+      this.mensajeError =
+        'Las contraseñas no coinciden.';
+
       return;
     }
 
     this.guardando = true;
 
+    /*
+      Para administrador no se agrega
+      tiendaId al objeto enviado.
+    */
     const usuarioNuevo = {
-      nombre: this.nombre.trim(),
-      usuario: this.usuario.trim().toLowerCase(),
-      password: this.contrasena,
-      rol: this.rol.toUpperCase(),
-      tiendaId: this.tiendaId
+      nombre:
+        this.nombre.trim(),
+
+      usuario:
+        this.usuario
+          .trim()
+          .toLowerCase(),
+
+      password:
+        this.contrasena,
+
+      rol:
+        this.rol.toUpperCase(),
+
+      ...(
+        this.rol !== 'admin'
+          ? {
+              tiendaId:
+                this.tiendaId
+            }
+          : {}
+      )
     };
 
-    this.http.post(this.usuariosApi, usuarioNuevo)
+    this.http
+      .post(
+        this.usuariosApi,
+        usuarioNuevo
+      )
       .subscribe({
         next: () => {
-          this.mensajeExito = 'El usuario se registró correctamente.';
+          this.mensajeExito =
+            'El usuario se registró correctamente.';
 
           setTimeout(() => {
-            this.router.navigate(['/lista-usuarios']);
+            this.router.navigate([
+              '/lista-usuarios'
+            ]);
           }, 900);
         },
+
         error: error => {
-          console.error('Error al crear usuario:', error);
+          console.error(
+            'Error al crear usuario:',
+            error
+          );
 
           this.mensajeError =
             error.error?.message ||
             'No fue posible registrar el usuario.';
+
+          this.guardando = false;
         },
+
         complete: () => {
           this.guardando = false;
         }
@@ -250,15 +365,22 @@ export class CrearUsuario implements OnInit {
     this.confirmarContrasena = '';
     this.mostrarContrasena = false;
     this.mostrarConfirmacion = false;
+
     this.limpiarMensajes();
   }
 
   volverAlListado(): void {
-    this.router.navigate(['/lista-usuarios']);
+    this.router.navigate([
+      '/lista-usuarios'
+    ]);
   }
 
-  manejarErrorImagen(event: Event): void {
-    const imagen = event.target as HTMLImageElement;
+  manejarErrorImagen(
+    event: Event
+  ): void {
+    const imagen =
+      event.target as HTMLImageElement;
+
     imagen.src = '/XoXO.png';
   }
 
