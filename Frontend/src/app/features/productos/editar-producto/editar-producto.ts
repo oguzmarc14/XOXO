@@ -137,11 +137,6 @@ export class EditarProducto implements OnInit {
       return;
     }
 
-    if (this.stockMinimo === null || Number(this.stockMinimo) < 0) {
-      this.mensajeError = 'El stock mínimo no puede ser negativo.';
-      return;
-    }
-
     if (!this.hayCambios) {
       this.mensajeError = 'No se detectaron cambios para guardar.';
       return;
@@ -154,7 +149,8 @@ export class EditarProducto implements OnInit {
       nombre: this.nombre.trim(),
       categoria: this.categoria,
       precio: Number(this.precio),
-      stockMinimo: Number(this.stockMinimo)
+      stockMinimo: Number(this.stockMinimo),
+      tiendaId: this.productoOriginal.tiendaId
     }).subscribe({
       next: () => {
         this.mensajeExito = 'Los cambios del producto se guardaron correctamente.';

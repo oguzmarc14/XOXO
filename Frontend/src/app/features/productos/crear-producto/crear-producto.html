@@ -110,27 +110,30 @@
 
           @if (esAdmin) {
             <div class="form-group full-width">
-              <label for="tiendaSeleccionada">
-                Tienda *
-              </label>
+              <label>Tienda *</label>
 
-              <select
-                id="tiendaSeleccionada"
-                name="tiendaSeleccionada"
-                [(ngModel)]="tiendaSeleccionada"
-                [disabled]="guardando"
-                required
-              >
-                <option value="" disabled>
-                  — Selecciona una tienda —
-                </option>
-
+              <div class="tienda-grid">
                 @for (tienda of tiendas; track tienda._id) {
-                  <option [value]="tienda._id">
-                    {{ tienda.nombre }} — {{ tienda.ciudad }}
-                  </option>
+                  <button
+                    type="button"
+                    class="tienda-option"
+                    [class.active]="tiendaSeleccionada === tienda._id"
+                    [disabled]="guardando"
+                    (click)="tiendaSeleccionada = tienda._id"
+                  >
+                    <span class="tienda-icon">🏪</span>
+
+                    <div class="tienda-info">
+                      <strong>{{ tienda.nombre }}</strong>
+                      <span>{{ tienda.ciudad }}</span>
+                    </div>
+
+                    @if (tiendaSeleccionada === tienda._id) {
+                      <span class="tienda-check">✓</span>
+                    }
+                  </button>
                 }
-              </select>
+              </div>
 
               <small>
                 El producto quedará asociado a esta sucursal.
