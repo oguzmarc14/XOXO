@@ -1,24 +1,15 @@
 <main class="turno-content">
-  <!-- Formulario de cierre -->
-  <section
-    class="turno-card"
-    *ngIf="turnoActual.activo; else turnoInactivo"
-  >
+  <section class="turno-card">
     <div class="card-heading">
-      <div class="heading-icon">
-        🔒
-      </div>
+      <div class="heading-icon">🔒</div>
 
       <div>
-        <span class="eyebrow">
-          Fin de operaciones
-        </span>
+        <span class="eyebrow">Fin de operaciones</span>
 
         <h1>Cerrar turno</h1>
 
         <p>
-          Verifica la información e ingresa el efectivo
-          disponible antes de finalizar el turno.
+          Selecciona una tienda, el turno abierto y registra el efectivo final.
         </p>
       </div>
     </div>
@@ -27,20 +18,81 @@
       class="turno-form"
       (ngSubmit)="cerrarTurno()"
     >
-      <div class="info-grid">
+      <div class="form-group">
+        <label for="tiendaId">
+          Tienda *
+        </label>
+
+        <select
+          id="tiendaId"
+          name="tiendaId"
+          [(ngModel)]="tiendaId"
+          [disabled]="enviando"
+          (ngModelChange)="cargarTurnosAbiertos()"
+          required
+        >
+          <option value="">
+            Selecciona una tienda
+          </option>
+
+          <option
+            *ngFor="let tienda of tiendas"
+            [value]="tienda._id"
+          >
+            {{ tienda.nombre }} - {{ tienda.ciudad }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="turnoId">
+          Turno abierto *
+        </label>
+
+        <select
+          id="turnoId"
+          name="turnoId"
+          [(ngModel)]="turnoId"
+          [disabled]="enviando || cargandoTurnos || turnosAbiertos.length === 0"
+          (ngModelChange)="seleccionarTurno()"
+          required
+        >
+          <option value="">
+            {{
+              cargandoTurnos
+                ? 'Cargando turnos...'
+                : 'Selecciona un turno'
+            }}
+          </option>
+
+          <option
+            *ngFor="let turno of turnosAbiertos"
+            [value]="turno._id"
+          >
+            Caja {{ turno.numeroCaja }} -
+            {{ turno.usuarioId.nombre }} -
+            ${{ turno.montoInicial | number:'1.2-2' }}
+          </option>
+        </select>
+      </div>
+
+      <div
+        class="info-grid"
+        *ngIf="turnoSeleccionado"
+      >
         <div class="info-item">
           <span>Responsable</span>
 
           <strong>
-            {{ turnoActual.usuario }}
+            {{ turnoSeleccionado.usuarioId.nombre }}
           </strong>
         </div>
 
         <div class="info-item">
-          <span>Sucursal</span>
+          <span>Caja</span>
 
           <strong>
-            {{ turnoActual.sucursal }}
+            {{ turnoSeleccionado.numeroCaja }}
           </strong>
         </div>
 
@@ -49,7 +101,7 @@
 
           <strong>
             {{
-              turnoActual.fechaApertura
+              turnoSeleccionado.fechaApertura
                 | date:'dd/MM/yyyy HH:mm'
             }}
           </strong>
@@ -60,7 +112,7 @@
 
           <strong>
             ${{
-              turnoActual.montoInicial
+              turnoSeleccionado.montoInicial
                 | number:'1.2-2'
             }}
           </strong>
@@ -69,7 +121,7 @@
 
       <div class="form-group">
         <label for="montoFinal">
-          Efectivo final en caja
+          Efectivo final en caja *
         </label>
 
         <div class="money-input">
@@ -102,8 +154,7 @@
         />
 
         <span>
-          Confirmo que revisé el efectivo y la información
-          correspondiente al turno.
+          Confirmo que revisé el efectivo y la información correspondiente al turno.
         </span>
       </label>
 
@@ -112,6 +163,13 @@
         *ngIf="mensajeError"
       >
         {{ mensajeError }}
+      </p>
+
+      <p
+        class="success-message"
+        *ngIf="mensajeExito"
+      >
+        {{ mensajeExito }}
       </p>
 
       <div class="form-actions">
@@ -136,37 +194,4 @@
       </div>
     </form>
   </section>
-
-  <!-- Sin turno activo -->
-  <ng-template #turnoInactivo>
-    <section class="turno-card status-card">
-      <div class="status-icon">
-        !
-      </div>
-
-      <h1>
-        No hay un turno activo
-      </h1>
-
-      <p>
-        Debes abrir un turno antes de poder realizar un cierre.
-      </p>
-
-      <div class="form-actions centered">
-        <a
-          class="secondary-button"
-          [routerLink]="dashboardRuta"
-        >
-          Volver al dashboard
-        </a>
-
-        <a
-          class="primary-button"
-          routerLink="/abrir-turno"
-        >
-          Abrir turno
-        </a>
-      </div>
-    </section>
-  </ng-template>
 </main>

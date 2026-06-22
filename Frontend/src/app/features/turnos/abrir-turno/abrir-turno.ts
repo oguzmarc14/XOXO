@@ -1,14 +1,29 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-
-import { Sidebar } from '../../../shared/components/sidebar/sidebar';
-import { Topbar } from '../../../shared/components/topbar/topbar';
 import {
-  TurnoActual,
-  TurnoService
-} from '../../../core/services/turno';
+  Component,
+  OnInit
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  Router,
+  RouterLink
+} from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+
+interface UsuarioBackend {
+  _id: string;
+  nombre: string;
+  usuario: string;
+  rol: string;
+}
+
+interface TiendaBackend {
+  _id: string;
+  nombre: string;
+  direccion: string;
+  ciudad: string;
+  telefono: string;
+}
 
 @Component({
   selector: 'app-abrir-turno',
@@ -16,23 +31,38 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
+    RouterLink
   ],
   templateUrl: './abrir-turno.html',
   styleUrl: './abrir-turno.css'
 })
-export class AbrirTurno {
+export class AbrirTurno implements OnInit {
+  usuarioId = '';
+  tiendaId = '';
+  numeroCaja: number | null = null;
   montoInicial: number | null = null;
+
+  usuarios: UsuarioBackend[] = [];
+  tiendas: TiendaBackend[] = [];
+
   mensajeError = '';
-  turnoActual: TurnoActual;
+  mensajeExito = '';
+
   enviando = false;
   fechaActual = new Date();
 
+  private readonly usuariosApi = 'http://localhost:3000/usuarios';
+  private readonly tiendasApi = 'http://localhost:3000/tiendas';
+  private readonly turnosApi = 'http://localhost:3000/turnos';
+
   constructor(
-    private turnoService: TurnoService,
-    private router: Router
-  ) {
-    this.turnoActual = this.turnoService.obtenerTurno();
+    private router: Router,
+    private http: HttpClient
+  ) {}
+
+  ngOnInit(): void {
+    this.cargarUsuarios();
+    this.cargarTiendas();
   }
 
   get rolActual(): string {
@@ -51,14 +81,53 @@ export class AbrirTurno {
     return '/dashboard-cajero';
   }
 
-  get subtitulo(): string {
-    return this.turnoActual.activo
-      ? `Turno activo · ${this.turnoActual.sucursal}`
-      : `Turno inactivo · ${this.turnoActual.sucursal}`;
+  cargarUsuarios(): void {
+    this.http.get<UsuarioBackend[]>(this.usuariosApi)
+      .subscribe({
+        next: usuarios => {
+          this.usuarios = usuarios;
+        },
+        error: error => {
+          console.error('Error al cargar usuarios:', error);
+          this.mensajeError = 'No fue posible cargar los usuarios.';
+        }
+      });
+  }
+
+  cargarTiendas(): void {
+    this.http.get<TiendaBackend[]>(this.tiendasApi)
+      .subscribe({
+        next: tiendas => {
+          this.tiendas = tiendas;
+        },
+        error: error => {
+          console.error('Error al cargar tiendas:', error);
+          this.mensajeError = 'No fue posible cargar las tiendas.';
+        }
+      });
   }
 
   abrirTurno(): void {
-    this.mensajeError = '';
+    this.limpiarMensajes();
+
+    if (!this.usuarioId) {
+      this.mensajeError = 'Selecciona un usuario.';
+      return;
+    }
+
+    if (!this.tiendaId) {
+      this.mensajeError = 'Selecciona una tienda.';
+      return;
+    }
+
+    if (
+      this.numeroCaja === null ||
+      this.numeroCaja === undefined ||
+      Number(this.numeroCaja) <= 0
+    ) {
+      this.mensajeError = 'Ingresa un número de caja válido.';
+      return;
+    }
 
     if (
       this.montoInicial === null ||
@@ -68,26 +137,46 @@ export class AbrirTurno {
       return;
     }
 
-    if (this.montoInicial < 0) {
-      this.mensajeError =
-        'El monto inicial no puede ser negativo.';
+    if (Number(this.montoInicial) < 0) {
+      this.mensajeError = 'El monto inicial no puede ser negativo.';
       return;
     }
 
-    try {
-      this.enviando = true;
+    this.enviando = true;
 
-      this.turnoActual =
-        this.turnoService.abrirTurno(this.montoInicial);
+    const nuevoTurno = {
+      usuarioId: this.usuarioId,
+      tiendaId: this.tiendaId,
+      numeroCaja: Number(this.numeroCaja),
+      montoInicial: Number(this.montoInicial)
+    };
 
-      this.router.navigate([this.dashboardRuta]);
-    } catch (error) {
-      this.mensajeError =
-        error instanceof Error
-          ? error.message
-          : 'No fue posible abrir el turno.';
-    } finally {
-      this.enviando = false;
-    }
+    this.http.post(`${this.turnosApi}/abrir`, nuevoTurno)
+      .subscribe({
+        next: () => {
+          this.mensajeExito = 'El turno se abrió correctamente.';
+
+          setTimeout(() => {
+            this.router.navigate([this.dashboardRuta]);
+          }, 900);
+        },
+        error: error => {
+          console.error('Error al abrir turno:', error);
+
+          this.mensajeError =
+            error.error?.message ||
+            'No fue posible abrir el turno.';
+
+          this.enviando = false;
+        },
+        complete: () => {
+          this.enviando = false;
+        }
+      });
+  }
+
+  private limpiarMensajes(): void {
+    this.mensajeError = '';
+    this.mensajeExito = '';
   }
 }

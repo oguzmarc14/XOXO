@@ -46,13 +46,9 @@ import {
 } from './features/productos/lista-productos/lista-productos';
 
 /* Tiendas */
-import {
-  CrearTienda
-} from './features/tiendas/crear-tienda/crear-tienda';
-
-import {
-  ListaTiendas
-} from './features/tiendas/lista-tiendas/lista-tiendas';
+import { CrearTienda } from './features/tiendas/crear-tienda/crear-tienda';
+import { ListaTiendas } from './features/tiendas/lista-tiendas/lista-tiendas';
+import { EditarTiendas } from './features/tiendas/editar-tiendas/editar-tiendas';
 
 /* Turnos */
 import {
@@ -164,6 +160,10 @@ export const routes: Routes = [
     path: 'crear-usuario',
     component: CrearUsuario
   },
+  {
+  path: 'editar-tiendas/:id',
+  component: EditarTiendas
+},
 
   /* Turnos */
   {
