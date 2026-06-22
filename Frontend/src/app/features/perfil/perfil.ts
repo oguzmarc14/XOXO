@@ -1,4 +1,3 @@
-
 import { CommonModule } from '@angular/common';
 
 import {
@@ -63,7 +62,10 @@ export class Perfil implements OnInit {
       ) === 'true';
 
     if (!sesionActiva) {
-      this.router.navigate(['/login']);
+      this.router.navigate([
+        '/login'
+      ]);
+
       return;
     }
 
@@ -128,15 +130,21 @@ export class Perfil implements OnInit {
 
     this.actualizarVistaPreviaAvatar();
 
-    this.mensajeError = '';
-    this.mensajeExito = '';
+    this.limpiarMensajes();
   }
 
   guardarCambios(): void {
-    this.mensajeError = '';
-    this.mensajeExito = '';
+    this.limpiarMensajes();
 
-    if (!this.nombre.trim()) {
+    const nombreNormalizado =
+      this.nombre.trim();
+
+    const usuarioNormalizado =
+      this.user
+        .trim()
+        .toLowerCase();
+
+    if (!nombreNormalizado) {
       this.mensajeError =
         'El nombre completo es obligatorio.';
 
@@ -144,9 +152,7 @@ export class Perfil implements OnInit {
     }
 
     if (
-      this.nombre
-        .trim()
-        .length < 3
+      nombreNormalizado.length < 3
     ) {
       this.mensajeError =
         'El nombre debe contener al menos 3 caracteres.';
@@ -154,16 +160,20 @@ export class Perfil implements OnInit {
       return;
     }
 
-    if (!this.user.trim()) {
+    if (!usuarioNormalizado) {
       this.mensajeError =
-        'El Usuario es obligatorio.';
+        'El usuario es obligatorio.';
 
       return;
     }
 
-    if (!this.correoValido(this.user)) {
+    if (
+      !this.usuarioValido(
+        usuarioNormalizado
+      )
+    ) {
       this.mensajeError =
-        'Ingresa un Usuario válido.';
+        'El usuario debe tener al menos 3 caracteres y solo puede contener letras, números, punto, guion o guion bajo.';
 
       return;
     }
@@ -199,13 +209,11 @@ export class Perfil implements OnInit {
         this.usuarioActualService
           .actualizarUsuario({
             nombre:
-              this.nombre.trim(),
+              nombreNormalizado,
 
             user:
-              this.user
-                .trim()
-                .toLowerCase(),
-            
+              usuarioNormalizado,
+
             sexo:
               this.sexo,
 
@@ -220,7 +228,12 @@ export class Perfil implements OnInit {
 
       this.mensajeExito =
         'Los datos del perfil se actualizaron correctamente.';
-    } catch {
+    } catch (error) {
+      console.error(
+        'Error al actualizar el perfil:',
+        error
+      );
+
       this.mensajeError =
         'No fue posible actualizar el perfil.';
     } finally {
@@ -230,9 +243,7 @@ export class Perfil implements OnInit {
 
   restaurarDatos(): void {
     this.cargarUsuarioActual();
-
-    this.mensajeError = '';
-    this.mensajeExito = '';
+    this.limpiarMensajes();
   }
 
   volver(): void {
@@ -240,11 +251,14 @@ export class Perfil implements OnInit {
       this.usuarioActualService
         .obtenerRutaDashboard();
 
-    this.router.navigate([ruta]);
+    this.router.navigate([
+      ruta
+    ]);
   }
 
   manejarErrorImagen(): void {
-    this.actualizarVistaPreviaAvatar();
+    this.avatar =
+      this.obtenerAvatarRespaldo();
   }
 
   private cargarUsuarioActual(): void {
@@ -252,32 +266,120 @@ export class Perfil implements OnInit {
       this.usuarioActualService
         .obtenerUsuario();
 
+    if (
+      !this.usuario ||
+      this.usuario.id === 0
+    ) {
+      this.router.navigate([
+        '/login'
+      ]);
+
+      return;
+    }
+
     this.cargarFormulario();
   }
 
   private cargarFormulario(): void {
     this.nombre =
-      this.usuario.nombre;
+      this.usuario.nombre || '';
 
     this.user =
-      this.usuario.user;
+      this.obtenerNombreUsuario(
+        this.usuario
+      );
 
     this.sexo =
-      this.usuario.sexo;
+      this.usuario.sexo ||
+      'hombre';
 
     this.cargo =
-      this.usuario.cargo;
+      this.usuario.cargo ||
+      this.rolTexto;
 
     this.sucursal =
-      this.usuario.sucursal;
+      this.obtenerNombreSucursal(
+        this.usuario.sucursal
+      );
 
     this.actualizarVistaPreviaAvatar();
+  }
+
+  private obtenerNombreUsuario(
+    usuarioActual: Usuario
+  ): string {
+    const usuarioFlexible =
+      usuarioActual as Usuario & {
+        correo?: string;
+        usuario?: string;
+        user?: string;
+      };
+
+    return (
+      usuarioFlexible.user ||
+      usuarioFlexible.usuario ||
+      usuarioFlexible.correo ||
+      ''
+    );
+  }
+
+  private obtenerNombreSucursal(
+    sucursalActual: unknown
+  ): string {
+    if (
+      typeof sucursalActual ===
+      'string'
+    ) {
+      return sucursalActual;
+    }
+
+    if (
+      sucursalActual &&
+      typeof sucursalActual ===
+      'object'
+    ) {
+      const tienda =
+        sucursalActual as {
+          nombre?: string;
+          ciudad?: string;
+          direccion?: string;
+        };
+
+      if (
+        tienda.nombre &&
+        tienda.ciudad
+      ) {
+        return (
+          `${tienda.nombre} - ` +
+          `${tienda.ciudad}`
+        );
+      }
+
+      if (tienda.nombre) {
+        return tienda.nombre;
+      }
+
+      if (tienda.direccion) {
+        return tienda.direccion;
+      }
+    }
+
+    if (
+      this.usuario?.rol ===
+      'admin'
+    ) {
+      return 'Administración general';
+    }
+
+    return 'Sucursal no asignada';
   }
 
   private actualizarVistaPreviaAvatar():
     void {
     if (!this.usuario) {
-      this.avatar = '/Cajero.png';
+      this.avatar =
+        this.obtenerAvatarRespaldo();
+
       return;
     }
 
@@ -289,15 +391,47 @@ export class Perfil implements OnInit {
         );
   }
 
-  private correoValido(
-    correo: string
-  ): boolean {
-    const expresionCorreo =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  private obtenerAvatarRespaldo():
+    string {
+    if (!this.usuario) {
+      return '/XoXO.png';
+    }
 
-    return expresionCorreo.test(
-      correo.trim()
+    if (
+      this.usuario.rol === 'admin'
+    ) {
+      return this.sexo === 'mujer'
+        ? '/Administradora.png'
+        : '/Administrador.png';
+    }
+
+    if (
+      this.usuario.rol ===
+      'gerente'
+    ) {
+      return this.sexo === 'mujer'
+        ? '/GerenteF.png'
+        : '/GerenteM.png';
+    }
+
+    return this.sexo === 'mujer'
+      ? '/Cajera.png'
+      : '/Cajero.png';
+  }
+
+  private usuarioValido(
+    nombreUsuario: string
+  ): boolean {
+    const expresionUsuario =
+      /^[a-zA-Z0-9._-]{3,50}$/;
+
+    return expresionUsuario.test(
+      nombreUsuario
     );
   }
-}
 
+  private limpiarMensajes(): void {
+    this.mensajeError = '';
+    this.mensajeExito = '';
+  }
+}

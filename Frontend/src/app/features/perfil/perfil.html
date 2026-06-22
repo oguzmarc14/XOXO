@@ -5,23 +5,25 @@
         Configuración de cuenta
       </span>
 
-  <h1>Tu perfil</h1>
+      <h1>Tu perfil</h1>
 
-  <p>
-    Consulta y actualiza la información del usuario activo
-    en la sesión.
-  </p>
-</div>
+      <p>
+        Consulta y actualiza la información
+        del usuario activo en la sesión.
+      </p>
+    </div>
 
-<button
-  class="back-button"
-  type="button"
-  (click)="volver()"
->
-  <span aria-hidden="true">←</span>
-  Volver al panel
-</button>
+    <button
+      class="back-button"
+      type="button"
+      (click)="volver()"
+    >
+      <span aria-hidden="true">
+        ←
+      </span>
 
+      Volver al panel
+    </button>
   </header>
 
   <div class="profile-layout">
@@ -29,308 +31,364 @@
     <aside class="profile-preview">
       <div class="avatar-wrapper">
         <img
-          *ngIf="avatar; else avatarIniciales"
+          *ngIf="
+            avatar;
+            else avatarIniciales
+          "
           [src]="avatar"
-          [alt]="'Foto de perfil de ' + nombre"
+          [alt]="
+            'Foto de perfil de ' +
+            nombre
+          "
           (error)="manejarErrorImagen()"
         />
 
-    <ng-template #avatarIniciales>
-      <div class="avatar-initials">
-        {{ iniciales }}
-      </div>
-    </ng-template>
+        <ng-template #avatarIniciales>
+          <div class="avatar-initials">
+            {{ iniciales }}
+          </div>
+        </ng-template>
 
-    <span
-      class="avatar-status"
-      title="Sesión activa"
-    ></span>
-  </div>
-
-  <div class="profile-identity">
-    <h2>
-      {{ nombre || 'Nombre del usuario' }}
-    </h2>
-
-    <span class="role-badge">
-      {{ rolTexto }}
-    </span>
-
-    <strong>
-      {{ cargo || 'Cargo no asignado' }}
-    </strong>
-
-    <p>
-      {{ usuario || 'usuario no registrado' }}
-    </p>
-
-    <small>
-      {{ sucursal || 'Sucursal no asignada' }}
-    </small>
-  </div>
-
-  <div class="automatic-avatar-info">
-    <div class="automatic-avatar-title">
-      <span aria-hidden="true">🖼️</span>
-
-      <strong>
-        Foto automática
-      </strong>
-    </div>
-
-    <p>
-      La fotografía se selecciona automáticamente según
-      el tipo de usuario y el sexo registrado.
-    </p>
-  </div>
-</aside>
-
-<!-- Formulario -->
-<section class="profile-form-card">
-  <div class="form-heading">
-    <div>
-      <h2>Información personal</h2>
-
-      <p>
-        Los cambios se reflejarán en el perfil y en la
-        barra superior.
-      </p>
-    </div>
-
-    <span class="session-label">
-      Usuario activo
-    </span>
-  </div>
-
-  <form
-    class="profile-form"
-    (ngSubmit)="guardarCambios()"
-  >
-    <div class="form-grid">
-      <div class="form-group full-width">
-        <label for="nombre">
-          Nombre completo
-        </label>
-
-        <input
-          id="nombre"
-          name="nombre"
-          type="text"
-          maxlength="80"
-          placeholder="Nombre completo"
-          [(ngModel)]="nombre"
-          [disabled]="guardando"
-          required
-        />
-
-        <small>
-          Este nombre aparecerá en la barra superior.
-        </small>
+        <span
+          class="avatar-status"
+          title="Sesión activa"
+        ></span>
       </div>
 
-      <div class="form-group">
-        <label for="text">
-          Usuario
-        </label>
+      <div class="profile-identity">
+        <h2>
+          {{
+            nombre ||
+            'Nombre del usuario'
+          }}
+        </h2>
 
-        <input
-          id="user"
-          name="user"
-          type="text"
-          maxlength="100"
-          placeholder="user"
-          [(ngModel)]="user"
-          [disabled]="guardando"
-          required
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="rol">
-          Tipo de usuario
-        </label>
-
-        <input
-          id="rol"
-          name="rol"
-          type="text"
-          [value]="rolTexto"
-          disabled
-        />
-
-        <small>
-          El rol no puede modificarse desde el perfil.
-        </small>
-      </div>
-
-      <div class="form-group full-width">
-        <label>
-          Sexo
-        </label>
-
-        <div class="gender-options">
-          <button
-            type="button"
-            class="gender-option"
-            [class.active]="sexo === 'hombre'"
-            [disabled]="guardando"
-            (click)="cambiarSexo('hombre')"
-          >
-            <span class="gender-icon">
-              👨
-            </span>
-
-            <div>
-              <strong>Hombre</strong>
-
-              <small>
-                Usará la fotografía masculina del rol.
-              </small>
-            </div>
-
-            <span
-              class="selection-indicator"
-              *ngIf="sexo === 'hombre'"
-            >
-              ✓
-            </span>
-          </button>
-
-          <button
-            type="button"
-            class="gender-option"
-            [class.active]="sexo === 'mujer'"
-            [disabled]="guardando"
-            (click)="cambiarSexo('mujer')"
-          >
-            <span class="gender-icon">
-              👩
-            </span>
-
-            <div>
-              <strong>Mujer</strong>
-
-              <small>
-                Usará la fotografía femenina del rol.
-              </small>
-            </div>
-
-            <span
-              class="selection-indicator"
-              *ngIf="sexo === 'mujer'"
-            >
-              ✓
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="cargo">
-          Cargo
-        </label>
-
-        <input
-          id="cargo"
-          name="cargo"
-          type="text"
-          maxlength="60"
-          placeholder="Cargo del usuario"
-          [(ngModel)]="cargo"
-          [disabled]="guardando"
-          required
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="sucursal">
-          Sucursal
-        </label>
-
-        <input
-          id="sucursal"
-          name="sucursal"
-          type="text"
-          maxlength="100"
-          placeholder="Sucursal asignada"
-          [(ngModel)]="sucursal"
-          [disabled]="guardando"
-          required
-        />
-      </div>
-    </div>
-
-    <div
-      class="avatar-preview-row"
-      *ngIf="avatar"
-    >
-      <img
-        [src]="avatar"
-        [alt]="'Avatar correspondiente a ' + sexoTexto"
-        (error)="manejarErrorImagen()"
-      />
-
-      <div>
-        <span>
-          Fotografía seleccionada
+        <span class="role-badge">
+          {{ rolTexto }}
         </span>
 
         <strong>
-          {{ rolTexto }} · {{ sexoTexto }}
+          {{
+            cargo ||
+            'Cargo no asignado'
+          }}
         </strong>
 
+        <!-- Se muestra el nombre de usuario,
+             no el objeto usuario completo -->
+        <p>
+          {{
+            user ||
+            'Usuario no registrado'
+          }}
+        </p>
+
         <small>
-          Se actualizará al guardar los cambios.
+          {{
+            sucursal ||
+            'Sucursal no asignada'
+          }}
         </small>
       </div>
-    </div>
 
-    <div
-      class="message error"
-      *ngIf="mensajeError"
-    >
-      <span>!</span>
+      <div class="automatic-avatar-info">
+        <div class="automatic-avatar-title">
+          <span aria-hidden="true">
+            🖼️
+          </span>
 
-      <p>
-        {{ mensajeError }}
-      </p>
-    </div>
+          <strong>
+            Foto automática
+          </strong>
+        </div>
 
-    <div
-      class="message success"
-      *ngIf="mensajeExito"
-    >
-      <span>✓</span>
+        <p>
+          La fotografía se selecciona
+          automáticamente según el tipo de
+          usuario y el sexo registrado.
+        </p>
+      </div>
+    </aside>
 
-      <p>
-        {{ mensajeExito }}
-      </p>
-    </div>
+    <!-- Formulario -->
+    <section class="profile-form-card">
+      <div class="form-heading">
+        <div>
+          <h2>
+            Información personal
+          </h2>
 
-    <div class="profile-actions">
-      <button
-        class="secondary-button"
-        type="button"
-        [disabled]="guardando"
-        (click)="restaurarDatos()"
+          <p>
+            Los cambios se reflejarán en el
+            perfil y en la barra superior.
+          </p>
+        </div>
+
+        <span class="session-label">
+          Usuario activo
+        </span>
+      </div>
+
+      <form
+        class="profile-form"
+        (ngSubmit)="guardarCambios()"
       >
-        Descartar cambios
-      </button>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="nombre">
+              Nombre completo
+            </label>
 
-      <button
-        class="primary-button"
-        type="submit"
-        [disabled]="guardando"
-      >
-        {{
-          guardando
-            ? 'Guardando...'
-            : 'Guardar cambios'
-        }}
-      </button>
-    </div>
-  </form>
-</section>
+            <input
+              id="nombre"
+              name="nombre"
+              type="text"
+              maxlength="80"
+              placeholder="Nombre completo"
+              [(ngModel)]="nombre"
+              [disabled]="guardando"
+              required
+            />
 
+            <small>
+              Este nombre aparecerá en la
+              barra superior.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="user">
+              Usuario
+            </label>
+
+            <input
+              id="user"
+              name="user"
+              type="text"
+              minlength="3"
+              maxlength="50"
+              placeholder="Nombre de usuario"
+              autocomplete="username"
+              [(ngModel)]="user"
+              [disabled]="guardando"
+              required
+            />
+
+            <small>
+              Puede contener letras, números,
+              punto, guion y guion bajo.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="rol">
+              Tipo de usuario
+            </label>
+
+            <input
+              id="rol"
+              name="rol"
+              type="text"
+              [value]="rolTexto"
+              disabled
+            />
+
+            <small>
+              El rol no puede modificarse
+              desde el perfil.
+            </small>
+          </div>
+
+          <div class="form-group full-width">
+            <label>
+              Sexo
+            </label>
+
+            <div class="gender-options">
+              <button
+                type="button"
+                class="gender-option"
+                [class.active]="
+                  sexo === 'hombre'
+                "
+                [disabled]="guardando"
+                (click)="
+                  cambiarSexo('hombre')
+                "
+              >
+                <span class="gender-icon">
+                  👨
+                </span>
+
+                <div>
+                  <strong>
+                    Hombre
+                  </strong>
+
+                  <small>
+                    Usará la fotografía masculina
+                    del rol.
+                  </small>
+                </div>
+
+                <span
+                  class="selection-indicator"
+                  *ngIf="
+                    sexo === 'hombre'
+                  "
+                >
+                  ✓
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="gender-option"
+                [class.active]="
+                  sexo === 'mujer'
+                "
+                [disabled]="guardando"
+                (click)="
+                  cambiarSexo('mujer')
+                "
+              >
+                <span class="gender-icon">
+                  👩
+                </span>
+
+                <div>
+                  <strong>
+                    Mujer
+                  </strong>
+
+                  <small>
+                    Usará la fotografía femenina
+                    del rol.
+                  </small>
+                </div>
+
+                <span
+                  class="selection-indicator"
+                  *ngIf="
+                    sexo === 'mujer'
+                  "
+                >
+                  ✓
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cargo">
+              Cargo
+            </label>
+
+            <input
+              id="cargo"
+              name="cargo"
+              type="text"
+              maxlength="60"
+              placeholder="Cargo del usuario"
+              [(ngModel)]="cargo"
+              [disabled]="guardando"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="sucursal">
+              Sucursal
+            </label>
+
+            <input
+              id="sucursal"
+              name="sucursal"
+              type="text"
+              maxlength="100"
+              placeholder="Sucursal asignada"
+              [(ngModel)]="sucursal"
+              [disabled]="guardando"
+              required
+            />
+          </div>
+        </div>
+
+        <div
+          class="avatar-preview-row"
+          *ngIf="avatar"
+        >
+          <img
+            [src]="avatar"
+            [alt]="
+              'Avatar correspondiente a ' +
+              sexoTexto
+            "
+            (error)="manejarErrorImagen()"
+          />
+
+          <div>
+            <span>
+              Fotografía seleccionada
+            </span>
+
+            <strong>
+              {{ rolTexto }} ·
+              {{ sexoTexto }}
+            </strong>
+
+            <small>
+              Se actualizará al guardar
+              los cambios.
+            </small>
+          </div>
+        </div>
+
+        <div
+          class="message error"
+          *ngIf="mensajeError"
+        >
+          <span>!</span>
+
+          <p>
+            {{ mensajeError }}
+          </p>
+        </div>
+
+        <div
+          class="message success"
+          *ngIf="mensajeExito"
+        >
+          <span>✓</span>
+
+          <p>
+            {{ mensajeExito }}
+          </p>
+        </div>
+
+        <div class="profile-actions">
+          <button
+            class="secondary-button"
+            type="button"
+            [disabled]="guardando"
+            (click)="restaurarDatos()"
+          >
+            Descartar cambios
+          </button>
+
+          <button
+            class="primary-button"
+            type="submit"
+            [disabled]="guardando"
+          >
+            {{
+              guardando
+                ? 'Guardando...'
+                : 'Guardar cambios'
+            }}
+          </button>
+        </div>
+      </form>
+    </section>
   </div>
 </section>
