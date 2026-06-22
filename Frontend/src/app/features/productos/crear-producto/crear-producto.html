@@ -1,24 +1,14 @@
 <main class="create-product-page">
   <section class="page-introduction">
     <div>
-      <span class="eyebrow">
-        Catálogo de productos
-      </span>
+      <span class="eyebrow"> Catálogo de productos </span>
 
-      <h2>
-        Registrar nuevo producto
-      </h2>
+      <h2>Registrar nuevo producto</h2>
 
-      <p>
-        Captura la información necesaria para agregar
-        un producto al catálogo de XoXO.
-      </p>
+      <p>Captura la información necesaria para agregar un producto al catálogo de XoXO.</p>
     </div>
 
-    <a
-      class="back-link"
-      routerLink="/lista-productos"
-    >
+    <a class="back-link" routerLink="/lista-productos">
       <span aria-hidden="true">←</span>
       Volver al listado
     </a>
@@ -29,29 +19,18 @@
     <section class="product-form-card">
       <div class="section-heading">
         <div>
-          <h2>
-            Información del producto
-          </h2>
+          <h2>Información del producto</h2>
 
-          <p>
-            Completa los campos obligatorios antes de guardar.
-          </p>
+          <p>Completa los campos obligatorios antes de guardar.</p>
         </div>
 
-        <span class="required-label">
-          * Campos obligatorios
-        </span>
+        <span class="required-label"> * Campos obligatorios </span>
       </div>
 
-      <form
-        class="product-form"
-        (ngSubmit)="guardarProducto()"
-      >
+      <form class="product-form" (ngSubmit)="guardarProducto()">
         <div class="form-grid">
           <div class="form-group">
-            <label for="nombre">
-              Nombre del producto *
-            </label>
+            <label for="nombre"> Nombre del producto * </label>
 
             <input
               id="nombre"
@@ -66,9 +45,7 @@
           </div>
 
           <div class="form-group full-width">
-            <label>
-              Categoría *
-            </label>
+            <label> Categoría * </label>
 
             <div class="category-grid">
               @for (item of categorias; track item.nombre) {
@@ -96,9 +73,7 @@
           </div>
 
           <div class="form-group">
-            <label for="precio">
-              Precio de venta *
-            </label>
+            <label for="precio"> Precio de venta * </label>
 
             <div class="money-control">
               <span>$</span>
@@ -115,6 +90,22 @@
                 required
               />
             </div>
+          </div>
+
+          <div class="form-group">
+            <label for="codigo"> Código del producto * </label>
+
+            <input
+              id="codigo"
+              name="codigo"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Ejemplo: 1001"
+              [(ngModel)]="codigo"
+              [disabled]="guardando"
+              required
+            />
           </div>
         </div>
 
@@ -143,18 +134,9 @@
           </button>
 
           <div>
-            <a
-              class="cancel-button"
-              routerLink="/lista-productos"
-            >
-              Cancelar
-            </a>
+            <a class="cancel-button" routerLink="/lista-productos"> Cancelar </a>
 
-            <button
-              class="save-button"
-              type="submit"
-              [disabled]="guardando"
-            >
+            <button class="save-button" type="submit" [disabled]="guardando">
               {{ guardando ? 'Guardando...' : 'Guardar producto' }}
             </button>
           </div>
@@ -167,9 +149,7 @@
       <div class="preview-heading">
         <span>Vista previa</span>
 
-        <small>
-          Así se mostrará en el catálogo
-        </small>
+        <small> Así se mostrará en el catálogo </small>
       </div>
 
       <article class="product-preview">
@@ -189,7 +169,7 @@
           <span>Precio de venta</span>
 
           <strong>
-            {{ precioVistaPrevia | currency:'MXN':'symbol':'1.2-2' }}
+            {{ precioVistaPrevia | currency: 'MXN' : 'symbol' : '1.2-2' }}
           </strong>
         </div>
       </article>
@@ -197,10 +177,7 @@
       <div class="preview-notice">
         <span aria-hidden="true">💡</span>
 
-        <p>
-          La vista previa se actualiza automáticamente
-          mientras completas el formulario.
-        </p>
+        <p>La vista previa se actualiza automáticamente mientras completas el formulario.</p>
       </div>
     </aside>
   </div>

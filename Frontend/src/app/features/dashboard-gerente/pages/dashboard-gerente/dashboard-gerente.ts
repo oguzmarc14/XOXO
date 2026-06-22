@@ -40,10 +40,15 @@ interface AlertaBackend {
   _id: string;
   tiendaId: TiendaBackend | string;
   productoId: ProductoBackend;
+  ventaId?: string;
   tipo: string;
   mensaje: string;
+  stockAnterior: number;
+  cantidadVendida: number;
   stockNuevo: number;
-  estado: string;
+  estado: 'PENDIENTE' | 'RESUELTA';
+  fechaResolucion?: string;
+  fecha: string;
 }
 
 @Component({

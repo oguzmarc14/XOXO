@@ -11,7 +11,7 @@
         </h2>
 
         <p>
-          Actualiza la información, precio y categoría
+          Actualiza el código, información, precio, categoría y stock mínimo
           del producto seleccionado.
         </p>
       </div>
@@ -43,15 +43,13 @@
 
   @if (productoEncontrado) {
     <div class="edit-product-layout">
-      <!-- Formulario -->
       <section class="product-form-card">
         <div class="section-heading">
           <div>
             <h2>Información del producto</h2>
 
             <p>
-              Modifica únicamente los datos que necesiten
-              actualizarse.
+              Modifica únicamente los datos que necesiten actualizarse.
             </p>
           </div>
 
@@ -68,6 +66,24 @@
           (ngSubmit)="guardarCambios()"
         >
           <div class="form-grid">
+            <div class="form-group">
+              <label for="codigo">
+                Código del producto *
+              </label>
+
+              <input
+                id="codigo"
+                name="codigo"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Ejemplo: 1001"
+                [(ngModel)]="codigo"
+                [disabled]="guardando"
+                required
+              />
+            </div>
+
             <div class="form-group">
               <label for="nombre">
                 Nombre del producto *
@@ -132,6 +148,28 @@
                 />
               </div>
             </div>
+
+            <div class="form-group">
+              <label for="stockMinimo">
+                Stock mínimo *
+              </label>
+
+              <input
+                id="stockMinimo"
+                name="stockMinimo"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Ejemplo: 5"
+                [(ngModel)]="stockMinimo"
+                [disabled]="guardando"
+                required
+              />
+
+              <small>
+                Se usará para generar alertas cuando el inventario sea bajo.
+              </small>
+            </div>
           </div>
 
           @if (mensajeError) {
@@ -178,7 +216,6 @@
         </form>
       </section>
 
-      <!-- Vista previa -->
       <aside class="product-preview-card">
         <div class="preview-heading">
           <span>Vista previa actualizada</span>
@@ -197,6 +234,10 @@
 
           <h3>{{ nombreVistaPrevia }}</h3>
 
+          <p class="preview-code">
+            Código: {{ codigoVistaPrevia }}
+          </p>
+
           <span class="preview-category">
             {{ categoriaVistaPrevia }}
           </span>
@@ -206,6 +247,14 @@
 
             <strong>
               {{ precioVistaPrevia | currency:'MXN':'symbol':'1.2-2' }}
+            </strong>
+          </div>
+
+          <div class="preview-price">
+            <span>Stock mínimo</span>
+
+            <strong>
+              {{ stockMinimoVistaPrevia }}
             </strong>
           </div>
         </article>

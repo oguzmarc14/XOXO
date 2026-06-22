@@ -13,6 +13,7 @@ import { ProductosService } from '../../../core/services/productos';
 })
 export class CrearProducto {
   nombre = '';
+  codigo: number | null = null;
   categoria = '';
   precio: number | null = null;
 
@@ -21,12 +22,12 @@ export class CrearProducto {
   mensajeExito = '';
 
   categorias = [
-    { nombre: 'Playeras',      icono: '👕' },
-    { nombre: 'Sudaderas',     icono: '🧥' },
-    { nombre: 'Accesorios',    icono: '👜' },
-    { nombre: 'Coleccionables',icono: '🎁' },
-    { nombre: 'Gorras',        icono: '🧢' },
-    { nombre: 'Otros',         icono: '📦' }
+    { nombre: 'Playeras', icono: '👕' },
+    { nombre: 'Sudaderas', icono: '🧥' },
+    { nombre: 'Accesorios', icono: '👜' },
+    { nombre: 'Coleccionables', icono: '🎁' },
+    { nombre: 'Gorras', icono: '🧢' },
+    { nombre: 'Otros', icono: '📦' }
   ];
 
   constructor(
@@ -46,11 +47,24 @@ export class CrearProducto {
     return Number(this.precio) || 0;
   }
 
-  get iconoCategoria(): string {
-    return this.categorias.find(c => c.nombre === this.categoria)?.icono ?? '📦';
+  get codigoVistaPrevia(): string {
+    return this.codigo?.toString() || 'Sin código';
   }
 
-  seleccionarCategoria(categoria: { nombre: string; icono: string }): void {
+  get iconoCategoria(): string {
+    return (
+      this.categorias.find(
+        c => c.nombre === this.categoria
+      )?.icono ?? '📦'
+    );
+  }
+
+  seleccionarCategoria(
+    categoria: {
+      nombre: string;
+      icono: string;
+    }
+  ): void {
     this.categoria = categoria.nombre;
     this.mensajeError = '';
     this.mensajeExito = '';
@@ -61,22 +75,38 @@ export class CrearProducto {
     this.mensajeExito = '';
 
     if (!this.nombre.trim()) {
-      this.mensajeError = 'El nombre del producto es obligatorio.';
+      this.mensajeError =
+        'El nombre del producto es obligatorio.';
       return;
     }
 
     if (this.nombre.trim().length < 3) {
-      this.mensajeError = 'El nombre debe contener al menos 3 caracteres.';
+      this.mensajeError =
+        'El nombre debe contener al menos 3 caracteres.';
+      return;
+    }
+
+    if (
+      this.codigo === null ||
+      this.codigo <= 0
+    ) {
+      this.mensajeError =
+        'El código del producto es obligatorio.';
       return;
     }
 
     if (!this.categoria) {
-      this.mensajeError = 'Selecciona una categoría.';
+      this.mensajeError =
+        'Selecciona una categoría.';
       return;
     }
 
-    if (this.precio === null || Number(this.precio) <= 0) {
-      this.mensajeError = 'El precio debe ser mayor a cero.';
+    if (
+      this.precio === null ||
+      Number(this.precio) <= 0
+    ) {
+      this.mensajeError =
+        'El precio debe ser mayor a cero.';
       return;
     }
 
@@ -84,15 +114,27 @@ export class CrearProducto {
 
     this.productosService.create({
       nombre: this.nombre.trim(),
+      codigo: Number(this.codigo),
       categoria: this.categoria,
       precio: Number(this.precio)
     }).subscribe({
       next: () => {
-        this.mensajeExito = 'El producto se registró correctamente.';
-        setTimeout(() => this.router.navigate(['/lista-productos']), 900);
+        this.mensajeExito =
+          'El producto se registró correctamente.';
+
+        setTimeout(() => {
+          this.router.navigate([
+            '/lista-productos'
+          ]);
+        }, 900);
       },
-      error: () => {
-        this.mensajeError = 'No fue posible guardar el producto.';
+
+      error: (error) => {
+        console.error(error);
+
+        this.mensajeError =
+          'No fue posible guardar el producto.';
+
         this.guardando = false;
       }
     });
@@ -100,6 +142,7 @@ export class CrearProducto {
 
   limpiarFormulario(): void {
     this.nombre = '';
+    this.codigo = null;
     this.categoria = '';
     this.precio = null;
     this.mensajeError = '';
