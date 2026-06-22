@@ -1,9 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { ProductosService } from '../../../core/services/productos';
 import { UsuarioActualService } from '../../../core/services/usuario-actual';
+
+interface TiendaOpcion {
+  _id: string;
+  nombre: string;
+  ciudad: string;
+}
 
 @Component({
   selector: 'app-crear-producto',
@@ -23,7 +30,11 @@ export class CrearProducto implements OnInit {
   mensajeError = '';
   mensajeExito = '';
 
-  private tiendaId: string | undefined;
+  esAdmin = false;
+  tiendas: TiendaOpcion[] = [];
+  tiendaSeleccionada = '';
+
+  private tiendaIdGerente: string | undefined;
 
   categorias = [
     { nombre: 'Playeras',       icono: '👕' },
@@ -37,13 +48,23 @@ export class CrearProducto implements OnInit {
   constructor(
     private productosService: ProductosService,
     private usuarioActualService: UsuarioActualService,
+    private http: HttpClient,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     const usuario = this.usuarioActualService.obtenerUsuario();
-    if (usuario.rol === 'gerente') {
-      this.tiendaId = usuario.tiendaId;
+
+    if (usuario.rol === 'admin') {
+      this.esAdmin = true;
+      this.http
+        .get<TiendaOpcion[]>('http://localhost:3000/tiendas')
+        .subscribe({
+          next: (tiendas) => { this.tiendas = tiendas; },
+          error: () => { this.mensajeError = 'No se pudieron cargar las tiendas.'; }
+        });
+    } else if (usuario.rol === 'gerente') {
+      this.tiendaIdGerente = usuario.tiendaId;
     }
   }
 
@@ -61,6 +82,12 @@ export class CrearProducto implements OnInit {
 
   get iconoCategoria(): string {
     return this.categorias.find(c => c.nombre === this.categoria)?.icono ?? '📦';
+  }
+
+  get tiendaVistaPrevia(): string {
+    if (!this.esAdmin) return '';
+    const tienda = this.tiendas.find(t => t._id === this.tiendaSeleccionada);
+    return tienda ? `${tienda.nombre} — ${tienda.ciudad}` : 'Sin tienda asignada';
   }
 
   seleccionarCategoria(categoria: { nombre: string; icono: string }): void {
@@ -103,7 +130,16 @@ export class CrearProducto implements OnInit {
       return;
     }
 
+    if (this.esAdmin && !this.tiendaSeleccionada) {
+      this.mensajeError = 'Selecciona la tienda a la que pertenece el producto.';
+      return;
+    }
+
     this.guardando = true;
+
+    const tiendaId = this.esAdmin
+      ? this.tiendaSeleccionada
+      : this.tiendaIdGerente;
 
     this.productosService.create({
       codigo: Number(this.codigo),
@@ -111,7 +147,7 @@ export class CrearProducto implements OnInit {
       categoria: this.categoria,
       precio: Number(this.precio),
       stockMinimo: Number(this.stockMinimo),
-      tiendaId: this.tiendaId
+      tiendaId
     }).subscribe({
       next: () => {
         this.mensajeExito = 'El producto se registró correctamente.';
@@ -130,6 +166,7 @@ export class CrearProducto implements OnInit {
     this.categoria = '';
     this.precio = null;
     this.stockMinimo = 5;
+    this.tiendaSeleccionada = '';
     this.mensajeError = '';
     this.mensajeExito = '';
   }

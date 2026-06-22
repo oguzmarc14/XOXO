@@ -107,6 +107,36 @@
               required
             />
           </div>
+
+          @if (esAdmin) {
+            <div class="form-group full-width">
+              <label for="tiendaSeleccionada">
+                Tienda *
+              </label>
+
+              <select
+                id="tiendaSeleccionada"
+                name="tiendaSeleccionada"
+                [(ngModel)]="tiendaSeleccionada"
+                [disabled]="guardando"
+                required
+              >
+                <option value="" disabled>
+                  — Selecciona una tienda —
+                </option>
+
+                @for (tienda of tiendas; track tienda._id) {
+                  <option [value]="tienda._id">
+                    {{ tienda.nombre }} — {{ tienda.ciudad }}
+                  </option>
+                }
+              </select>
+
+              <small>
+                El producto quedará asociado a esta sucursal.
+              </small>
+            </div>
+          }
         </div>
 
         @if (mensajeError) {
@@ -176,6 +206,13 @@
             {{ precioVistaPrevia | currency: 'MXN' : 'symbol' : '1.2-2' }}
           </strong>
         </div>
+
+        @if (esAdmin) {
+          <div class="preview-price">
+            <span>Tienda</span>
+            <strong>{{ tiendaVistaPrevia }}</strong>
+          </div>
+        }
       </article>
 
       <div class="preview-notice">
