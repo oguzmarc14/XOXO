@@ -51,73 +51,6 @@ export const routes: Routes = [
   },
 
   {
-    path: '',
-    component: AdminLayout,
-    children: [
-      {
-        path: 'dashboard-admin',
-        component: DashboardAdmin
-      },
-      {
-        path: 'admin/perfil',
-        component: Perfil
-      },
-      {
-        path: 'lista-inventario',
-        component: ListaInventario
-      },
-      {
-        path: 'movimientos-inventario',
-        component: MovimientosInventario
-      },
-      {
-        path: 'crear-producto',
-        component: CrearProducto
-      },
-      {
-        path: 'editar-producto',
-        component: EditarProducto
-      },
-      {
-        path: 'lista-productos',
-        component: ListaProductos
-      },
-      {
-        path: 'crear-tienda',
-        component: CrearTienda
-      },
-      {
-        path: 'lista-tiendas',
-        component: ListaTiendas
-      },
-      {
-        path: 'abrir-turno',
-        component: AbrirTurno
-      },
-      {
-        path: 'cerrar-turno',
-        component: CerrarTurno
-      },
-      {
-        path: 'crear-usuario',
-        component: CrearUsuario
-      },
-      {
-        path: 'lista-usuarios',
-        component: ListaUsuarios
-      },
-      {
-        path: 'historial-ventas',
-        component: HistorialVentas
-      },
-      {
-        path: 'nueva-venta',
-        component: NuevaVenta
-      }
-    ]
-  },
-
-  {
     path: 'dashboard-cajero',
     component: DashboardCajero
   },
@@ -126,6 +59,12 @@ export const routes: Routes = [
     component: DashboardGerente
   },
   {
+    path: 'dashboard-admin',
+    component: DashboardAdmin
+  },
+
+  /* Perfiles por rol */
+  {
     path: 'cajero/perfil',
     component: Perfil
   },
@@ -133,7 +72,76 @@ export const routes: Routes = [
     path: 'gerente/perfil',
     component: Perfil
   },
+  {
+    path: 'admin/perfil',
+    component: Perfil
+  },
 
+  /* Inventario */
+  {
+    path: 'lista-inventario',
+    component: ListaInventario
+  },
+  {
+    path: 'movimientos-inventario',
+    component: MovimientosInventario
+  },
+
+  /* Productos */
+  {
+    path: 'crear-producto',
+    component: CrearProducto
+  },
+  {
+    path: 'editar-producto',
+    component: EditarProducto
+  },
+  {
+    path: 'lista-productos',
+    component: ListaProductos
+  },
+
+  /* Tiendas */
+  {
+    path: 'crear-tienda',
+    component: CrearTienda
+  },
+  {
+    path: 'lista-tiendas',
+    component: ListaTiendas
+  },
+
+  /* Turnos */
+  {
+    path: 'abrir-turno',
+    component: AbrirTurno
+  },
+  {
+    path: 'cerrar-turno',
+    component: CerrarTurno
+  },
+
+  /* Usuarios */
+  {
+    path: 'crear-usuario',
+    component: CrearUsuario
+  },
+  {
+    path: 'lista-usuarios',
+    component: ListaUsuarios
+  },
+
+  /* Ventas */
+  {
+    path: 'historial-ventas',
+    component: HistorialVentas
+  },
+  {
+    path: 'nueva-venta',
+    component: NuevaVenta
+  },
+
+  /* Ruta no encontrada */
   {
     path: '**',
     redirectTo: ''

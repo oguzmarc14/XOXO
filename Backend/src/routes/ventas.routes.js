@@ -65,6 +65,18 @@ router.post("/", async (req, res) => {
         });
       }
 
+      if (stockNuevo >= 0 && stockNuevo <= producto.stockMinimo) {
+        await Alertas.create({
+          tiendaId,
+          productoId: producto._id,
+          tipo: "STOCK_BAJO",
+          mensaje: `El producto ${producto.nombre} quedó con stock bajo. Stock actual: ${stockNuevo}, mínimo recomendado: ${producto.stockMinimo}`,
+          stockAnterior,
+          cantidadVendida: cantidad,
+          stockNuevo,
+        });
+      }
+
       total = total + subtotal;
 
       productosProcesados.push({
