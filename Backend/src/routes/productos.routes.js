@@ -5,7 +5,12 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
     try{
-        const productos = await Productos.find();
+        const filtro = {};
+        if (req.query.tiendaId) {
+            filtro.tiendaId = req.query.tiendaId;
+        }
+
+        const productos = await Productos.find(filtro);
 
         res.json(productos);
     }

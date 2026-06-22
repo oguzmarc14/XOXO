@@ -16,4 +16,5 @@ export interface Usuario {
   cargo: string;
   sucursal: string;
   avatar: string;
+  tiendaId?: string;
 }

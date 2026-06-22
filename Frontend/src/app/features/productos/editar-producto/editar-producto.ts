@@ -15,9 +15,11 @@ import { Producto } from '../../../core/models/producto.model';
 export class EditarProducto implements OnInit {
   productoOriginal: Producto | null = null;
 
+  codigo: number | null = null;
   nombre = '';
   categoria = '';
   precio: number | null = null;
+  stockMinimo: number | null = null;
 
   guardando = false;
   productoEncontrado = false;
@@ -67,9 +69,11 @@ export class EditarProducto implements OnInit {
   get hayCambios(): boolean {
     if (!this.productoOriginal) return false;
     return (
+      Number(this.codigo) !== this.productoOriginal.codigo ||
       this.nombre.trim() !== this.productoOriginal.nombre ||
       this.categoria !== this.productoOriginal.categoria ||
-      Number(this.precio) !== this.productoOriginal.precio
+      Number(this.precio) !== this.productoOriginal.precio ||
+      Number(this.stockMinimo) !== this.productoOriginal.stockMinimo
     );
   }
 
@@ -85,6 +89,11 @@ export class EditarProducto implements OnInit {
 
     if (!this.productoOriginal) {
       this.mensajeError = 'No se encontró el producto que deseas editar.';
+      return;
+    }
+
+    if (this.codigo === null || Number(this.codigo) <= 0) {
+      this.mensajeError = 'El código del producto es obligatorio y debe ser mayor a cero.';
       return;
     }
 
@@ -108,6 +117,11 @@ export class EditarProducto implements OnInit {
       return;
     }
 
+    if (this.stockMinimo === null || Number(this.stockMinimo) < 0) {
+      this.mensajeError = 'El stock mínimo no puede ser negativo.';
+      return;
+    }
+
     if (!this.hayCambios) {
       this.mensajeError = 'No se detectaron cambios para guardar.';
       return;
@@ -116,9 +130,12 @@ export class EditarProducto implements OnInit {
     this.guardando = true;
 
     this.productosService.update(this.productoOriginal._id, {
+      codigo: Number(this.codigo),
       nombre: this.nombre.trim(),
       categoria: this.categoria,
-      precio: Number(this.precio)
+      precio: Number(this.precio),
+      stockMinimo: Number(this.stockMinimo),
+      tiendaId: this.productoOriginal.tiendaId
     }).subscribe({
       next: () => {
         this.mensajeExito = 'Los cambios del producto se guardaron correctamente.';
@@ -157,8 +174,10 @@ export class EditarProducto implements OnInit {
   }
 
   private cargarFormulario(producto: Producto): void {
+    this.codigo = producto.codigo;
     this.nombre = producto.nombre;
     this.categoria = producto.categoria;
     this.precio = producto.precio;
+    this.stockMinimo = producto.stockMinimo;
   }
 }

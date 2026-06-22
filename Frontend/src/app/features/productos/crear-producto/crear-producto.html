@@ -49,6 +49,28 @@
       >
         <div class="form-grid">
           <div class="form-group">
+            <label for="codigo">
+              Código del producto *
+            </label>
+
+            <input
+              id="codigo"
+              name="codigo"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Ej. 1001"
+              [(ngModel)]="codigo"
+              [disabled]="guardando"
+              required
+            />
+
+            <small>
+              Identificador numérico único del producto.
+            </small>
+          </div>
+
+          <div class="form-group">
             <label for="nombre">
               Nombre del producto *
             </label>
@@ -116,6 +138,28 @@
               />
             </div>
           </div>
+
+          <div class="form-group">
+            <label for="stockMinimo">
+              Stock mínimo *
+            </label>
+
+            <input
+              id="stockMinimo"
+              name="stockMinimo"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="5"
+              [(ngModel)]="stockMinimo"
+              [disabled]="guardando"
+              required
+            />
+
+            <small>
+              Nivel de alerta por existencias bajas.
+            </small>
+          </div>
         </div>
 
         @if (mensajeError) {
@@ -178,6 +222,10 @@
             {{ iconoCategoria }}
           </div>
         </div>
+
+        @if (codigo) {
+          <span class="preview-code">#{{ codigo }}</span>
+        }
 
         <h3>{{ nombreVistaPrevia }}</h3>
 

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductosService } from '../../../core/services/productos';
+import { UsuarioActualService } from '../../../core/services/usuario-actual';
 import { Producto } from '../../../core/models/producto.model';
 
 @Component({
@@ -26,12 +27,19 @@ export class ListaProductos implements OnInit {
   modalEliminarAbierto = false;
   productoSeleccionado: Producto | null = null;
 
+  private tiendaId: string | undefined;
+
   constructor(
     private productosService: ProductosService,
+    private usuarioActualService: UsuarioActualService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    const usuario = this.usuarioActualService.obtenerUsuario();
+    if (usuario.rol === 'gerente') {
+      this.tiendaId = usuario.tiendaId;
+    }
     this.cargarProductos();
   }
 
@@ -49,7 +57,8 @@ export class ListaProductos implements OnInit {
       const coincideBusqueda =
         !texto ||
         this.normalizarTexto(producto.nombre).includes(texto) ||
-        this.normalizarTexto(producto.categoria).includes(texto);
+        this.normalizarTexto(producto.categoria).includes(texto) ||
+        String(producto.codigo).includes(texto);
 
       const coincideCategoria =
         this.categoriaSeleccionada === 'todas' ||
@@ -105,7 +114,7 @@ export class ListaProductos implements OnInit {
 
   private cargarProductos(): void {
     this.cargando = true;
-    this.productosService.getAll().subscribe({
+    this.productosService.getAll(this.tiendaId).subscribe({
       next: (productos) => {
         this.productos = productos;
         this.aplicarFiltros();

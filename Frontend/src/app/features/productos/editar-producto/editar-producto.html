@@ -6,9 +6,7 @@
           Catálogo de productos
         </span>
 
-        <h2>
-          Editar producto
-        </h2>
+        <h2>Editar producto</h2>
 
         <p>
           Actualiza la información, precio y categoría
@@ -30,11 +28,8 @@
   @if (!productoEncontrado) {
     <section class="not-found-card">
       <div class="not-found-icon">⚠️</div>
-
       <h2>Producto no disponible</h2>
-
       <p>{{ mensajeError }}</p>
-
       <button type="button" (click)="volverAlListado()">
         Volver al listado de productos
       </button>
@@ -69,6 +64,28 @@
         >
           <div class="form-grid">
             <div class="form-group">
+              <label for="codigo">
+                Código del producto *
+              </label>
+
+              <input
+                id="codigo"
+                name="codigo"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Ej. 1001"
+                [(ngModel)]="codigo"
+                [disabled]="guardando"
+                required
+              />
+
+              <small>
+                El código debe ser único dentro del catálogo.
+              </small>
+            </div>
+
+            <div class="form-group">
               <label for="nombre">
                 Nombre del producto *
               </label>
@@ -97,12 +114,8 @@
                     [disabled]="guardando"
                     (click)="seleccionarCategoria(item)"
                   >
-                    <span class="category-icon">
-                      {{ item.icono }}
-                    </span>
-
+                    <span class="category-icon">{{ item.icono }}</span>
                     <span>{{ item.nombre }}</span>
-
                     @if (categoria === item.nombre) {
                       <span class="category-check">✓</span>
                     }
@@ -131,6 +144,28 @@
                   required
                 />
               </div>
+            </div>
+
+            <div class="form-group">
+              <label for="stockMinimo">
+                Stock mínimo *
+              </label>
+
+              <input
+                id="stockMinimo"
+                name="stockMinimo"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="5"
+                [(ngModel)]="stockMinimo"
+                [disabled]="guardando"
+                required
+              />
+
+              <small>
+                Nivel utilizado para generar alertas.
+              </small>
             </div>
           </div>
 
@@ -182,18 +217,17 @@
       <aside class="product-preview-card">
         <div class="preview-heading">
           <span>Vista previa actualizada</span>
-
-          <small>
-            Revisa el resultado antes de guardar
-          </small>
+          <small>Revisa el resultado antes de guardar</small>
         </div>
 
         <article class="product-preview">
           <div class="preview-top">
-            <div class="product-icon">
-              {{ iconoCategoria }}
-            </div>
+            <div class="product-icon">{{ iconoCategoria }}</div>
           </div>
+
+          @if (codigo) {
+            <span class="preview-code">#{{ codigo }}</span>
+          }
 
           <h3>{{ nombreVistaPrevia }}</h3>
 
@@ -203,7 +237,6 @@
 
           <div class="preview-price">
             <span>Precio de venta</span>
-
             <strong>
               {{ precioVistaPrevia | currency:'MXN':'symbol':'1.2-2' }}
             </strong>
@@ -220,11 +253,7 @@
 
           <div>
             <strong>
-              {{
-                hayCambios
-                  ? 'Hay cambios pendientes'
-                  : 'Información sin modificar'
-              }}
+              {{ hayCambios ? 'Hay cambios pendientes' : 'Información sin modificar' }}
             </strong>
 
             <p>

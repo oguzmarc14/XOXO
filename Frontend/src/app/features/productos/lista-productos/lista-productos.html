@@ -143,6 +143,7 @@
               </div>
 
               <div class="product-information">
+                <span class="product-code">#{{ producto.codigo }}</span>
                 <h3>{{ producto.nombre }}</h3>
                 <span class="product-category">{{ producto.categoria }}</span>
               </div>
@@ -153,6 +154,14 @@
 
                   <strong>
                     {{ producto.precio | currency:'MXN':'symbol':'1.2-2' }}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Stock mínimo</span>
+
+                  <strong>
+                    {{ producto.stockMinimo }}
                   </strong>
                 </div>
               </div>
