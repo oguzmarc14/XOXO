@@ -1,5 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import {
+  Component,
+  OnInit
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -13,6 +16,14 @@ interface OpcionRol {
   icono: string;
 }
 
+interface TiendaBackend {
+  _id: string;
+  nombre: string;
+  direccion: string;
+  ciudad: string;
+  telefono: string;
+}
+
 @Component({
   selector: 'app-crear-usuario',
   standalone: true,
@@ -23,7 +34,7 @@ interface OpcionRol {
   templateUrl: './crear-usuario.html',
   styleUrl: './crear-usuario.css'
 })
-export class CrearUsuario {
+export class CrearUsuario implements OnInit {
   nombre = '';
   usuario = '';
   tiendaId = '';
@@ -37,11 +48,15 @@ export class CrearUsuario {
   mostrarConfirmacion = false;
 
   guardando = false;
+  cargandoTiendas = false;
 
   mensajeError = '';
   mensajeExito = '';
 
-  private readonly apiUrl = 'http://localhost:3000/usuarios';
+  tiendas: TiendaBackend[] = [];
+
+  private readonly usuariosApi = 'http://localhost:3000/usuarios';
+  private readonly tiendasApi = 'http://localhost:3000/tiendas';
 
   readonly roles: OpcionRol[] = [
     {
@@ -68,6 +83,10 @@ export class CrearUsuario {
     private router: Router,
     private http: HttpClient
   ) {}
+
+  ngOnInit(): void {
+    this.cargarTiendas();
+  }
 
   get cargo(): string {
     if (this.rol === 'admin') {
@@ -102,33 +121,23 @@ export class CrearUsuario {
   }
 
   get tiendaVistaPrevia(): string {
-    if (this.rol === 'admin') {
-      return 'Sin tienda';
+    const tienda = this.tiendas.find(
+      item => item._id === this.tiendaId
+    );
+
+    if (!tienda) {
+      return 'Tienda no seleccionada';
     }
 
-    return this.tiendaId.trim() || 'Sin tienda asignada';
+    return `${tienda.nombre} - ${tienda.ciudad}`;
   }
 
   get rolTexto(): string {
     return this.cargo;
   }
 
-  get contrasenaSegura(): boolean {
-    return (
-      this.contrasena.length >= 8 &&
-      /[A-Z]/.test(this.contrasena) &&
-      /[a-z]/.test(this.contrasena) &&
-      /\d/.test(this.contrasena)
-    );
-  }
-
   seleccionarRol(rolSeleccionado: UserRole): void {
     this.rol = rolSeleccionado;
-
-    if (this.rol === 'admin') {
-      this.tiendaId = '';
-    }
-
     this.limpiarMensajes();
   }
 
@@ -138,6 +147,23 @@ export class CrearUsuario {
 
   alternarConfirmacion(): void {
     this.mostrarConfirmacion = !this.mostrarConfirmacion;
+  }
+
+  cargarTiendas(): void {
+    this.cargandoTiendas = true;
+
+    this.http.get<TiendaBackend[]>(this.tiendasApi)
+      .subscribe({
+        next: tiendas => {
+          this.tiendas = tiendas;
+          this.cargandoTiendas = false;
+        },
+        error: error => {
+          console.error('Error al cargar tiendas:', error);
+          this.mensajeError = 'No fue posible cargar las tiendas.';
+          this.cargandoTiendas = false;
+        }
+      });
   }
 
   guardarUsuario(): void {
@@ -163,14 +189,18 @@ export class CrearUsuario {
       return;
     }
 
+    if (!this.tiendaId) {
+      this.mensajeError = 'Selecciona la tienda asignada.';
+      return;
+    }
+
     if (!this.contrasena) {
       this.mensajeError = 'La contraseña es obligatoria.';
       return;
     }
 
-    if (!this.contrasenaSegura) {
-      this.mensajeError =
-        'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.';
+    if (this.contrasena.length < 4) {
+      this.mensajeError = 'La contraseña debe tener al menos 4 caracteres.';
       return;
     }
 
@@ -186,13 +216,10 @@ export class CrearUsuario {
       usuario: this.usuario.trim().toLowerCase(),
       password: this.contrasena,
       rol: this.rol.toUpperCase(),
-      tiendaId:
-        this.rol === 'admin' || !this.tiendaId.trim()
-          ? undefined
-          : this.tiendaId.trim()
+      tiendaId: this.tiendaId
     };
 
-    this.http.post(this.apiUrl, usuarioNuevo)
+    this.http.post(this.usuariosApi, usuarioNuevo)
       .subscribe({
         next: () => {
           this.mensajeExito = 'El usuario se registró correctamente.';

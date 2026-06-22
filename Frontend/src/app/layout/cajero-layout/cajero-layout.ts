@@ -38,8 +38,6 @@ import {
   imports: [
     CommonModule,
     RouterOutlet,
-    Sidebar,
-    Topbar
   ],
   templateUrl:
     './cajero-layout.html',

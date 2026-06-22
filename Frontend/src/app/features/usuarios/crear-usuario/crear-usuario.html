@@ -5,16 +5,10 @@
 
       <h2>Crear nuevo usuario</h2>
 
-      <p>
-        Registra el nombre, usuario, rol y contraseña para crear una cuenta.
-      </p>
+      <p>Registra el nombre, usuario, rol y contraseña para crear una cuenta.</p>
     </div>
 
-    <button
-      class="back-button"
-      type="button"
-      (click)="volverAlListado()"
-    >
+    <button class="back-button" type="button" (click)="volverAlListado()">
       <span aria-hidden="true">←</span>
       Volver al listado
     </button>
@@ -26,20 +20,13 @@
         <div>
           <h2>Información del usuario</h2>
 
-          <p>
-            Completa los datos requeridos por el backend.
-          </p>
+          <p>Completa los datos requeridos por el backend.</p>
         </div>
 
-        <span class="required-label">
-          * Campos obligatorios
-        </span>
+        <span class="required-label"> * Campos obligatorios </span>
       </div>
 
-      <form
-        class="user-form"
-        (ngSubmit)="guardarUsuario()"
-      >
+      <form class="user-form" (ngSubmit)="guardarUsuario()">
         <section class="form-section">
           <div class="form-section-heading">
             <span class="section-number">1</span>
@@ -47,17 +34,13 @@
             <div>
               <h3>Datos de cuenta</h3>
 
-              <p>
-                Información básica para el acceso al sistema.
-              </p>
+              <p>Información básica para el acceso al sistema.</p>
             </div>
           </div>
 
           <div class="form-grid">
             <div class="form-group full-width">
-              <label for="nombre">
-                Nombre completo *
-              </label>
+              <label for="nombre"> Nombre completo * </label>
 
               <input
                 id="nombre"
@@ -72,9 +55,7 @@
             </div>
 
             <div class="form-group full-width">
-              <label for="usuario">
-                Usuario *
-              </label>
+              <label for="usuario"> Usuario * </label>
 
               <input
                 id="usuario"
@@ -97,17 +78,13 @@
             <div>
               <h3>Rol y tienda</h3>
 
-              <p>
-                Define el tipo de usuario y la tienda asignada si aplica.
-              </p>
+              <p>Define el tipo de usuario y la tienda asignada si aplica.</p>
             </div>
           </div>
 
           <div class="form-grid">
             <div class="form-group full-width">
-              <label>
-                Tipo de usuario *
-              </label>
+              <label> Tipo de usuario * </label>
 
               <div class="role-options">
                 <button
@@ -132,51 +109,39 @@
                     </small>
                   </div>
 
-                  <span
-                    class="selection-check"
-                    *ngIf="rol === item.valor"
-                  >
-                    ✓
-                  </span>
+                  <span class="selection-check" *ngIf="rol === item.valor"> ✓ </span>
                 </button>
               </div>
             </div>
 
             <div class="form-group">
-              <label for="cargo">
-                Cargo
-              </label>
+              <label for="cargo"> Cargo </label>
 
-              <input
-                id="cargo"
-                name="cargo"
-                type="text"
-                [value]="cargo"
-                disabled
-              />
+              <input id="cargo" name="cargo" type="text" [value]="cargo" disabled />
 
-              <small>
-                Se asigna automáticamente según el rol.
-              </small>
+              <small> Se asigna automáticamente según el rol. </small>
             </div>
 
             <div class="form-group">
-              <label for="tiendaId">
-                ID de tienda
-              </label>
+              <label for="tiendaId"> Tienda asignada * </label>
 
-              <input
+              <select
                 id="tiendaId"
                 name="tiendaId"
-                type="text"
-                placeholder="Opcional"
                 [(ngModel)]="tiendaId"
-                [disabled]="guardando || rol === 'admin'"
-              />
+                [disabled]="guardando || cargandoTiendas"
+                required
+              >
+                <option value="">
+                  {{ cargandoTiendas ? 'Cargando tiendas...' : 'Selecciona una tienda' }}
+                </option>
 
-              <small>
-                Solo aplica para cajeros o gerentes. Para admin puede ir vacío.
-              </small>
+                <option *ngFor="let tienda of tiendas" [value]="tienda._id">
+                  {{ tienda.nombre }} - {{ tienda.ciudad }}
+                </option>
+              </select>
+
+              <small> Se guardará el ID de la tienda seleccionada. </small>
             </div>
           </div>
         </section>
@@ -188,17 +153,13 @@
             <div>
               <h3>Credenciales</h3>
 
-              <p>
-                Configura la contraseña inicial.
-              </p>
+              <p>Configura la contraseña inicial.</p>
             </div>
           </div>
 
           <div class="form-grid">
             <div class="form-group">
-              <label for="contrasena">
-                Contraseña *
-              </label>
+              <label for="contrasena"> Contraseña * </label>
 
               <div class="password-control">
                 <span aria-hidden="true">🔒</span>
@@ -214,20 +175,14 @@
                   required
                 />
 
-                <button
-                  type="button"
-                  [disabled]="guardando"
-                  (click)="alternarContrasena()"
-                >
+                <button type="button" [disabled]="guardando" (click)="alternarContrasena()">
                   {{ mostrarContrasena ? 'Ocultar' : 'Mostrar' }}
                 </button>
               </div>
             </div>
 
             <div class="form-group">
-              <label for="confirmarContrasena">
-                Confirmar contraseña *
-              </label>
+              <label for="confirmarContrasena"> Confirmar contraseña * </label>
 
               <div class="password-control">
                 <span aria-hidden="true">🔒</span>
@@ -243,11 +198,7 @@
                   required
                 />
 
-                <button
-                  type="button"
-                  [disabled]="guardando"
-                  (click)="alternarConfirmacion()"
-                >
+                <button type="button" [disabled]="guardando" (click)="alternarConfirmacion()">
                   {{ mostrarConfirmacion ? 'Ocultar' : 'Mostrar' }}
                 </button>
               </div>
@@ -255,18 +206,12 @@
           </div>
         </section>
 
-        <div
-          class="message error"
-          *ngIf="mensajeError"
-        >
+        <div class="message error" *ngIf="mensajeError">
           <span>!</span>
           <p>{{ mensajeError }}</p>
         </div>
 
-        <div
-          class="message success"
-          *ngIf="mensajeExito"
-        >
+        <div class="message success" *ngIf="mensajeExito">
           <span>✓</span>
           <p>{{ mensajeExito }}</p>
         </div>
@@ -291,11 +236,7 @@
               Cancelar
             </button>
 
-            <button
-              class="save-button"
-              type="submit"
-              [disabled]="guardando"
-            >
+            <button class="save-button" type="submit" [disabled]="guardando">
               {{ guardando ? 'Guardando...' : 'Guardar usuario' }}
             </button>
           </div>
@@ -322,10 +263,7 @@
 
         <h3>{{ nombreVistaPrevia }}</h3>
 
-        <span
-          class="preview-role"
-          [ngClass]="rol"
-        >
+        <span class="preview-role" [ngClass]="rol">
           {{ rolTexto }}
         </span>
 
@@ -333,9 +271,7 @@
           {{ cargo }}
         </strong>
 
-        <p class="preview-email">
-          Usuario: {{ usuarioVistaPrevia }}
-        </p>
+        <p class="preview-email">Usuario: {{ usuarioVistaPrevia }}</p>
 
         <div class="preview-branch">
           <span aria-hidden="true">🏪</span>
@@ -356,9 +292,7 @@
         <div>
           <strong>Credenciales del sistema</strong>
 
-          <p>
-            El usuario iniciará sesión con su usuario y contraseña.
-          </p>
+          <p>El usuario iniciará sesión con su usuario y contraseña.</p>
         </div>
       </div>
     </aside>

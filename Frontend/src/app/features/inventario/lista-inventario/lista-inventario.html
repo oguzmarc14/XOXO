@@ -2,7 +2,6 @@
   <section class="summary-grid">
     <article class="summary-card featured">
       <div class="summary-icon">📦</div>
-
       <div>
         <span>Productos en inventario</span>
         <strong>{{ totalProductos }}</strong>
@@ -12,7 +11,6 @@
 
     <article class="summary-card">
       <div class="summary-icon">🧮</div>
-
       <div>
         <span>Unidades disponibles</span>
         <strong>{{ totalUnidades }}</strong>
@@ -22,7 +20,6 @@
 
     <article class="summary-card warning">
       <div class="summary-icon">⚠️</div>
-
       <div>
         <span>Stock bajo</span>
         <strong>{{ productosStockBajo }}</strong>
@@ -32,7 +29,6 @@
 
     <article class="summary-card danger">
       <div class="summary-icon">✖</div>
-
       <div>
         <span>Productos agotados</span>
         <strong>{{ productosAgotados }}</strong>
@@ -42,12 +38,9 @@
 
     <article class="summary-card value">
       <div class="summary-icon">💰</div>
-
       <div>
         <span>Valor del inventario</span>
-        <strong>
-          {{ valorInventario | currency:'MXN':'symbol':'1.2-2' }}
-        </strong>
+        <strong>{{ valorInventario | currency:'MXN':'symbol':'1.2-2' }}</strong>
         <small>Valor estimado disponible</small>
       </div>
     </article>
@@ -57,24 +50,15 @@
     <div class="section-heading">
       <div>
         <h2>Consultar inventario</h2>
-
-        <p>
-          Busca productos y filtra existencias por tienda, categoría o nivel de stock.
-        </p>
+        <p>Busca productos y filtra existencias reales por tienda.</p>
       </div>
 
       <div class="heading-actions">
-        <a
-          class="secondary-link"
-          routerLink="/movimientos-inventario"
-        >
+        <a class="secondary-link" routerLink="/movimientos-inventario">
           🔄 Ver movimientos
         </a>
 
-        <a
-          class="primary-link"
-          routerLink="/lista-productos"
-        >
+        <a class="primary-link" routerLink="/lista-productos">
           🏷️ Administrar productos
         </a>
       </div>
@@ -164,16 +148,21 @@
     <div class="table-heading">
       <div>
         <h2>Existencias registradas</h2>
-
-        <p>
-          {{ productosFiltrados.length }}
-          producto(s) encontrado(s)
-        </p>
+        <p>{{ productosFiltrados.length }} producto(s) encontrado(s)</p>
       </div>
 
-      <span class="results-badge">
-        Inventario actualizado
-      </span>
+      <span class="results-badge">Inventario actualizado</span>
+    </div>
+
+    <div class="message error" *ngIf="mensajeError">
+      <span>!</span>
+      <p>{{ mensajeError }}</p>
+    </div>
+
+    <div class="empty-state" *ngIf="cargando">
+      <div class="empty-icon">⏳</div>
+      <h3>Cargando inventario</h3>
+      <p>Consultando productos, tiendas y existencias.</p>
     </div>
 
     <div
@@ -222,25 +211,17 @@
 
                 <div>
                   <strong>{{ producto.nombre }}</strong>
-
-                  <span>
-                    ID {{ producto.productoId }}
-                  </span>
+                  <span>ID {{ producto.productoId }}</span>
                 </div>
               </div>
             </td>
 
-            <td>
-              {{ producto.categoria }}
-            </td>
+            <td>{{ producto.categoria }}</td>
 
             <td>
               <div class="branch-cell">
                 <span aria-hidden="true">🏪</span>
-
-                <span>
-                  {{ producto.sucursal }}
-                </span>
+                <span>{{ producto.sucursal }}</span>
               </div>
             </td>
 
@@ -254,13 +235,9 @@
               </strong>
             </td>
 
-            <td>
-              {{ producto.minimo }}
-            </td>
+            <td>{{ producto.minimo }}</td>
 
-            <td>
-              {{ producto.precio | currency:'MXN':'symbol':'1.2-2' }}
-            </td>
+            <td>{{ producto.precio | currency:'MXN':'symbol':'1.2-2' }}</td>
 
             <td>
               <span
@@ -268,7 +245,6 @@
                 [ngClass]="obtenerClaseEstado(producto.estado)"
               >
                 <span class="status-dot"></span>
-
                 {{ obtenerTextoEstado(producto.estado) }}
               </span>
             </td>
@@ -278,10 +254,7 @@
     </div>
 
     <ng-template #inventarioVacio>
-      <div
-        class="empty-state"
-        *ngIf="!cargando"
-      >
+      <div class="empty-state" *ngIf="!cargando">
         <div class="empty-icon">🔍</div>
 
         <h3>No se encontraron productos</h3>
@@ -290,10 +263,7 @@
           Modifica los filtros o registra inventario para las tiendas.
         </p>
 
-        <button
-          type="button"
-          (click)="limpiarFiltros()"
-        >
+        <button type="button" (click)="limpiarFiltros()">
           Mostrar todo el inventario
         </button>
       </div>

@@ -38,8 +38,6 @@ import {
   imports: [
     CommonModule,
     RouterOutlet,
-    Sidebar,
-    Topbar
   ],
   templateUrl: './gerente-layout.html',
   styleUrl: './gerente-layout.css'

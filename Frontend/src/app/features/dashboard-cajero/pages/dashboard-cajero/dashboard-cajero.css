@@ -17,6 +17,13 @@
   padding: 10px 30px 34px;
 }
 
+.dashboard-shell {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+}
+
 /* Acciones principales */
 
 .quick-actions {

@@ -4,46 +4,39 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
-import {
-  SexoUsuario,
-  UserRole
-} from '../../../core/models/usuario.model';
-
+type UserRole = 'admin' | 'gerente' | 'cajero';
 type EstadoUsuario = 'activo' | 'inactivo';
+
+interface TiendaBackend {
+  _id: string;
+  nombre: string;
+  direccion?: string;
+  ciudad?: string;
+  telefono?: string;
+}
 
 interface UsuarioBackend {
   _id: string;
   nombre: string;
   usuario: string;
-  correo?: string;
-  telefono?: string;
-  sexo?: SexoUsuario;
   password?: string;
   rol: 'ADMIN' | 'GERENTE' | 'CAJERO';
-  tiendaId?: {
-    _id: string;
-    nombre?: string;
-    nombreTienda?: string;
-    sucursal?: string;
-  } | null;
+  tiendaId?: TiendaBackend | string | null;
   activo: boolean;
-  ultimoAcceso?: string;
   fechaCreacion: string;
 }
 
 interface UsuarioListado {
   id: string;
   nombre: string;
-  sexo: SexoUsuario;
-  correo: string;
+  usuario: string;
   rol: UserRole;
   cargo: string;
-  sucursal: string;
-  avatar: string;
-  telefono: string;
+  tienda: string;
+  tiendaId: string;
   estado: EstadoUsuario;
-  ultimoAcceso: string;
   fechaRegistro: string;
+  avatar: string;
 }
 
 @Component({
@@ -61,14 +54,15 @@ export class ListaUsuarios implements OnInit {
 
   rolSeleccionado = 'todos';
   estadoSeleccionado = 'todos';
-  sucursalSeleccionada = 'todas';
+  tiendaSeleccionada = 'todas';
 
   usuarios: UsuarioListado[] = [];
   usuariosFiltrados: UsuarioListado[] = [];
 
   mensajeExito = '';
-  modalEliminarAbierto = false;
+  mensajeError = '';
 
+  modalEliminarAbierto = false;
   usuarioSeleccionado: UsuarioListado | null = null;
 
   private readonly apiUrl = 'http://localhost:3000/usuarios';
@@ -106,10 +100,10 @@ export class ListaUsuarios implements OnInit {
     return this.usuarios.filter(usuario => usuario.rol === 'admin').length;
   }
 
-  get sucursales(): string[] {
+  get tiendas(): string[] {
     return [
       ...new Set(
-        this.usuarios.map(usuario => usuario.sucursal)
+        this.usuarios.map(usuario => usuario.tienda)
       )
     ].sort();
   }
@@ -121,10 +115,9 @@ export class ListaUsuarios implements OnInit {
       const coincideBusqueda =
         !texto ||
         this.normalizarTexto(usuario.nombre).includes(texto) ||
-        this.normalizarTexto(usuario.correo).includes(texto) ||
+        this.normalizarTexto(usuario.usuario).includes(texto) ||
         this.normalizarTexto(usuario.cargo).includes(texto) ||
-        this.normalizarTexto(usuario.sucursal).includes(texto) ||
-        this.normalizarTexto(usuario.telefono).includes(texto);
+        this.normalizarTexto(usuario.tienda).includes(texto);
 
       const coincideRol =
         this.rolSeleccionado === 'todos' ||
@@ -134,15 +127,15 @@ export class ListaUsuarios implements OnInit {
         this.estadoSeleccionado === 'todos' ||
         usuario.estado === this.estadoSeleccionado;
 
-      const coincideSucursal =
-        this.sucursalSeleccionada === 'todas' ||
-        usuario.sucursal === this.sucursalSeleccionada;
+      const coincideTienda =
+        this.tiendaSeleccionada === 'todas' ||
+        usuario.tienda === this.tiendaSeleccionada;
 
       return (
         coincideBusqueda &&
         coincideRol &&
         coincideEstado &&
-        coincideSucursal
+        coincideTienda
       );
     });
   }
@@ -151,7 +144,7 @@ export class ListaUsuarios implements OnInit {
     this.busqueda = '';
     this.rolSeleccionado = 'todos';
     this.estadoSeleccionado = 'todos';
-    this.sucursalSeleccionada = 'todas';
+    this.tiendaSeleccionada = 'todas';
 
     this.aplicarFiltros();
   }
@@ -161,10 +154,7 @@ export class ListaUsuarios implements OnInit {
   }
 
   editarUsuario(usuario: UsuarioListado): void {
-    localStorage.setItem(
-      'xoxo_usuario_editar',
-      JSON.stringify(usuario)
-    );
+    this.router.navigate(['/editar-usuario', usuario.id]);
   }
 
   cambiarEstado(usuario: UsuarioListado): void {
@@ -212,30 +202,18 @@ export class ListaUsuarios implements OnInit {
 
   obtenerTextoRol(usuario: UsuarioListado): string {
     if (usuario.rol === 'admin') {
-      return usuario.sexo === 'mujer'
-        ? 'Administradora'
-        : 'Administrador';
+      return 'Administrador';
     }
 
     if (usuario.rol === 'gerente') {
       return 'Gerente';
     }
 
-    return usuario.sexo === 'mujer'
-      ? 'Cajera'
-      : 'Cajero';
+    return 'Cajero';
   }
 
   obtenerClaseRol(rol: UserRole): string {
-    if (rol === 'admin') {
-      return 'admin';
-    }
-
-    if (rol === 'gerente') {
-      return 'gerente';
-    }
-
-    return 'cajero';
+    return rol;
   }
 
   manejarErrorImagen(
@@ -243,11 +221,7 @@ export class ListaUsuarios implements OnInit {
     usuario: UsuarioListado
   ): void {
     const imagen = event.target as HTMLImageElement;
-
-    imagen.src = this.obtenerAvatar(
-      usuario.rol,
-      usuario.sexo
-    );
+    imagen.src = usuario.avatar;
   }
 
   private cargarUsuarios(): void {
@@ -263,6 +237,10 @@ export class ListaUsuarios implements OnInit {
         error: error => {
           console.error('Error al cargar usuarios:', error);
 
+          this.mensajeError =
+            error.error?.message ||
+            'No fue posible cargar los usuarios.';
+
           this.usuarios = [];
           this.aplicarFiltros();
         }
@@ -274,38 +252,48 @@ export class ListaUsuarios implements OnInit {
   ): UsuarioListado {
     const rol = usuario.rol.toLowerCase() as UserRole;
 
-    const sexo: SexoUsuario =
-      usuario.sexo || 'hombre';
-
     return {
       id: usuario._id,
       nombre: usuario.nombre,
-      sexo,
-      correo: usuario.correo || usuario.usuario,
+      usuario: usuario.usuario,
       rol,
       cargo: this.obtenerCargoDesdeRol(rol),
-      sucursal: this.obtenerNombreSucursal(usuario),
-      avatar: this.obtenerAvatar(rol, sexo),
-      telefono: usuario.telefono || 'Sin teléfono',
+      tienda: this.obtenerNombreTienda(usuario.tiendaId),
+      tiendaId: this.obtenerIdTienda(usuario.tiendaId),
       estado: usuario.activo ? 'activo' : 'inactivo',
-      ultimoAcceso: usuario.ultimoAcceso || usuario.fechaCreacion,
-      fechaRegistro: usuario.fechaCreacion
+      fechaRegistro: usuario.fechaCreacion,
+      avatar: this.obtenerAvatar(rol)
     };
   }
 
-  private obtenerNombreSucursal(
-    usuario: UsuarioBackend
+  private obtenerNombreTienda(
+    tienda: TiendaBackend | string | null | undefined
   ): string {
-    if (!usuario.tiendaId) {
-      return 'Sin sucursal';
+    if (!tienda) {
+      return 'Sin tienda';
     }
 
-    return (
-      usuario.tiendaId.nombre ||
-      usuario.tiendaId.nombreTienda ||
-      usuario.tiendaId.sucursal ||
-      'Sucursal asignada'
-    );
+    if (typeof tienda === 'string') {
+      return tienda;
+    }
+
+    return tienda.ciudad
+      ? `${tienda.nombre} - ${tienda.ciudad}`
+      : tienda.nombre;
+  }
+
+  private obtenerIdTienda(
+    tienda: TiendaBackend | string | null | undefined
+  ): string {
+    if (!tienda) {
+      return '';
+    }
+
+    if (typeof tienda === 'string') {
+      return tienda;
+    }
+
+    return tienda._id;
   }
 
   private obtenerCargoDesdeRol(rol: UserRole): string {
@@ -320,25 +308,16 @@ export class ListaUsuarios implements OnInit {
     return 'Cajero';
   }
 
-  private obtenerAvatar(
-    rol: UserRole,
-    sexo: SexoUsuario
-  ): string {
+  private obtenerAvatar(rol: UserRole): string {
     if (rol === 'admin') {
-      return sexo === 'mujer'
-        ? '/Administradora.png'
-        : '/Administrador.png';
+      return '/Administrador.png';
     }
 
     if (rol === 'gerente') {
-      return sexo === 'mujer'
-        ? '/GerenteF.png'
-        : '/GerenteM.png';
+      return '/GerenteM.png';
     }
 
-    return sexo === 'mujer'
-      ? '/Cajera.png'
-      : '/Cajero.png';
+    return '/Cajero.png';
   }
 
   private normalizarTexto(texto: string): string {
@@ -352,6 +331,7 @@ export class ListaUsuarios implements OnInit {
   private ocultarMensaje(): void {
     setTimeout(() => {
       this.mensajeExito = '';
+      this.mensajeError = '';
     }, 2500);
   }
 }

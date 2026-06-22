@@ -16,7 +16,7 @@ import { Topbar } from '../../shared/components/topbar/topbar';
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, Sidebar, Topbar],
+  imports: [CommonModule, RouterOutlet,],
   templateUrl: './admin-layout.html',
   styleUrl: './admin-layout.css',
 })
