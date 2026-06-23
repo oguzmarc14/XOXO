@@ -1,0 +1,609 @@
+<main class="create-user-page">
+  <section
+    class="user-form-card"
+    *ngIf="cargandoUsuario"
+  >
+    <div class="section-heading">
+      <div>
+        <h2>Cargando usuario</h2>
+
+        <p>
+          Espera mientras se obtiene la información.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="user-form-card"
+    *ngIf="
+      !cargandoUsuario &&
+      !usuarioEncontrado
+    "
+  >
+    <div class="section-heading">
+      <div>
+        <h2>Usuario no disponible</h2>
+
+        <p>
+          {{ mensajeError }}
+        </p>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button
+        class="cancel-button"
+        type="button"
+        (click)="volverAlListado()"
+      >
+        Volver al listado
+      </button>
+    </div>
+  </section>
+
+  <ng-container
+    *ngIf="
+      !cargandoUsuario &&
+      usuarioEncontrado
+    "
+  >
+    <section class="page-introduction">
+      <div>
+        <span class="eyebrow">
+          Administración de cuentas
+        </span>
+
+        <h2>Editar usuario</h2>
+
+        <p>
+          Actualiza la información de la cuenta seleccionada.
+        </p>
+      </div>
+
+      <button
+        class="back-button"
+        type="button"
+        (click)="volverAlListado()"
+      >
+        <span aria-hidden="true">
+          ←
+        </span>
+
+        Volver al listado
+      </button>
+    </section>
+
+    <div class="create-user-layout">
+      <section class="user-form-card">
+        <div class="section-heading">
+          <div>
+            <h2>Información del usuario</h2>
+
+            <p>
+              Modifica los datos que necesiten actualizarse.
+            </p>
+          </div>
+
+          <span class="required-label">
+            * Campos obligatorios
+          </span>
+        </div>
+
+        <form
+          class="user-form"
+          (ngSubmit)="guardarCambios()"
+        >
+          <!-- Datos de cuenta -->
+          <section class="form-section">
+            <div class="form-section-heading">
+              <span class="section-number">
+                1
+              </span>
+
+              <div>
+                <h3>Datos de cuenta</h3>
+
+                <p>
+                  Información básica para el acceso al sistema.
+                </p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="nombre">
+                  Nombre completo *
+                </label>
+
+                <input
+                  id="nombre"
+                  name="nombre"
+                  type="text"
+                  maxlength="100"
+                  placeholder="Nombre y apellidos"
+                  [(ngModel)]="nombre"
+                  [disabled]="guardando"
+                  required
+                />
+              </div>
+
+              <div class="form-group full-width">
+                <label for="usuario">
+                  Usuario *
+                </label>
+
+                <input
+                  id="usuario"
+                  name="usuario"
+                  type="text"
+                  minlength="3"
+                  maxlength="50"
+                  placeholder="Nombre de usuario"
+                  [(ngModel)]="usuario"
+                  [disabled]="guardando"
+                  required
+                />
+
+                <small>
+                  Puede contener letras, números, punto,
+                  guion y guion bajo.
+                </small>
+              </div>
+            </div>
+          </section>
+
+          <!-- Rol, sexo y tienda -->
+          <section class="form-section">
+            <div class="form-section-heading">
+              <span class="section-number">
+                2
+              </span>
+
+              <div>
+                <h3>Rol y asignación</h3>
+
+                <p>
+                  Define el tipo de usuario y su tienda.
+                </p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label>
+                  Tipo de usuario *
+                </label>
+
+                <div class="role-options">
+                  <button
+                    *ngFor="let item of roles"
+                    type="button"
+                    class="role-option"
+                    [class.selected]="
+                      rol === item.valor
+                    "
+                    [disabled]="guardando"
+                    (click)="
+                      seleccionarRol(
+                        item.valor
+                      )
+                    "
+                  >
+                    <span class="role-icon">
+                      {{ item.icono }}
+                    </span>
+
+                    <div>
+                      <strong>
+                        {{ item.nombre }}
+                      </strong>
+
+                      <small>
+                        {{ item.descripcion }}
+                      </small>
+                    </div>
+
+                    <span
+                      class="selection-check"
+                      *ngIf="
+                        rol === item.valor
+                      "
+                    >
+                      ✓
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group full-width">
+                <label>
+                  Sexo *
+                </label>
+
+                <div class="role-options">
+                  <button
+                    type="button"
+                    class="role-option"
+                    [class.selected]="
+                      sexo === 'hombre'
+                    "
+                    [disabled]="guardando"
+                    (click)="
+                      cambiarSexo('hombre')
+                    "
+                  >
+                    <span class="role-icon">
+                      👨
+                    </span>
+
+                    <div>
+                      <strong>Hombre</strong>
+
+                      <small>
+                        Utilizará el avatar masculino.
+                      </small>
+                    </div>
+
+                    <span
+                      class="selection-check"
+                      *ngIf="
+                        sexo === 'hombre'
+                      "
+                    >
+                      ✓
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="role-option"
+                    [class.selected]="
+                      sexo === 'mujer'
+                    "
+                    [disabled]="guardando"
+                    (click)="
+                      cambiarSexo('mujer')
+                    "
+                  >
+                    <span class="role-icon">
+                      👩
+                    </span>
+
+                    <div>
+                      <strong>Mujer</strong>
+
+                      <small>
+                        Utilizará el avatar femenino.
+                      </small>
+                    </div>
+
+                    <span
+                      class="selection-check"
+                      *ngIf="
+                        sexo === 'mujer'
+                      "
+                    >
+                      ✓
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="cargo">
+                  Cargo
+                </label>
+
+                <input
+                  id="cargo"
+                  name="cargo"
+                  type="text"
+                  [value]="cargo"
+                  disabled
+                />
+
+                <small>
+                  Se actualiza según el rol y sexo.
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label for="tiendaId">
+                  Tienda asignada
+
+                  <span *ngIf="!esAdministrador">
+                    *
+                  </span>
+                </label>
+
+                <select
+                  id="tiendaId"
+                  name="tiendaId"
+                  [(ngModel)]="tiendaId"
+                  [disabled]="
+                    guardando ||
+                    cargandoTiendas ||
+                    esAdministrador
+                  "
+                  [required]="!esAdministrador"
+                >
+                  <option value="">
+                    {{
+                      esAdministrador
+                        ? 'No aplica para administradores'
+                        : cargandoTiendas
+                          ? 'Cargando tiendas...'
+                          : 'Selecciona una tienda'
+                    }}
+                  </option>
+
+                  <option
+                    *ngFor="let tienda of tiendas"
+                    [value]="tienda._id"
+                  >
+                    {{ tienda.nombre }}
+
+                    <ng-container *ngIf="tienda.ciudad">
+                      - {{ tienda.ciudad }}
+                    </ng-container>
+                  </option>
+                </select>
+
+                <small *ngIf="esAdministrador">
+                  El administrador no requiere tienda.
+                </small>
+
+                <small *ngIf="!esAdministrador">
+                  Selecciona la tienda del usuario.
+                </small>
+              </div>
+            </div>
+          </section>
+
+          <!-- Contraseña -->
+          <section class="form-section">
+            <div class="form-section-heading">
+              <span class="section-number">
+                3
+              </span>
+
+              <div>
+                <h3>Nueva contraseña</h3>
+
+                <p>
+                  Déjala vacía para conservar la contraseña actual.
+                </p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="nuevaContrasena">
+                  Nueva contraseña
+                </label>
+
+                <div class="password-control">
+                  <span aria-hidden="true">
+                    🔒
+                  </span>
+
+                  <input
+                    id="nuevaContrasena"
+                    name="nuevaContrasena"
+                    [type]="
+                      mostrarContrasena
+                        ? 'text'
+                        : 'password'
+                    "
+                    maxlength="60"
+                    placeholder="Dejar vacío para conservar"
+                    [(ngModel)]="nuevaContrasena"
+                    [disabled]="guardando"
+                  />
+
+                  <button
+                    type="button"
+                    [disabled]="guardando"
+                    (click)="alternarContrasena()"
+                  >
+                    {{
+                      mostrarContrasena
+                        ? 'Ocultar'
+                        : 'Mostrar'
+                    }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="confirmarContrasena">
+                  Confirmar contraseña
+                </label>
+
+                <div class="password-control">
+                  <span aria-hidden="true">
+                    🔒
+                  </span>
+
+                  <input
+                    id="confirmarContrasena"
+                    name="confirmarContrasena"
+                    [type]="
+                      mostrarConfirmacion
+                        ? 'text'
+                        : 'password'
+                    "
+                    maxlength="60"
+                    placeholder="Repite la nueva contraseña"
+                    [(ngModel)]="confirmarContrasena"
+                    [disabled]="guardando"
+                  />
+
+                  <button
+                    type="button"
+                    [disabled]="guardando"
+                    (click)="alternarConfirmacion()"
+                  >
+                    {{
+                      mostrarConfirmacion
+                        ? 'Ocultar'
+                        : 'Mostrar'
+                    }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div
+            class="message error"
+            *ngIf="mensajeError"
+          >
+            <span>!</span>
+
+            <p>
+              {{ mensajeError }}
+            </p>
+          </div>
+
+          <div
+            class="message success"
+            *ngIf="mensajeExito"
+          >
+            <span>✓</span>
+
+            <p>
+              {{ mensajeExito }}
+            </p>
+          </div>
+
+          <div class="form-actions">
+            <button
+              class="cancel-button"
+              type="button"
+              [disabled]="guardando"
+              (click)="volverAlListado()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              class="save-button"
+              type="submit"
+              [disabled]="
+                guardando ||
+                cargandoTiendas
+              "
+            >
+              {{
+                guardando
+                  ? 'Guardando...'
+                  : 'Guardar cambios'
+              }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Vista previa -->
+      <aside class="user-preview-card">
+        <div class="preview-heading">
+          <span>
+            Vista previa
+          </span>
+
+          <small>
+            Así quedará el registro
+          </small>
+        </div>
+
+        <article class="user-preview">
+          <div class="preview-avatar">
+            <img
+              [src]="avatar"
+              [alt]="
+                'Avatar de ' +
+                nombreVistaPrevia
+              "
+              (error)="
+                manejarErrorImagen($event)
+              "
+            />
+
+            <span class="active"></span>
+          </div>
+
+          <h3>
+            {{ nombreVistaPrevia }}
+          </h3>
+
+          <span
+            class="preview-role"
+            [ngClass]="rol"
+          >
+            {{ rolTexto }}
+          </span>
+
+          <strong class="preview-cargo">
+            {{ cargo }}
+          </strong>
+
+          <p class="preview-email">
+            Usuario:
+            {{ usuarioVistaPrevia }}
+          </p>
+
+          <div class="preview-branch">
+            <span aria-hidden="true">
+              🏪
+            </span>
+
+            <div>
+              <span>
+                Asignación
+              </span>
+
+              <strong>
+                {{ tiendaVistaPrevia }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="preview-branch">
+            <span aria-hidden="true">
+              👤
+            </span>
+
+            <div>
+              <span>
+                Sexo
+              </span>
+
+              <strong>
+                {{ sexoTexto }}
+              </strong>
+            </div>
+          </div>
+        </article>
+
+        <div class="security-information">
+          <span aria-hidden="true">
+            🔐
+          </span>
+
+          <div>
+            <strong>
+              Contraseña segura
+            </strong>
+
+            <p>
+              La contraseña actual no se muestra.
+              Solo se reemplazará si escribes una nueva.
+            </p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </ng-container>
+</main>

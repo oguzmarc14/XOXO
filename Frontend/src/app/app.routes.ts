@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
-
+import {
+  EditarUsuario
+} from './features/usuarios/editar-usuario/editar-usuario';
 /* Autenticación */
 import {
   Login
@@ -155,6 +157,10 @@ export const routes: Routes = [
   {
     path: 'lista-usuarios',
     component: ListaUsuarios
+  },
+  {
+  path: 'editar-usuario/:id',
+  component: EditarUsuario
   },
   {
     path: 'crear-usuario',
