@@ -27,13 +27,12 @@ export class EditarProducto implements OnInit {
   mensajeExito = '';
 
   categorias = [
-    { nombre: 'Bebidas', icono: '🥤' },
-    { nombre: 'Botanas', icono: '🍟' },
-    { nombre: 'Dulces', icono: '🍫' },
-    { nombre: 'Panadería', icono: '🍞' },
-    { nombre: 'Lácteos', icono: '🥛' },
-    { nombre: 'Limpieza', icono: '🧼' },
-    { nombre: 'Otros', icono: '📦' }
+    { nombre: 'Playeras',       icono: '👕' },
+    { nombre: 'Sudaderas',      icono: '🧥' },
+    { nombre: 'Accesorios',     icono: '👜' },
+    { nombre: 'Coleccionables', icono: '🎁' },
+    { nombre: 'Gorras',         icono: '🧢' },
+    { nombre: 'Otros',          icono: '📦' }
   ];
 
   constructor(
@@ -83,7 +82,6 @@ export class EditarProducto implements OnInit {
     }
 
     return (
-      Number(this.codigo) !== this.productoOriginal.codigo ||
       Number(this.codigo) !== this.productoOriginal.codigo ||
       this.nombre.trim() !== this.productoOriginal.nombre ||
       this.categoria !== this.productoOriginal.categoria ||
