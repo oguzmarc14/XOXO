@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 import { SexoUsuario, Usuario, UserRole } from '../../../core/models/usuario.model';
-
 import { UsuarioActualService } from '../../../core/services/usuario-actual';
 
 interface TiendaLogin {
@@ -44,12 +44,15 @@ export class Login {
   cargando = false;
   mostrarContrasena = false;
 
+  private readonly authApi = 'https://xoxo-backend-ewqr.onrender.com/auth/login';
+
   constructor(
     private router: Router,
-    private usuarioActualService: UsuarioActualService,
+    private http: HttpClient,
+    private usuarioActualService: UsuarioActualService
   ) {}
 
-  async iniciarSesion(): Promise<void> {
+  iniciarSesion(): void {
     this.error = '';
 
     const usuarioIngresado = this.correo.trim();
@@ -62,84 +65,49 @@ export class Login {
 
     this.cargando = true;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    this.http.post<LoginResponse>(this.authApi, {
+      usuario: usuarioIngresado,
+      password
+    }).subscribe({
+      next: async (data) => {
+        if (!data.usuario) {
+          this.error = 'El servidor no devolvió los datos del usuario.';
+          this.cargando = false;
+          return;
+        }
 
-    try {
-      this.usuarioActualService.cerrarSesion();
-      localStorage.removeItem('sesionActiva');
+        const rol = this.convertirRol(data.usuario.rol);
+        const sexo = this.convertirSexo(data.usuario.sexo);
 
-      const respuesta = await fetch('https://xoxo-backend-ewqr.onrender.com/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          usuario: usuarioIngresado,
-          password,
-        }),
-        signal: controller.signal,
-      });
+        const usuarioSesion: Usuario = {
+          id: this.convertirId(data.usuario.id || data.usuario._id),
+          nombre: data.usuario.nombre,
+          sexo,
+          user: data.usuario.usuario,
+          rol,
+          cargo: this.obtenerCargo(rol, sexo),
+          sucursal: this.obtenerSucursal(rol, data.usuario.tiendaId),
+          tiendaId: this.extraerTiendaId(data.usuario.tiendaId),
+          avatar: this.usuarioActualService.obtenerAvatarPorRolYSexo(rol, sexo),
+        };
 
-      const data = await this.leerRespuesta(respuesta);
+        this.usuarioActualService.establecerUsuario(usuarioSesion);
+        localStorage.setItem('sesionActiva', 'true');
 
-      if (!respuesta.ok) {
+        await this.router.navigateByUrl(this.obtenerRutaDashboard(rol));
+
+        this.cargando = false;
+      },
+      error: (error) => {
+        console.error('Error login:', error);
+
         this.error =
-          data.message ||
-          (respuesta.status === 404
-            ? 'Usuario no encontrado.'
-            : respuesta.status === 401
-              ? 'Contraseña incorrecta.'
-              : 'Usuario o contraseña incorrectos.');
+          error.error?.message ||
+          'Usuario o contraseña incorrectos.';
 
-        return;
+        this.cargando = false;
       }
-
-      if (!data.usuario) {
-        this.error = 'El servidor no devolvió los datos del usuario.';
-        return;
-      }
-
-      const rol = this.convertirRol(data.usuario.rol);
-      const sexo = this.convertirSexo(data.usuario.sexo);
-
-      const usuarioSesion: Usuario = {
-        id: this.convertirId(data.usuario.id || data.usuario._id),
-        nombre: data.usuario.nombre,
-        sexo,
-        user: data.usuario.usuario,
-        rol,
-        cargo: this.obtenerCargo(rol, sexo),
-        sucursal: this.obtenerSucursal(rol, data.usuario.tiendaId),
-        tiendaId: this.extraerTiendaId(data.usuario.tiendaId),
-        avatar: this.usuarioActualService.obtenerAvatarPorRolYSexo(rol, sexo),
-      };
-
-      this.usuarioActualService.establecerUsuario(usuarioSesion);
-
-      localStorage.setItem('sesionActiva', 'true');
-
-      const rutaDashboard = this.obtenerRutaDashboard(rol);
-
-      const navegacionExitosa = await this.router.navigateByUrl(rutaDashboard);
-
-      if (!navegacionExitosa) {
-        this.usuarioActualService.cerrarSesion();
-        localStorage.removeItem('sesionActiva');
-
-        this.error = 'No fue posible abrir el panel del usuario.';
-      }
-    } catch (error: any) {
-      console.error('Error de inicio de sesión:', error);
-
-      this.error =
-        error?.name === 'AbortError'
-          ? 'El servidor tardó demasiado en responder. Intenta de nuevo.'
-          : 'No se pudo conectar con el servidor. Verifica que el backend esté encendido.';
-    } finally {
-      clearTimeout(timeout);
-      this.cargando = false;
-    }
+    });
   }
 
   alternarContrasena(): void {
@@ -150,49 +118,18 @@ export class Login {
     this.error = '';
   }
 
-  seleccionarUsuarioPrueba(rol: 'CAJERO' | 'GERENTE' | 'ADMIN'): void {
-    const usuariosPrueba: Record<'CAJERO' | 'GERENTE' | 'ADMIN', string> = {
-      CAJERO: 'cajero',
-      GERENTE: 'marco',
-      ADMIN: 'admin',
-    };
-
-    this.correo = usuariosPrueba[rol];
-
-    this.contrasena = '1234';
-    this.error = '';
-  }
-
-  private async leerRespuesta(respuesta: Response): Promise<LoginResponse> {
-    try {
-      return (await respuesta.json()) as LoginResponse;
-    } catch {
-      return {
-        message: 'El servidor devolvió una respuesta inválida.',
-      };
-    }
-  }
-
   private convertirRol(rolBackend: 'ADMIN' | 'GERENTE' | 'CAJERO'): UserRole {
-    if (rolBackend === 'ADMIN') {
-      return 'admin';
-    }
-
-    if (rolBackend === 'GERENTE') {
-      return 'gerente';
-    }
-
+    if (rolBackend === 'ADMIN') return 'admin';
+    if (rolBackend === 'GERENTE') return 'gerente';
     return 'cajero';
   }
 
   private convertirSexo(
-    sexoBackend: 'HOMBRE' | 'MUJER' | 'hombre' | 'mujer' | undefined,
+    sexoBackend: 'HOMBRE' | 'MUJER' | 'hombre' | 'mujer' | undefined
   ): SexoUsuario {
-    if (sexoBackend === 'MUJER' || sexoBackend === 'mujer') {
-      return 'mujer';
-    }
-
-    return 'hombre';
+    return sexoBackend === 'MUJER' || sexoBackend === 'mujer'
+      ? 'mujer'
+      : 'hombre';
   }
 
   private obtenerCargo(rol: UserRole, sexo: SexoUsuario): string {
@@ -200,65 +137,51 @@ export class Login {
       return sexo === 'mujer' ? 'Administradora' : 'Administrador';
     }
 
-    if (rol === 'gerente') {
-      return 'Gerente';
-    }
+    if (rol === 'gerente') return 'Gerente';
 
     return sexo === 'mujer' ? 'Cajera' : 'Cajero';
   }
 
-  private obtenerSucursal(rol: UserRole, tienda: TiendaLogin | string | null | undefined): string {
-    if (rol === 'admin') {
-      return 'Administración general';
-    }
+  private obtenerSucursal(
+    rol: UserRole,
+    tienda: TiendaLogin | string | null | undefined
+  ): string {
+    if (rol === 'admin') return 'Administración general';
 
     if (tienda && typeof tienda === 'object' && tienda.nombre) {
-      return tienda.nombre;
+      return tienda.ciudad
+        ? `${tienda.nombre} - ${tienda.ciudad}`
+        : tienda.nombre;
     }
 
-    if (typeof tienda === 'string' && tienda.trim()) {
-      return tienda;
-    }
+    if (typeof tienda === 'string' && tienda.trim()) return tienda;
 
     return 'Sucursal no asignada';
   }
 
   private obtenerRutaDashboard(rol: UserRole): string {
-    if (rol === 'admin') {
-      return '/dashboard-admin';
-    }
-
-    if (rol === 'gerente') {
-      return '/dashboard-gerente';
-    }
-
+    if (rol === 'admin') return '/dashboard-admin';
+    if (rol === 'gerente') return '/dashboard-gerente';
     return '/dashboard-cajero';
   }
 
-  private extraerTiendaId(tienda: TiendaLogin | string | null | undefined): string | undefined {
+  private extraerTiendaId(
+    tienda: TiendaLogin | string | null | undefined
+  ): string | undefined {
     if (!tienda) return undefined;
-    if (typeof tienda === 'object' && tienda._id) {
-      return tienda._id;
-    }
-    if (typeof tienda === 'string') {
-      return tienda;
-    }
+    if (typeof tienda === 'object' && tienda._id) return tienda._id;
+    if (typeof tienda === 'string') return tienda;
     return undefined;
   }
 
   private convertirId(id: string | undefined): number {
-    if (!id) {
-      return Date.now();
-    }
+    if (!id) return Date.now();
 
     const parteHexadecimal = id.replace(/[^a-fA-F0-9]/g, '').slice(-8);
-
     const idConvertido = Number.parseInt(parteHexadecimal, 16);
 
-    if (Number.isFinite(idConvertido) && idConvertido > 0) {
-      return idConvertido;
-    }
-
-    return Date.now();
+    return Number.isFinite(idConvertido) && idConvertido > 0
+      ? idConvertido
+      : Date.now();
   }
 }
