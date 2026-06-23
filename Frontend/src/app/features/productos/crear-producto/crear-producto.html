@@ -1,28 +1,15 @@
 <main class="create-product-page">
   <section class="page-introduction">
     <div>
-      <span class="eyebrow">
-        Catálogo de productos
-      </span>
+      <span class="eyebrow"> Catálogo de productos </span>
 
-      <h2>
-        Registrar nuevo producto
-      </h2>
+      <h2>Registrar nuevo producto</h2>
 
-      <p>
-        Captura la información necesaria para agregar
-        un producto al catálogo de XoXO.
-      </p>
+      <p>Captura la información necesaria para agregar un producto al catálogo de XoXO.</p>
     </div>
 
-    <a
-      class="back-link"
-      routerLink="/lista-productos"
-    >
-      <span aria-hidden="true">
-        ←
-      </span>
-
+    <a class="back-link" routerLink="/lista-productos">
+      <span aria-hidden="true">←</span>
       Volver al listado
     </a>
   </section>
@@ -32,31 +19,18 @@
     <section class="product-form-card">
       <div class="section-heading">
         <div>
-          <h2>
-            Información del producto
-          </h2>
+          <h2>Información del producto</h2>
 
-          <p>
-            Completa los campos obligatorios antes
-            de guardar.
-          </p>
+          <p>Completa los campos obligatorios antes de guardar.</p>
         </div>
 
-        <span class="required-label">
-          * Campos obligatorios
-        </span>
+        <span class="required-label"> * Campos obligatorios </span>
       </div>
 
-      <form
-        class="product-form"
-        (ngSubmit)="guardarProducto()"
-      >
+      <form class="product-form" (ngSubmit)="guardarProducto()">
         <div class="form-grid">
-          <!-- Nombre -->
           <div class="form-group">
-            <label for="nombre">
-              Nombre del producto *
-            </label>
+            <label for="nombre"> Nombre del producto * </label>
 
             <input
               id="nombre"
@@ -70,50 +44,17 @@
             />
           </div>
 
-          <!-- Código -->
-          <div class="form-group">
-            <label for="codigo">
-              Código del producto *
-            </label>
-
-            <input
-              id="codigo"
-              name="codigo"
-              type="number"
-              min="1"
-              step="1"
-              placeholder="Ejemplo: 1001"
-              [(ngModel)]="codigo"
-              [disabled]="guardando"
-              required
-            />
-
-            <small>
-              El código debe ser único dentro de la tienda.
-            </small>
-          </div>
-
-          <!-- Categoría -->
           <div class="form-group full-width">
-            <label>
-              Categoría *
-            </label>
+            <label> Categoría * </label>
 
             <div class="category-grid">
-              @for (
-                item of categorias;
-                track item.nombre
-              ) {
+              @for (item of categorias; track item.nombre) {
                 <button
                   type="button"
                   class="category-option"
-                  [class.active]="
-                    categoria === item.nombre
-                  "
+                  [class.active]="categoria === item.nombre"
                   [disabled]="guardando"
-                  (click)="
-                    seleccionarCategoria(item)
-                  "
+                  (click)="seleccionarCategoria(item)"
                 >
                   <span class="category-icon">
                     {{ item.icono }}
@@ -123,28 +64,19 @@
                     {{ item.nombre }}
                   </span>
 
-                  @if (
-                    categoria === item.nombre
-                  ) {
-                    <span class="category-check">
-                      ✓
-                    </span>
+                  @if (categoria === item.nombre) {
+                    <span class="category-check">✓</span>
                   }
                 </button>
               }
             </div>
           </div>
 
-          <!-- Precio -->
           <div class="form-group">
-            <label for="precio">
-              Precio de venta *
-            </label>
+            <label for="precio"> Precio de venta * </label>
 
             <div class="money-control">
-              <span>
-                $
-              </span>
+              <span>$</span>
 
               <input
                 id="precio"
@@ -160,125 +92,70 @@
             </div>
           </div>
 
-          <!-- Stock mínimo -->
           <div class="form-group">
-            <label for="stockMinimo">
-              Stock mínimo *
-            </label>
+            <label for="codigo"> Código del producto * </label>
 
             <input
-              id="stockMinimo"
-              name="stockMinimo"
+              id="codigo"
+              name="codigo"
               type="number"
-              min="0"
+              min="1"
               step="1"
-              placeholder="Ejemplo: 5"
-              [(ngModel)]="stockMinimo"
+              placeholder="Ejemplo: 1001"
+              [(ngModel)]="codigo"
               [disabled]="guardando"
               required
             />
-
-            <small>
-              Se utilizará para generar alertas de inventario.
-            </small>
           </div>
 
-          <!-- Tienda para administrador -->
-          @if (esAdministrador) {
+          @if (esAdmin) {
             <div class="form-group full-width">
-              <label for="tiendaId">
-                Tienda asignada *
-              </label>
+              <label>Tienda *</label>
 
-              <select
-                id="tiendaId"
-                name="tiendaId"
-                [(ngModel)]="tiendaId"
-                [disabled]="
-                  guardando ||
-                  cargandoTiendas
-                "
-                required
-              >
-                <option value="">
-                  {{
-                    cargandoTiendas
-                      ? 'Cargando tiendas...'
-                      : 'Selecciona una tienda'
-                  }}
-                </option>
-
-                @for (
-                  tienda of tiendas;
-                  track tienda._id
-                ) {
-                  <option
-                    [value]="tienda._id"
+              <div class="tienda-grid">
+                @for (tienda of tiendas; track tienda._id) {
+                  <button
+                    type="button"
+                    class="tienda-option"
+                    [class.active]="tiendaSeleccionada === tienda._id"
+                    [disabled]="guardando"
+                    (click)="tiendaSeleccionada = tienda._id"
                   >
-                    {{ tienda.nombre }}
+                    <span class="tienda-icon">🏪</span>
 
-                    @if (tienda.ciudad) {
-                      - {{ tienda.ciudad }}
+                    <div class="tienda-info">
+                      <strong>{{ tienda.nombre }}</strong>
+                      <span>{{ tienda.ciudad }}</span>
+                    </div>
+
+                    @if (tiendaSeleccionada === tienda._id) {
+                      <span class="tienda-check">✓</span>
                     }
-                  </option>
+                  </button>
                 }
-              </select>
+              </div>
 
               <small>
-                El producto solamente estará disponible
-                para los usuarios de esta tienda.
-              </small>
-            </div>
-          }
-
-          <!-- Tienda automática para gerente y cajero -->
-          @if (!esAdministrador) {
-            <div class="form-group full-width">
-              <label>
-                Tienda asignada
-              </label>
-
-              <input
-                type="text"
-                [value]="nombreTiendaSeleccionada"
-                disabled
-              />
-
-              <small>
-                La tienda se asigna automáticamente
-                según el usuario que inició sesión.
+                El producto quedará asociado a esta sucursal.
               </small>
             </div>
           }
         </div>
 
-        <!-- Mensaje de error -->
         @if (mensajeError) {
           <div class="message error">
-            <span>
-              !
-            </span>
-
-            <p>
-              {{ mensajeError }}
-            </p>
+            <span>!</span>
+            <p>{{ mensajeError }}</p>
           </div>
         }
 
-        <!-- Mensaje de éxito -->
         @if (mensajeExito) {
           <div class="message success">
-            <span>
-              ✓
-            </span>
-
-            <p>
-              {{ mensajeExito }}
-            </p>
+            <span>✓</span>
+            <p>{{ mensajeExito }}</p>
           </div>
         }
 
-        <!-- Acciones -->
         <div class="form-actions">
           <button
             class="clear-form-button"
@@ -290,26 +167,10 @@
           </button>
 
           <div>
-            <a
-              class="cancel-button"
-              routerLink="/lista-productos"
-            >
-              Cancelar
-            </a>
+            <a class="cancel-button" routerLink="/lista-productos"> Cancelar </a>
 
-            <button
-              class="save-button"
-              type="submit"
-              [disabled]="
-                guardando ||
-                cargandoTiendas
-              "
-            >
-              {{
-                guardando
-                  ? 'Guardando...'
-                  : 'Guardar producto'
-              }}
+            <button class="save-button" type="submit" [disabled]="guardando">
+              {{ guardando ? 'Guardando...' : 'Guardar producto' }}
             </button>
           </div>
         </div>
@@ -319,13 +180,9 @@
     <!-- Vista previa -->
     <aside class="product-preview-card">
       <div class="preview-heading">
-        <span>
-          Vista previa
-        </span>
+        <span>Vista previa</span>
 
-        <small>
-          Así se mostrará en el catálogo
-        </small>
+        <small> Así se mostrará en el catálogo </small>
       </div>
 
       <article class="product-preview">
@@ -336,65 +193,35 @@
         </div>
 
         @if (codigo) {
-          <span class="preview-code">
-            #{{ codigo }}
-          </span>
+          <span class="preview-code">#{{ codigo }}</span>
         }
 
-        <h3>
-          {{ nombreVistaPrevia }}
-        </h3>
+        <h3>{{ nombreVistaPrevia }}</h3>
 
         <span class="preview-category">
           {{ categoriaVistaPrevia }}
         </span>
 
         <div class="preview-price">
-          <span>
-            Precio de venta
-          </span>
+          <span>Precio de venta</span>
 
           <strong>
-            {{
-              precioVistaPrevia
-                | currency:
-                    'MXN':
-                    'symbol':
-                    '1.2-2'
-            }}
+            {{ precioVistaPrevia | currency: 'MXN' : 'symbol' : '1.2-2' }}
           </strong>
         </div>
 
-        <div class="preview-price">
-          <span>
-            Stock mínimo
-          </span>
-
-          <strong>
-            {{ stockMinimo || 0 }}
-          </strong>
-        </div>
-
-                <div class="preview-price">
-          <span>
-            Tienda
-          </span>
-
-          <strong>
-            {{ nombreTiendaSeleccionada }}
-          </strong>
-        </div>
+        @if (esAdmin) {
+          <div class="preview-price">
+            <span>Tienda</span>
+            <strong>{{ tiendaVistaPrevia }}</strong>
+          </div>
+        }
       </article>
 
       <div class="preview-notice">
-        <span aria-hidden="true">
-          💡
-        </span>
+        <span aria-hidden="true">💡</span>
 
-        <p>
-          La vista previa se actualiza automáticamente
-          mientras completas el formulario.
-        </p>
+        <p>La vista previa se actualiza automáticamente mientras completas el formulario.</p>
       </div>
     </aside>
   </div>

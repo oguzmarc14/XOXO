@@ -1,52 +1,21 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit
-} from '@angular/core';
-import {
-  FormsModule
-} from '@angular/forms';
-import {
-  HttpClient
-} from '@angular/common/http';
-import {
-  Router,
-  RouterLink
-} from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { Router, RouterLink } from '@angular/router';
+import { ProductosService } from '../../../core/services/productos';
+import { UsuarioActualService } from '../../../core/services/usuario-actual';
 
-import {
-  ProductosService
-} from '../../../core/services/productos';
-
-import {
-  UsuarioActualService
-} from '../../../core/services/usuario-actual';
-
-import {
-  Usuario
-} from '../../../core/models/usuario.model';
-
-interface TiendaProducto {
+interface TiendaOpcion {
   _id: string;
   nombre: string;
-  direccion?: string;
-  ciudad?: string;
-  telefono?: string;
-}
-
-interface CategoriaProducto {
-  nombre: string;
-  icono: string;
+  ciudad: string;
 }
 
 @Component({
   selector: 'app-crear-producto',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterLink
-  ],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './crear-producto.html',
   styleUrl: './crear-producto.css'
 })
@@ -56,45 +25,24 @@ export class CrearProducto implements OnInit {
   categoria = '';
   precio: number | null = null;
   stockMinimo: number | null = 5;
-  tiendaId = '';
 
-  tiendas: TiendaProducto[] = [];
-  usuarioActual!: Usuario;
-
-  cargandoTiendas = false;
   guardando = false;
-
   mensajeError = '';
   mensajeExito = '';
 
-  private readonly tiendasUrl =
-    'http://localhost:3000/tiendas';
+  esAdmin = false;
+  tiendas: TiendaOpcion[] = [];
+  tiendaSeleccionada = '';
 
-  readonly categorias: CategoriaProducto[] = [
-    {
-      nombre: 'Playeras',
-      icono: '👕'
-    },
-    {
-      nombre: 'Sudaderas',
-      icono: '🧥'
-    },
-    {
-      nombre: 'Accesorios',
-      icono: '👜'
-    },
-    {
-      nombre: 'Coleccionables',
-      icono: '🎁'
-    },
-    {
-      nombre: 'Gorras',
-      icono: '🧢'
-    },
-    {
-      nombre: 'Otros',
-      icono: '📦'
-    }
+  private tiendaIdGerente: string | undefined;
+
+  categorias = [
+    { nombre: 'Playeras',       icono: '👕' },
+    { nombre: 'Sudaderas',      icono: '🧥' },
+    { nombre: 'Accesorios',     icono: '👜' },
+    { nombre: 'Coleccionables', icono: '🎁' },
+    { nombre: 'Gorras',         icono: '🧢' },
+    { nombre: 'Otros',          icono: '📦' }
   ];
 
   constructor(
@@ -105,57 +53,27 @@ export class CrearProducto implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.usuarioActual =
-      this.usuarioActualService.obtenerUsuario();
+    const usuario = this.usuarioActualService.obtenerUsuario();
 
-    if (
-      !this.usuarioActual ||
-      this.usuarioActual.id === 0
-    ) {
-      this.mensajeError =
-        'No se encontró una sesión activa.';
-
-      return;
+    if (usuario.rol === 'admin') {
+      this.esAdmin = true;
+      this.http
+        .get<TiendaOpcion[]>('http://localhost:3000/tiendas')
+        .subscribe({
+          next: (tiendas) => { this.tiendas = tiendas; },
+          error: () => { this.mensajeError = 'No se pudieron cargar las tiendas.'; }
+        });
+    } else if (usuario.rol === 'gerente') {
+      this.tiendaIdGerente = usuario.tiendaId;
     }
-
-    if (this.esAdministrador) {
-      this.cargarTiendas();
-      return;
-    }
-
-    this.tiendaId =
-      this.usuarioActual.tiendaId || '';
-
-    if (!this.tiendaId) {
-      this.mensajeError =
-        'El usuario no tiene una tienda asignada. No es posible registrar productos.';
-    }
-  }
-
-  get esAdministrador(): boolean {
-    return this.usuarioActual?.rol === 'admin';
-  }
-
-  get esGerente(): boolean {
-    return this.usuarioActual?.rol === 'gerente';
-  }
-
-  get esCajero(): boolean {
-    return this.usuarioActual?.rol === 'cajero';
   }
 
   get nombreVistaPrevia(): string {
-    return (
-      this.nombre.trim() ||
-      'Nombre del producto'
-    );
+    return this.nombre.trim() || 'Nombre del producto';
   }
 
   get categoriaVistaPrevia(): string {
-    return (
-      this.categoria ||
-      'Categoría sin seleccionar'
-    );
+    return this.categoria || 'Categoría sin seleccionar';
   }
 
   get precioVistaPrevia(): number {
@@ -163,188 +81,83 @@ export class CrearProducto implements OnInit {
   }
 
   get iconoCategoria(): string {
-    return (
-      this.categorias.find(
-        item =>
-          item.nombre === this.categoria
-      )?.icono ?? '📦'
-    );
+    return this.categorias.find(c => c.nombre === this.categoria)?.icono ?? '📦';
   }
 
-  get nombreTiendaSeleccionada(): string {
-    if (!this.tiendaId) {
-      return this.esAdministrador
-        ? 'Tienda sin seleccionar'
-        : 'Tienda no asignada';
-    }
-
-    const tienda =
-      this.tiendas.find(
-        item =>
-          item._id === this.tiendaId
-      );
-
-    if (tienda) {
-      return tienda.ciudad
-        ? `${tienda.nombre} - ${tienda.ciudad}`
-        : tienda.nombre;
-    }
-
-    return (
-      this.usuarioActual?.sucursal ||
-      'Tienda asignada'
-    );
+  get tiendaVistaPrevia(): string {
+    if (!this.esAdmin) return '';
+    const tienda = this.tiendas.find(t => t._id === this.tiendaSeleccionada);
+    return tienda ? ${tienda.nombre} — ${tienda.ciudad} : 'Sin tienda asignada';
   }
 
-  seleccionarCategoria(
-    categoria: CategoriaProducto
-  ): void {
-    this.categoria =
-      categoria.nombre;
-
-    this.limpiarMensajes();
-  }
-
-  cargarTiendas(): void {
-    this.cargandoTiendas = true;
+  seleccionarCategoria(categoria: { nombre: string; icono: string }): void {
+    this.categoria = categoria.nombre;
     this.mensajeError = '';
-
-    this.http
-      .get<TiendaProducto[]>(
-        this.tiendasUrl
-      )
-      .subscribe({
-        next: tiendas => {
-          this.tiendas =
-            Array.isArray(tiendas)
-              ? tiendas
-              : [];
-
-          this.cargandoTiendas = false;
-
-          if (this.tiendas.length === 0) {
-            this.mensajeError =
-              'No existen tiendas disponibles para asignar el producto.';
-          }
-        },
-
-        error: error => {
-          console.error(
-            'Error al cargar tiendas:',
-            error
-          );
-
-          this.mensajeError =
-            'No fue posible cargar las tiendas.';
-
-          this.cargandoTiendas = false;
-        }
-      });
+    this.mensajeExito = '';
   }
 
   guardarProducto(): void {
-    this.limpiarMensajes();
+    this.mensajeError = '';
+    this.mensajeExito = '';
 
-    if (
-      this.codigo === null ||
-      Number(this.codigo) <= 0
-    ) {
-      this.mensajeError =
-        'El código del producto es obligatorio y debe ser mayor a cero.';
-
+    if (this.codigo === null || Number(this.codigo) <= 0) {
+      this.mensajeError = 'El código del producto es obligatorio y debe ser mayor a cero.';
       return;
     }
 
     if (!this.nombre.trim()) {
-      this.mensajeError =
-        'El nombre del producto es obligatorio.';
-
+      this.mensajeError = 'El nombre del producto es obligatorio.';
       return;
     }
 
     if (this.nombre.trim().length < 3) {
-      this.mensajeError =
-        'El nombre debe contener al menos 3 caracteres.';
-
+      this.mensajeError = 'El nombre debe contener al menos 3 caracteres.';
       return;
     }
 
     if (!this.categoria) {
-      this.mensajeError =
-        'Selecciona una categoría.';
-
+      this.mensajeError = 'Selecciona una categoría.';
       return;
     }
 
-    if (
-      this.precio === null ||
-      Number(this.precio) <= 0
-    ) {
-      this.mensajeError =
-        'El precio debe ser mayor a cero.';
-
+    if (this.precio === null || Number(this.precio) <= 0) {
+      this.mensajeError = 'El precio debe ser mayor a cero.';
       return;
     }
 
-    if (
-      this.stockMinimo === null ||
-      Number(this.stockMinimo) < 0
-    ) {
-      this.mensajeError =
-        'El stock mínimo no puede ser negativo.';
-
+    if (this.stockMinimo === null || Number(this.stockMinimo) < 0) {
+      this.mensajeError = 'El stock mínimo no puede ser negativo.';
       return;
     }
 
-    if (!this.tiendaId) {
-      this.mensajeError =
-        this.esAdministrador
-          ? 'Selecciona la tienda a la que pertenecerá el producto.'
-          : 'Tu usuario no tiene una tienda asignada.';
-
+    if (this.esAdmin && !this.tiendaSeleccionada) {
+      this.mensajeError = 'Selecciona la tienda a la que pertenece el producto.';
       return;
     }
 
     this.guardando = true;
 
-    this.productosService
-      .create({
-        codigo: Number(this.codigo),
-        nombre: this.nombre.trim(),
-        categoria: this.categoria,
-        precio: Number(this.precio),
-        stockMinimo: Number(this.stockMinimo),
-        tiendaId: this.tiendaId
-      })
-      .subscribe({
-        next: () => {
-          this.mensajeExito =
-            'El producto se registró correctamente.';
+    const tiendaId = this.esAdmin
+      ? this.tiendaSeleccionada
+      : this.tiendaIdGerente;
 
-          setTimeout(() => {
-            this.router.navigate([
-              '/lista-productos'
-            ]);
-          }, 900);
-        },
-
-        error: error => {
-          console.error(
-            'Error al guardar producto:',
-            error
-          );
-
-          this.mensajeError =
-            error.error?.message ||
-            'No fue posible guardar el producto. Verifica que el código no esté duplicado en esa tienda.';
-
-          this.guardando = false;
-        },
-
-        complete: () => {
-          this.guardando = false;
-        }
-      });
+    this.productosService.create({
+      codigo: Number(this.codigo),
+      nombre: this.nombre.trim(),
+      categoria: this.categoria,
+      precio: Number(this.precio),
+      stockMinimo: Number(this.stockMinimo),
+      tiendaId
+    }).subscribe({
+      next: () => {
+        this.mensajeExito = 'El producto se registró correctamente.';
+        setTimeout(() => this.router.navigate(['/lista-productos']), 900);
+      },
+      error: () => {
+        this.mensajeError = 'No fue posible guardar el producto. Verifica que el código no esté duplicado.';
+        this.guardando = false;
+      }
+    });
   }
 
   limpiarFormulario(): void {
@@ -353,19 +166,7 @@ export class CrearProducto implements OnInit {
     this.categoria = '';
     this.precio = null;
     this.stockMinimo = 5;
-
-    if (this.esAdministrador) {
-      this.tiendaId = '';
-    } else {
-      this.tiendaId =
-        this.usuarioActual?.tiendaId ||
-        '';
-    }
-
-    this.limpiarMensajes();
-  }
-
-  private limpiarMensajes(): void {
+    this.tiendaSeleccionada = '';
     this.mensajeError = '';
     this.mensajeExito = '';
   }
