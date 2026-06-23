@@ -15,36 +15,18 @@ interface TiendaOpcion {
 @Component({
   selector: 'app-crear-producto',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterLink
-  ],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './crear-producto.html',
   styleUrl: './crear-producto.css'
 })
-export class CrearProducto
-  implements OnInit {
-
+export class CrearProducto implements OnInit {
   codigo: number | null = null;
   nombre = '';
   categoria = '';
   precio: number | null = null;
   stockMinimo: number | null = 5;
 
-  /*
-    Es pública porque se utilizará
-    directamente desde el HTML.
-  */
-  tiendaId = '';
-
-  tiendas: TiendaProducto[] = [];
-
-  usuarioActual!: Usuario;
-
-  cargandoTiendas = false;
   guardando = false;
-
   mensajeError = '';
   mensajeExito = '';
 
@@ -54,33 +36,14 @@ export class CrearProducto
 
   private tiendaIdGerente: string | undefined;
 
-  readonly categorias:
-    CategoriaProducto[] = [
-      {
-        nombre: 'Playeras',
-        icono: '👕'
-      },
-      {
-        nombre: 'Sudaderas',
-        icono: '🧥'
-      },
-      {
-        nombre: 'Accesorios',
-        icono: '👜'
-      },
-      {
-        nombre: 'Coleccionables',
-        icono: '🎁'
-      },
-      {
-        nombre: 'Gorras',
-        icono: '🧢'
-      },
-      {
-        nombre: 'Otros',
-        icono: '📦'
-      }
-    ];
+  categorias = [
+    { nombre: 'Playeras',       icono: '👕' },
+    { nombre: 'Sudaderas',      icono: '🧥' },
+    { nombre: 'Accesorios',     icono: '👜' },
+    { nombre: 'Coleccionables', icono: '🎁' },
+    { nombre: 'Gorras',         icono: '🧢' },
+    { nombre: 'Otros',          icono: '📦' }
+  ];
 
   constructor(
     private productosService: ProductosService,
@@ -105,39 +68,12 @@ export class CrearProducto
     }
   }
 
-  get esAdministrador(): boolean {
-    return (
-      this.usuarioActual?.rol ===
-      'admin'
-    );
-  }
-
-  get esGerente(): boolean {
-    return (
-      this.usuarioActual?.rol ===
-      'gerente'
-    );
-  }
-
-  get esCajero(): boolean {
-    return (
-      this.usuarioActual?.rol ===
-      'cajero'
-    );
-  }
-
   get nombreVistaPrevia(): string {
-    return (
-      this.nombre.trim() ||
-      'Nombre del producto'
-    );
+    return this.nombre.trim() || 'Nombre del producto';
   }
 
   get categoriaVistaPrevia(): string {
-    return (
-      this.categoria ||
-      'Categoría sin seleccionar'
-    );
+    return this.categoria || 'Categoría sin seleccionar';
   }
 
   get precioVistaPrevia(): number {
@@ -145,13 +81,7 @@ export class CrearProducto
   }
 
   get iconoCategoria(): string {
-    return (
-      this.categorias.find(
-        item =>
-          item.nombre ===
-          this.categoria
-      )?.icono ?? '📦'
-    );
+    return this.categorias.find(c => c.nombre === this.categoria)?.icono ?? '📦';
   }
 
   get tiendaVistaPrevia(): string {
@@ -163,68 +93,25 @@ export class CrearProducto
   seleccionarCategoria(categoria: { nombre: string; icono: string }): void {
     this.categoria = categoria.nombre;
     this.mensajeError = '';
-
-    this.http
-      .get<TiendaProducto[]>(
-        this.tiendasUrl
-      )
-      .subscribe({
-        next: tiendas => {
-          this.tiendas =
-            Array.isArray(tiendas)
-              ? tiendas
-              : [];
-
-          this.cargandoTiendas = false;
-
-          if (
-            this.tiendas.length === 0
-          ) {
-            this.mensajeError =
-              'No existen tiendas disponibles para asignar el producto.';
-          }
-        },
-
-        error: error => {
-          console.error(
-            'Error al cargar tiendas:',
-            error
-          );
-
-          this.mensajeError =
-            'No fue posible cargar las tiendas.';
-
-          this.cargandoTiendas = false;
-        }
-      });
+    this.mensajeExito = '';
   }
 
   guardarProducto(): void {
-    this.limpiarMensajes();
+    this.mensajeError = '';
+    this.mensajeExito = '';
 
-    if (
-      this.codigo === null ||
-      Number(this.codigo) <= 0
-    ) {
-      this.mensajeError =
-        'El código del producto es obligatorio y debe ser mayor a cero.';
-
+    if (this.codigo === null || Number(this.codigo) <= 0) {
+      this.mensajeError = 'El código del producto es obligatorio y debe ser mayor a cero.';
       return;
     }
 
     if (!this.nombre.trim()) {
-      this.mensajeError =
-        'El nombre del producto es obligatorio.';
-
+      this.mensajeError = 'El nombre del producto es obligatorio.';
       return;
     }
 
-    if (
-      this.nombre.trim().length < 3
-    ) {
-      this.mensajeError =
-        'El nombre debe contener al menos 3 caracteres.';
-
+    if (this.nombre.trim().length < 3) {
+      this.mensajeError = 'El nombre debe contener al menos 3 caracteres.';
       return;
     }
 
