@@ -84,7 +84,14 @@ export class Login {
       const data = await this.leerRespuesta(respuesta);
 
       if (!respuesta.ok) {
-        this.error = data.message || 'Usuario o contraseña incorrectos.';
+        this.error =
+          data.message ||
+          (respuesta.status === 404
+            ? 'Usuario no encontrado.'
+            : respuesta.status === 401
+              ? 'Contraseña incorrecta.'
+              : 'Usuario o contraseña incorrectos.');
+
         return;
       }
 
