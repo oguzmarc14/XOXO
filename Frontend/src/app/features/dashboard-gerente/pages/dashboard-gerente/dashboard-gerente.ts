@@ -27,28 +27,35 @@ interface VentaBackend {
   productos: {
     productoId: ProductoBackend;
     cantidad: number;
-    precioUnitario: number;
-    subtotal: number;
-    stockAnterior: number;
-    stockNuevo: number;
   }[];
-  total: number;
-  fecha: string;
+  total?: number;
+  totalVenta?: number;
+  fecha?: string;
+  fechaVenta?: string;
+  createdAt?: string;
+  estado?: string;
 }
 
 interface AlertaBackend {
   _id: string;
   tiendaId: TiendaBackend | string | null;
   productoId: ProductoBackend | null;
-  ventaId?: string;
-  tipo: string;
   mensaje: string;
   stockAnterior: number;
   cantidadVendida: number;
   stockNuevo: number;
   estado: 'PENDIENTE' | 'RESUELTA';
-  fechaResolucion?: string;
-  fecha: string;
+  fecha?: string;
+  createdAt?: string;
+}
+
+interface TurnoBackend {
+  _id: string;
+  tiendaId: TiendaBackend | string;
+  usuarioId: any;
+  numeroCaja: number;
+  estado: 'ABIERTO' | 'CERRADO';
+  fechaApertura: string;
 }
 
 @Component({
@@ -70,7 +77,7 @@ export class DashboardGerente implements OnInit {
 
   alertas: AlertaBackend[] = [];
   ventas: VentaBackend[] = [];
-  turnosAbiertos: any[] = [];
+  turnosAbiertos: TurnoBackend[] = [];
 
   resumenFinal: CardResumenItem[] = [];
 
@@ -78,33 +85,10 @@ export class DashboardGerente implements OnInit {
   private readonly alertasApi = 'https://xoxo-backend-ewqr.onrender.com/alertas';
   private readonly ventasApi = 'https://xoxo-backend-ewqr.onrender.com/ventas';
 
-  constructor(
-    private http: HttpClient
-  ) {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    const usuario = JSON.parse(
-      localStorage.getItem('usuario') || '{}'
-    );
-
-    this.tiendaId =
-      usuario.tiendaId?._id ||
-      usuario.tiendaId ||
-      '';
-
-    this.sucursal =
-      usuario.tiendaId?.ciudad
-        ? `${usuario.tiendaId.nombre} - ${usuario.tiendaId.ciudad}`
-        : usuario.tiendaId?.nombre || 'Tienda no asignada';
-
-    if (!this.tiendaId) {
-      this.cargarResumen();
-      return;
-    }
-
-    this.cargarTurnos();
-    this.cargarAlertas();
-    this.cargarVentas();
+    this.cargarTurnosGlobales();
   }
 
   get subtituloTurno(): string {
@@ -112,21 +96,34 @@ export class DashboardGerente implements OnInit {
     return `Turno: ${estado} · ${this.sucursal}`;
   }
 
-  cargarTurnos(): void {
-    this.http.get<any[]>(`${this.turnosApi}/abiertos/${this.tiendaId}`)
+  cargarTurnosGlobales(): void {
+    this.http.get<TurnoBackend[]>(`${this.turnosApi}/abiertos`)
       .subscribe({
         next: turnos => {
-          this.turnosAbiertos = turnos;
-          this.turnoActivo = turnos.length > 0;
+          this.turnosAbiertos = turnos || [];
 
-          localStorage.setItem(
-            'turnoActivo',
-            String(this.turnoActivo)
+          if (this.turnosAbiertos.length === 0) {
+            this.turnoActivo = false;
+            this.cargarResumen();
+            return;
+          }
+
+          const turno = this.turnosAbiertos[0];
+
+          this.turnoActivo = true;
+          this.tiendaId = this.obtenerTiendaId(turno.tiendaId);
+          this.sucursal = this.obtenerNombreTienda(turno.tiendaId);
+
+          this.turnosAbiertos = this.turnosAbiertos.filter(
+            item => this.obtenerTiendaId(item.tiendaId) === this.tiendaId
           );
 
+          this.cargarAlertas();
+          this.cargarVentas();
           this.cargarResumen();
         },
-        error: () => {
+        error: error => {
+          console.error('Error al cargar turnos:', error);
           this.turnosAbiertos = [];
           this.turnoActivo = false;
           this.cargarResumen();
@@ -138,23 +135,22 @@ export class DashboardGerente implements OnInit {
     this.http.get<AlertaBackend[]>(this.alertasApi)
       .subscribe({
         next: alertas => {
-          this.alertas = alertas
-            .filter(alerta => {
-              const alertaTiendaId = this.obtenerTiendaId(alerta.tiendaId);
-
-              return (
-                alerta.estado !== 'RESUELTA' &&
-                alertaTiendaId === this.tiendaId
-              );
-            })
-            .sort((a, b) => {
-              return new Date(b.fecha).getTime() - new Date(a.fecha).getTime();
-            })
+          this.alertas = (alertas || [])
+            .filter(alerta =>
+              alerta.estado !== 'RESUELTA' &&
+              this.obtenerTiendaId(alerta.tiendaId) === this.tiendaId
+            )
+            .sort((a, b) =>
+              new Date(this.obtenerFecha(a)).getTime() -
+              new Date(this.obtenerFecha(b)).getTime()
+            )
+            .reverse()
             .slice(0, 3);
 
           this.cargarResumen();
         },
-        error: () => {
+        error: error => {
+          console.error('Error al cargar alertas:', error);
           this.alertas = [];
           this.cargarResumen();
         }
@@ -165,20 +161,21 @@ export class DashboardGerente implements OnInit {
     this.http.get<VentaBackend[]>(this.ventasApi)
       .subscribe({
         next: ventas => {
-          this.ventas = ventas
-            .filter(venta => {
-              const ventaTiendaId = this.obtenerTiendaId(venta.tiendaId);
-
-              return ventaTiendaId === this.tiendaId;
-            })
-            .sort((a, b) => {
-              return new Date(b.fecha).getTime() - new Date(a.fecha).getTime();
-            })
+          this.ventas = (ventas || [])
+            .filter(venta =>
+              this.obtenerTiendaId(venta.tiendaId) === this.tiendaId
+            )
+            .sort((a, b) =>
+              new Date(this.obtenerFechaVenta(a)).getTime() -
+              new Date(this.obtenerFechaVenta(b)).getTime()
+            )
+            .reverse()
             .slice(0, 4);
 
           this.cargarResumen();
         },
-        error: () => {
+        error: error => {
+          console.error('Error al cargar ventas:', error);
           this.ventas = [];
           this.cargarResumen();
         }
@@ -190,6 +187,10 @@ export class DashboardGerente implements OnInit {
   }
 
   obtenerHoraVenta(fecha: string): string {
+    if (!fecha) {
+      return '--:--';
+    }
+
     return new Date(fecha).toLocaleTimeString('es-MX', {
       hour: '2-digit',
       minute: '2-digit'
@@ -197,10 +198,10 @@ export class DashboardGerente implements OnInit {
   }
 
   obtenerProductosVenta(venta: VentaBackend): number {
-    return venta.productos.reduce(
-      (total, producto) => total + producto.cantidad,
+    return venta.productos?.reduce(
+      (total, producto) => total + Number(producto.cantidad || 0),
       0
-    );
+    ) || 0;
   }
 
   obtenerNombreProductoAlerta(alerta: AlertaBackend): string {
@@ -213,7 +214,7 @@ export class DashboardGerente implements OnInit {
         titulo: 'Estado del turno',
         valor: this.turnoActivo ? 'Activo' : 'Inactivo',
         descripcion: this.turnoActivo
-          ? 'La sucursal se encuentra operando actualmente.'
+          ? `La sucursal ${this.sucursal} se encuentra operando actualmente.`
           : 'No existe un turno abierto en este momento.',
         icono: '🕐',
         permiso: 'TURNOS_VER',
@@ -250,17 +251,31 @@ export class DashboardGerente implements OnInit {
     ];
   }
 
-  private obtenerTiendaId(
-    tienda: TiendaBackend | string | null
-  ): string {
+  private obtenerTiendaId(tienda: TiendaBackend | string | null): string {
     if (!tienda) {
       return '';
     }
 
-    if (typeof tienda === 'string') {
-      return tienda;
+    return typeof tienda === 'string'
+      ? tienda
+      : tienda._id || '';
+  }
+
+  private obtenerNombreTienda(tienda: TiendaBackend | string | null): string {
+    if (!tienda || typeof tienda === 'string') {
+      return 'Tienda asignada';
     }
 
-    return tienda._id || '';
+    return tienda.ciudad
+      ? `${tienda.nombre} - ${tienda.ciudad}`
+      : tienda.nombre;
+  }
+
+  private obtenerFecha(alerta: AlertaBackend): string {
+    return alerta.fecha || alerta.createdAt || '';
+  }
+
+  private obtenerFechaVenta(venta: VentaBackend): string {
+    return venta.fechaVenta || venta.fecha || venta.createdAt || '';
   }
 }
