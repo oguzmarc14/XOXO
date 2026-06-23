@@ -3,8 +3,11 @@
   width: 100%;
   min-width: 0;
   min-height: 100%;
-  color: #f9fafb;
-  font-family: Arial, Helvetica, sans-serif;
+  color: #f8fafc;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
 }
 
 * {
@@ -16,77 +19,290 @@ input {
   font: inherit;
 }
 
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .turno-content {
   width: 100%;
   min-width: 0;
-  padding: 10px 30px 40px;
+  padding: 28px 30px 42px;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
 }
+
+/* ==================================================
+   TARJETA PRINCIPAL
+   ================================================== */
 
 .turno-card {
   width: min(760px, 100%);
-  min-width: 0;
-  padding: 30px;
-  border: 1px solid rgba(249, 250, 251, 0.09);
-  border-radius: 26px;
-  background: rgba(31, 41, 55, 0.82);
-  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.16);
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(30, 41, 59, 0.98),
+      rgba(17, 24, 39, 0.98)
+    );
+  box-shadow:
+    0 24px 60px
+    rgba(0, 0, 0, 0.22);
 }
 
-/* Encabezado */
+/* ==================================================
+   ENCABEZADO
+   ================================================== */
 
 .card-heading {
-  padding-bottom: 24px;
-  border-bottom: 1px solid rgba(249, 250, 251, 0.08);
+  padding: 26px 30px;
+  border-bottom:
+    1px solid
+    rgba(148, 163, 184, 0.12);
   display: flex;
   align-items: flex-start;
-  gap: 18px;
+  gap: 17px;
 }
 
 .heading-icon {
   width: 56px;
   height: 56px;
-  border-radius: 18px;
-  background: rgba(225, 29, 72, 0.14);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  flex: 0 0 56px;
+  border-radius: 17px;
+  background:
+    rgba(225, 29, 72, 0.16);
+  display: grid;
+  place-items: center;
   font-size: 27px;
-  flex-shrink: 0;
+}
+
+.card-heading > div:last-child {
+  min-width: 0;
 }
 
 .eyebrow {
+  display: inline-block;
+  margin-bottom: 7px;
   color: #fb7185;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.card-heading h1,
-.status-card h1 {
-  margin: 7px 0 8px;
-  color: #f9fafb;
-  font-size: 28px;
+.card-heading h1 {
+  margin: 0 0 8px;
+  color: #f8fafc;
+  font-size: clamp(27px, 3vw, 34px);
+  line-height: 1.1;
 }
 
-.card-heading p,
-.status-card > p {
+.card-heading p {
   margin: 0;
-  color: #9ca3af;
-  line-height: 1.5;
+  color: #94a3b8;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
-/* Formulario */
+/* ==================================================
+   FORMULARIO
+   ================================================== */
 
 .turno-form {
-  padding-top: 24px;
+  padding: 26px 30px 30px;
 }
 
+.form-group {
+  margin-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.form-group input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.2);
+  border-radius: 13px;
+  outline: none;
+  background: #0f172a;
+  color: #f8fafc;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.form-group input::placeholder {
+  color: #64748b;
+}
+
+.form-group input:focus {
+  border-color:
+    rgba(225, 29, 72, 0.75);
+  box-shadow:
+    0 0 0 3px
+    rgba(225, 29, 72, 0.1);
+}
+
+.form-group input:disabled {
+  cursor: not-allowed;
+  border-color:
+    rgba(148, 163, 184, 0.12);
+  background:
+    rgba(148, 163, 184, 0.1);
+  color: #cbd5e1;
+  opacity: 1;
+}
+
+.form-group small {
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* ==================================================
+   CARGANDO TURNO
+   ================================================== */
+
+.loading-turno {
+  margin-bottom: 22px;
+  padding: 16px;
+  border:
+    1px solid
+    rgba(59, 130, 246, 0.2);
+  border-radius: 15px;
+  background:
+    rgba(30, 64, 175, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.loading-turno > span {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 13px;
+  background:
+    rgba(59, 130, 246, 0.14);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.loading-turno div {
+  min-width: 0;
+}
+
+.loading-turno strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #bfdbfe;
+  font-size: 13px;
+}
+
+.loading-turno p {
+  margin: 0;
+  color: #93c5fd;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* ==================================================
+   RESPONSABLE DEL TURNO
+   ================================================== */
+
+.turno-responsable {
+  margin-bottom: 22px;
+  padding: 18px;
+  border:
+    1px solid
+    rgba(34, 197, 94, 0.24);
+  border-radius: 17px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(20, 83, 45, 0.24),
+      rgba(15, 23, 42, 0.62)
+    );
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.responsable-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+  background:
+    rgba(34, 197, 94, 0.14);
+  display: grid;
+  place-items: center;
+  font-size: 23px;
+}
+
+.responsable-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.responsable-info span {
+  color: #86efac;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.responsable-info strong {
+  overflow-wrap: anywhere;
+  color: #f8fafc;
+  font-size: 18px;
+}
+
+.responsable-info small {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.turno-status {
+  padding: 7px 10px;
+  border:
+    1px solid
+    rgba(34, 197, 94, 0.26);
+  border-radius: 999px;
+  background:
+    rgba(34, 197, 94, 0.12);
+  color: #86efac;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+/* ==================================================
+   INFORMACIÓN DEL TURNO
+   ================================================== */
+
 .info-grid {
-  margin-bottom: 26px;
+  margin-bottom: 24px;
   display: grid;
   grid-template-columns:
     repeat(2, minmax(0, 1fr));
@@ -95,247 +311,315 @@ input {
 
 .info-item {
   min-width: 0;
-  padding: 15px;
-  border: 1px solid rgba(249, 250, 251, 0.07);
+  min-height: 76px;
+  padding: 15px 16px;
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.14);
   border-radius: 15px;
-  background: rgba(17, 24, 39, 0.44);
+  background:
+    rgba(15, 23, 42, 0.56);
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 6px;
 }
 
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
 .info-item span {
-  color: #9ca3af;
-  font-size: 12px;
+  color: #94a3b8;
+  font-size: 11px;
 }
 
 .info-item strong {
   overflow-wrap: anywhere;
-  color: #f9fafb;
-  font-size: 14px;
+  color: #f8fafc;
+  font-size: 15px;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-}
-
-.form-group label {
-  color: #f9fafb;
-  font-size: 14px;
-  font-weight: 700;
-}
+/* ==================================================
+   CAMPO DE DINERO
+   ================================================== */
 
 .money-input {
-  min-height: 56px;
-  border: 1px solid rgba(249, 250, 251, 0.13);
-  border-radius: 15px;
-  background: rgba(17, 24, 39, 0.7);
+  min-height: 48px;
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.2);
+  border-radius: 13px;
+  background: #0f172a;
   display: flex;
   align-items: center;
   overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .money-input:focus-within {
-  border-color: rgba(225, 29, 72, 0.72);
-  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+  border-color:
+    rgba(225, 29, 72, 0.75);
+  box-shadow:
+    0 0 0 3px
+    rgba(225, 29, 72, 0.1);
 }
 
-.money-input span {
-  padding-left: 17px;
+.money-input > span {
+  min-width: 46px;
+  align-self: stretch;
+  border-right:
+    1px solid
+    rgba(148, 163, 184, 0.14);
+  background:
+    rgba(30, 41, 59, 0.72);
   color: #fb7185;
-  font-size: 20px;
-  font-weight: 700;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
 }
 
 .money-input input {
-  width: 100%;
-  min-width: 0;
-  padding: 16px 17px 16px 8px;
+  min-height: 46px;
   border: none;
-  outline: none;
-  background: transparent;
-  color: #f9fafb;
-  font-size: 17px;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-.money-input input::placeholder {
-  color: #6b7280;
+.money-input input:focus {
+  box-shadow: none;
 }
 
-.money-input input:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.form-group small {
-  color: #9ca3af;
-  font-size: 12px;
-}
-
-/* Confirmación */
+/* ==================================================
+   CONFIRMACIÓN
+   ================================================== */
 
 .confirmation {
-  margin-top: 22px;
-  padding: 15px;
-  border: 1px solid rgba(249, 250, 251, 0.08);
-  border-radius: 14px;
-  background: rgba(17, 24, 39, 0.45);
-  color: #d1d5db;
+  margin-bottom: 22px;
+  padding: 16px;
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.14);
+  border-radius: 15px;
+  background:
+    rgba(15, 23, 42, 0.54);
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  font-size: 13px;
-  line-height: 1.45;
   cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
-}
-
-.confirmation:hover {
-  border-color: rgba(225, 29, 72, 0.3);
-  background: rgba(17, 24, 39, 0.62);
 }
 
 .confirmation input {
-  width: 17px;
-  height: 17px;
-  margin-top: 1px;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin: 1px 0 0;
   accent-color: #e11d48;
-  flex-shrink: 0;
+  cursor: pointer;
 }
 
-.confirmation input:disabled {
+.confirmation span {
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.confirmation.disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.confirmation.disabled input {
   cursor: not-allowed;
 }
 
-/* Mensaje de error */
+/* ==================================================
+   MENSAJES
+   ================================================== */
 
-.error-message {
-  margin: 18px 0 0;
-  padding: 12px 14px;
-  border: 1px solid rgba(225, 29, 72, 0.28);
-  border-radius: 12px;
-  background: rgba(225, 29, 72, 0.11);
-  color: #fb7185;
+.error-message,
+.success-message {
+  margin: 0 0 20px;
+  padding: 13px 15px;
+  border-radius: 13px;
   font-size: 13px;
+  font-weight: 700;
   line-height: 1.45;
 }
 
-/* Acciones */
+.error-message {
+  border:
+    1px solid
+    rgba(244, 63, 94, 0.35);
+  background:
+    rgba(127, 29, 29, 0.22);
+  color: #fecdd3;
+}
+
+.success-message {
+  border:
+    1px solid
+    rgba(34, 197, 94, 0.3);
+  background:
+    rgba(20, 83, 45, 0.23);
+  color: #bbf7d0;
+}
+
+/* ==================================================
+   ACCIONES
+   ================================================== */
 
 .form-actions {
   margin-top: 28px;
+  padding-top: 22px;
+  border-top:
+    1px solid
+    rgba(148, 163, 184, 0.12);
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 12px;
 }
 
-.primary-button,
 .secondary-button,
 .danger-button {
-  min-width: 135px;
-  padding: 13px 18px;
-  border: none;
+  min-height: 46px;
+  padding: 0 20px;
   border-radius: 13px;
-  color: #f9fafb;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   text-decoration: none;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
     opacity 0.2s ease;
 }
 
-.primary-button:hover,
-.secondary-button:hover,
+.secondary-button {
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.2);
+  background:
+    rgba(30, 41, 59, 0.76);
+  color: #e2e8f0;
+}
+
+.secondary-button:hover {
+  border-color:
+    rgba(148, 163, 184, 0.42);
+  background:
+    rgba(51, 65, 85, 0.84);
+}
+
+.danger-button {
+  border:
+    1px solid
+    #e11d48;
+  background:
+    linear-gradient(
+      135deg,
+      #e11d48,
+      #be123c
+    );
+  color: #ffffff;
+  box-shadow:
+    0 14px 30px
+    rgba(225, 29, 72, 0.22);
+  cursor: pointer;
+}
+
 .danger-button:hover:not(:disabled) {
   transform: translateY(-2px);
 }
 
-.primary-button {
-  background: linear-gradient(
-    135deg,
-    #15803d,
-    #22c55e
-  );
-  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.16);
-}
-
-.secondary-button {
-  border: 1px solid rgba(249, 250, 251, 0.13);
-  background: rgba(17, 24, 39, 0.6);
-}
-
-.danger-button {
-  background: linear-gradient(
-    135deg,
-    #9f1239,
-    #e11d48
-  );
-  box-shadow: 0 12px 24px rgba(225, 29, 72, 0.18);
-}
-
 .danger-button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.48;
   box-shadow: none;
 }
 
-/* Estado sin turno */
+/* ==================================================
+   RESPONSIVE
+   ================================================== */
 
-.status-card {
-  text-align: center;
-}
-
-.status-icon {
-  width: 68px;
-  height: 68px;
-  margin: 0 auto 18px;
-  border-radius: 50%;
-  color: #fb7185;
-  background: rgba(225, 29, 72, 0.15);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 30px;
-  font-weight: 700;
-}
-
-.form-actions.centered {
-  justify-content: center;
-}
-
-/* Responsive */
-
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .turno-content {
-    padding: 8px 18px 30px;
-  }
-
-  .turno-card {
-    padding: 21px;
-    border-radius: 21px;
+    padding:
+      20px 16px 32px;
   }
 
   .card-heading {
-    flex-direction: column;
+    padding:
+      22px 20px;
+  }
+
+  .turno-form {
+    padding:
+      22px 20px 24px;
+  }
+
+  .turno-responsable {
+    grid-template-columns:
+      auto minmax(0, 1fr);
+  }
+
+  .turno-status {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 
   .info-grid {
     grid-template-columns: 1fr;
   }
 
+  .info-item.full-width {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .turno-content {
+    padding:
+      16px 12px 26px;
+  }
+
+  .turno-card {
+    border-radius: 18px;
+  }
+
+  .card-heading {
+    flex-direction: column;
+  }
+
+  .heading-icon {
+    width: 50px;
+    height: 50px;
+    flex-basis: 50px;
+  }
+
+  .turno-responsable {
+    grid-template-columns: 1fr;
+  }
+
+  .responsable-icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .turno-status {
+    grid-column: auto;
+  }
+
   .form-actions {
     flex-direction: column-reverse;
   }
 
-  .primary-button,
   .secondary-button,
   .danger-button {
     width: 100%;

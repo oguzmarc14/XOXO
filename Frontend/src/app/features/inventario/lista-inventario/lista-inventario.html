@@ -166,27 +166,8 @@
     </div>
 
     <div
-      class="message error"
-      *ngIf="mensajeError"
-    >
-      <span>!</span>
-      <p>{{ mensajeError }}</p>
-    </div>
-
-    <div
-      class="empty-state"
-      *ngIf="cargando"
-    >
-      <div class="empty-icon">⏳</div>
-
-      <h3>Cargando inventario</h3>
-
-      <p>Consultando productos, tiendas y existencias.</p>
-    </div>
-
-    <div
       class="table-container"
-      *ngIf="!cargando && productosFiltrados.length > 0; else inventarioVacio"
+      *ngIf="!cargando && !mensajeError && productosFiltrados.length > 0; else inventarioVacio"
     >
       <table>
         <thead>
@@ -254,7 +235,7 @@
     </div>
 
     <ng-template #inventarioVacio>
-      <div class="empty-state" *ngIf="!cargando">
+      <div class="empty-state" *ngIf="!cargando && !mensajeError">
         <div class="empty-icon">🔍</div>
 
         <h3>No se encontraron productos</h3>
