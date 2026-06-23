@@ -1,95 +1,288 @@
 <main class="inventory-page">
+  <!-- ==========================================
+       TARJETAS DE RESUMEN
+       ========================================== -->
+
   <section class="summary-grid">
     <article class="summary-card featured">
-      <div class="summary-icon">📦</div>
+      <div class="summary-icon">
+        📦
+      </div>
+
       <div>
-        <span>Productos en inventario</span>
-        <strong>{{ totalProductos }}</strong>
-        <small>Registros reales de MongoDB</small>
+        <span>
+          Productos en inventario
+        </span>
+
+        <strong>
+          {{ totalProductos }}
+        </strong>
+
+        <small>
+          Registros reales de MongoDB
+        </small>
       </div>
     </article>
 
     <article class="summary-card">
-      <div class="summary-icon">🧮</div>
+      <div class="summary-icon">
+        🧮
+      </div>
+
       <div>
-        <span>Unidades disponibles</span>
-        <strong>{{ totalUnidades }}</strong>
-        <small>Existencias acumuladas</small>
+        <span>
+          Unidades disponibles
+        </span>
+
+        <strong>
+          {{ totalUnidades }}
+        </strong>
+
+        <small>
+          Existencias acumuladas
+        </small>
       </div>
     </article>
 
     <article class="summary-card warning">
-      <div class="summary-icon">⚠️</div>
+      <div class="summary-icon">
+        ⚠️
+      </div>
+
       <div>
-        <span>Stock bajo</span>
-        <strong>{{ productosStockBajo }}</strong>
-        <small>Requieren reabastecimiento</small>
+        <span>
+          Stock bajo
+        </span>
+
+        <strong>
+          {{ productosStockBajo }}
+        </strong>
+
+        <small>
+          Requieren reabastecimiento
+        </small>
       </div>
     </article>
 
     <article class="summary-card danger">
-      <div class="summary-icon">✖</div>
+      <div class="summary-icon">
+        ✖
+      </div>
+
       <div>
-        <span>Productos agotados</span>
-        <strong>{{ productosAgotados }}</strong>
-        <small>Sin piezas disponibles</small>
+        <span>
+          Productos agotados
+        </span>
+
+        <strong>
+          {{ productosAgotados }}
+        </strong>
+
+        <small>
+          Sin piezas disponibles
+        </small>
       </div>
     </article>
 
     <article class="summary-card value">
-      <div class="summary-icon">💰</div>
+      <div class="summary-icon">
+        💰
+      </div>
+
       <div>
-        <span>Valor del inventario</span>
-        <strong>{{ valorInventario | currency:'MXN':'symbol':'1.2-2' }}</strong>
-        <small>Valor estimado disponible</small>
+        <span>
+          Valor del inventario
+        </span>
+
+        <strong>
+          {{
+            valorInventario
+              | currency:'MXN':'symbol':'1.2-2'
+          }}
+        </strong>
+
+        <small>
+          Valor estimado disponible
+        </small>
       </div>
     </article>
   </section>
 
+  <!-- ==========================================
+       GENERACIÓN DEL INVENTARIO DEL GERENTE
+       ========================================== -->
+
+  <section
+    class="inventory-generation-section"
+    *ngIf="puedeCrearInventario"
+  >
+    <div class="generation-content">
+      <div class="generation-icon">
+        📋
+      </div>
+
+      <div class="generation-information">
+        <span class="generation-eyebrow">
+          Inventario de la tienda
+        </span>
+
+        <h2>
+          {{ nombreTiendaActual }}
+        </h2>
+
+        <p *ngIf="productos.length === 0">
+          Crea automáticamente el inventario utilizando
+          todos los productos registrados en esta tienda.
+          Las existencias comenzarán en cero.
+        </p>
+
+        <p *ngIf="productos.length > 0">
+          Puedes reemplazar el inventario actual por uno
+          nuevo generado con todos los productos que
+          pertenecen actualmente a esta tienda.
+        </p>
+
+        <small>
+          Al reemplazarlo se eliminarán únicamente los
+          registros anteriores de esta tienda. Los
+          inventarios de otras tiendas no serán afectados.
+        </small>
+      </div>
+    </div>
+
+    <button
+      class="generate-inventory-button"
+      type="button"
+      [disabled]="reemplazandoInventario"
+      (click)="crearOReemplazarInventario()"
+    >
+      <span aria-hidden="true">
+        {{
+          reemplazandoInventario
+            ? '⏳'
+            : productos.length > 0
+              ? '🔄'
+              : '➕'
+        }}
+      </span>
+
+      {{
+        reemplazandoInventario
+          ? 'Generando inventario...'
+          : productos.length > 0
+            ? 'Reemplazar inventario'
+            : 'Crear inventario'
+      }}
+    </button>
+  </section>
+
+  <!-- ==========================================
+       MENSAJES
+       ========================================== -->
+
+  <div
+    class="message success"
+    *ngIf="mensajeExito"
+  >
+    <span>
+      ✓
+    </span>
+
+    <p>
+      {{ mensajeExito }}
+    </p>
+  </div>
+
+  <div
+    class="message error"
+    *ngIf="mensajeError"
+  >
+    <span>
+      !
+    </span>
+
+    <p>
+      {{ mensajeError }}
+    </p>
+  </div>
+
+  <!-- ==========================================
+       FILTROS
+       ========================================== -->
+
   <section class="filters-section">
     <div class="section-heading">
       <div>
-        <h2>Consultar inventario</h2>
-        <p>Busca productos y filtra existencias reales por tienda.</p>
+        <h2>
+          Consultar inventario
+        </h2>
+
+        <p *ngIf="esGerente">
+          Busca productos y consulta las existencias
+          de {{ nombreTiendaActual }}.
+        </p>
+
+        <p *ngIf="esAdmin">
+          Busca productos y filtra existencias reales
+          por tienda.
+        </p>
       </div>
 
       <div class="heading-actions">
-        <a class="secondary-link" routerLink="/movimientos-inventario">
+        <a
+          class="secondary-link"
+          routerLink="/movimientos-inventario"
+          *ngIf="puedeVerMovimientos"
+        >
           🔄 Ver movimientos
         </a>
 
-        <a class="primary-link" routerLink="/lista-productos">
+        <a
+          class="primary-link"
+          routerLink="/lista-productos"
+          *ngIf="puedeAdministrar"
+        >
           🏷️ Administrar productos
         </a>
       </div>
     </div>
 
     <div class="filters-grid">
+      <!-- Búsqueda -->
       <div class="form-group search-group">
-        <label for="busqueda">Buscar producto</label>
+        <label for="busqueda">
+          Buscar producto
+        </label>
 
         <div class="search-control">
-          <span aria-hidden="true">🔍</span>
+          <span aria-hidden="true">
+            🔍
+          </span>
 
           <input
             id="busqueda"
             type="search"
-            placeholder="Nombre, categoría o tienda"
+            placeholder="Nombre, código, categoría o tienda"
             [(ngModel)]="busqueda"
             (ngModelChange)="aplicarFiltros()"
           />
         </div>
       </div>
 
+      <!-- Categoría -->
       <div class="form-group">
-        <label for="categoria">Categoría</label>
+        <label for="categoria">
+          Categoría
+        </label>
 
         <select
           id="categoria"
           [(ngModel)]="categoriaSeleccionada"
           (ngModelChange)="aplicarFiltros()"
         >
-          <option value="todas">Todas</option>
+          <option value="todas">
+            Todas
+          </option>
 
           <option
             *ngFor="let categoria of categorias"
@@ -100,15 +293,23 @@
         </select>
       </div>
 
-      <div class="form-group">
-        <label for="sucursal">Tienda</label>
+      <!-- Tienda: solo administrador -->
+      <div
+        class="form-group"
+        *ngIf="esAdmin"
+      >
+        <label for="sucursal">
+          Tienda
+        </label>
 
         <select
           id="sucursal"
           [(ngModel)]="sucursalSeleccionada"
           (ngModelChange)="aplicarFiltros()"
         >
-          <option value="todas">Todas</option>
+          <option value="todas">
+            Todas
+          </option>
 
           <option
             *ngFor="let sucursal of sucursales"
@@ -119,18 +320,49 @@
         </select>
       </div>
 
+      <!-- Tienda fija: gerente -->
+      <div
+        class="form-group"
+        *ngIf="esGerente"
+      >
+        <label for="tiendaAsignada">
+          Tienda
+        </label>
+
+        <input
+          id="tiendaAsignada"
+          type="text"
+          [value]="nombreTiendaActual"
+          disabled
+        />
+      </div>
+
+      <!-- Estado -->
       <div class="form-group">
-        <label for="estado">Nivel de existencias</label>
+        <label for="estado">
+          Nivel de existencias
+        </label>
 
         <select
           id="estado"
           [(ngModel)]="estadoSeleccionado"
           (ngModelChange)="aplicarFiltros()"
         >
-          <option value="todos">Todos</option>
-          <option value="disponible">Disponible</option>
-          <option value="bajo">Stock bajo</option>
-          <option value="agotado">Agotado</option>
+          <option value="todos">
+            Todos
+          </option>
+
+          <option value="disponible">
+            Disponible
+          </option>
+
+          <option value="bajo">
+            Stock bajo
+          </option>
+
+          <option value="agotado">
+            Agotado
+          </option>
         </select>
       </div>
 
@@ -144,108 +376,184 @@
     </div>
   </section>
 
+  <!-- ==========================================
+       TABLA DEL INVENTARIO
+       ========================================== -->
+
   <section class="inventory-section">
     <div class="table-heading">
       <div>
-        <h2>Existencias registradas</h2>
-        <p>{{ productosFiltrados.length }} producto(s) encontrado(s)</p>
+        <h2>
+          Existencias registradas
+        </h2>
+
+        <p>
+          {{ productosFiltrados.length }}
+          producto(s) encontrado(s)
+        </p>
       </div>
 
-      <span class="results-badge">Inventario actualizado</span>
+      <span
+        class="results-badge"
+        *ngIf="!cargando"
+      >
+        Inventario actualizado
+      </span>
     </div>
 
-    <div class="message error" *ngIf="mensajeError">
-      <span>!</span>
-      <p>{{ mensajeError }}</p>
-    </div>
-
-    <div class="empty-state" *ngIf="cargando">
-      <div class="empty-icon">⏳</div>
-      <h3>Cargando inventario</h3>
-      <p>Consultando productos, tiendas y existencias.</p>
-    </div>
-
-    <div
-      class="message error"
-      *ngIf="mensajeError"
-    >
-      <span>!</span>
-      <p>{{ mensajeError }}</p>
-    </div>
-
+    <!-- Cargando -->
     <div
       class="empty-state"
       *ngIf="cargando"
     >
-      <div class="empty-icon">⏳</div>
+      <div class="empty-icon">
+        ⏳
+      </div>
 
-      <h3>Cargando inventario</h3>
+      <h3>
+        Cargando inventario
+      </h3>
 
-      <p>Consultando productos, tiendas y existencias.</p>
+      <p>
+        Consultando productos, tiendas y existencias.
+      </p>
     </div>
 
+    <!-- Tabla -->
     <div
       class="table-container"
-      *ngIf="!cargando && productosFiltrados.length > 0; else inventarioVacio"
+      *ngIf="
+        !cargando &&
+        productosFiltrados.length > 0
+      "
     >
       <table>
         <thead>
           <tr>
-            <th>Producto</th>
-            <th>Categoría</th>
-            <th>Tienda</th>
-            <th>Existencia</th>
-            <th>Mínimo</th>
-            <th>Precio</th>
-            <th>Estado</th>
+            <th>
+              Producto
+            </th>
+
+            <th>
+              Categoría
+            </th>
+
+            <th>
+              Tienda
+            </th>
+
+            <th>
+              Existencia
+            </th>
+
+            <th>
+              Mínimo
+            </th>
+
+            <th>
+              Precio
+            </th>
+
+            <th>
+              Estado
+            </th>
           </tr>
         </thead>
 
         <tbody>
-          <tr *ngFor="let producto of productosFiltrados">
+          <tr
+            *ngFor="
+              let producto of productosFiltrados
+            "
+          >
+            <!-- Producto -->
             <td>
               <div class="product-cell">
                 <div class="product-avatar">
-                  {{ obtenerIconoCategoria(producto.categoria) }}
+                  {{
+                    obtenerIconoCategoria(
+                      producto.categoria
+                    )
+                  }}
                 </div>
 
                 <div>
-                  <strong>{{ producto.nombre }}</strong>
-                  <span>ID {{ producto.productoId }}</span>
+                  <strong>
+                    {{ producto.nombre }}
+                  </strong>
+
+                  <span>
+                    Código:
+                    {{ producto.codigo }}
+                  </span>
                 </div>
               </div>
             </td>
 
-            <td>{{ producto.categoria }}</td>
+            <!-- Categoría -->
+            <td>
+              {{ producto.categoria }}
+            </td>
 
+            <!-- Tienda -->
             <td>
               <div class="branch-cell">
-                <span aria-hidden="true">🏪</span>
-                <span>{{ producto.sucursal }}</span>
+                <span aria-hidden="true">
+                  🏪
+                </span>
+
+                <span>
+                  {{ producto.sucursal }}
+                </span>
               </div>
             </td>
 
+            <!-- Existencia -->
             <td>
               <strong
                 class="stock-number"
-                [class.stock-warning]="producto.estado === 'bajo'"
-                [class.stock-danger]="producto.estado === 'agotado'"
+                [class.stock-warning]="
+                  producto.estado === 'bajo'
+                "
+                [class.stock-danger]="
+                  producto.estado === 'agotado'
+                "
               >
                 {{ producto.existencia }}
               </strong>
             </td>
 
-            <td>{{ producto.minimo }}</td>
+            <!-- Stock mínimo -->
+            <td>
+              {{ producto.minimo }}
+            </td>
 
-            <td>{{ producto.precio | currency:'MXN':'symbol':'1.2-2' }}</td>
+            <!-- Precio -->
+            <td>
+              {{
+                producto.precio
+                  | currency:'MXN':'symbol':'1.2-2'
+              }}
+            </td>
 
+            <!-- Estado -->
             <td>
               <span
                 class="status-badge"
-                [ngClass]="obtenerClaseEstado(producto.estado)"
+                [ngClass]="
+                  obtenerClaseEstado(
+                    producto.estado
+                  )
+                "
               >
-                <span class="status-dot"></span>
-                {{ obtenerTextoEstado(producto.estado) }}
+                <span class="status-dot">
+                </span>
+
+                {{
+                  obtenerTextoEstado(
+                    producto.estado
+                  )
+                }}
               </span>
             </td>
           </tr>
@@ -253,20 +561,70 @@
       </table>
     </div>
 
-    <ng-template #inventarioVacio>
-      <div class="empty-state" *ngIf="!cargando">
-        <div class="empty-icon">🔍</div>
-
-        <h3>No se encontraron productos</h3>
-
-        <p>
-          Modifica los filtros o registra inventario para las tiendas.
-        </p>
-
-        <button type="button" (click)="limpiarFiltros()">
-          Mostrar todo el inventario
-        </button>
+    <!-- Inventario vacío -->
+    <div
+      class="empty-state"
+      *ngIf="
+        !cargando &&
+        productosFiltrados.length === 0
+      "
+    >
+      <div class="empty-icon">
+        {{
+          productos.length === 0
+            ? '📦'
+            : '🔍'
+        }}
       </div>
-    </ng-template>
+
+      <h3 *ngIf="productos.length === 0">
+        No hay inventario registrado
+      </h3>
+
+      <h3 *ngIf="productos.length > 0">
+        No se encontraron productos
+      </h3>
+
+      <p *ngIf="productos.length === 0 && esGerente">
+        Presiona el botón Crear inventario para generar
+        automáticamente las existencias de los productos
+        de tu tienda.
+      </p>
+
+      <p *ngIf="productos.length === 0 && esAdmin">
+        Todavía no existen inventarios registrados
+        en las tiendas.
+      </p>
+
+      <p *ngIf="productos.length > 0">
+        Modifica los filtros para consultar otros
+        productos del inventario.
+      </p>
+
+      <button
+        type="button"
+        *ngIf="productos.length > 0"
+        (click)="limpiarFiltros()"
+      >
+        Mostrar todo el inventario
+      </button>
+
+      <button
+        class="generate-empty-button"
+        type="button"
+        *ngIf="
+          productos.length === 0 &&
+          puedeCrearInventario
+        "
+        [disabled]="reemplazandoInventario"
+        (click)="crearOReemplazarInventario()"
+      >
+        {{
+          reemplazandoInventario
+            ? 'Creando inventario...'
+            : 'Crear inventario'
+        }}
+      </button>
+    </div>
   </section>
 </main>
