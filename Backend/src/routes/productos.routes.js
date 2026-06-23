@@ -1,110 +1,373 @@
-import express from "express"
-import Productos from "../models/Productos.js"
+import express from "express";
+import mongoose from "mongoose";
+
+import Productos from "../models/Productos.js";
+import Tiendas from "../models/Tiendas.js";
 
 const router = express.Router();
 
+/*
+  GET /productos
+
+  Administrador:
+  GET /productos
+
+  Gerente o cajero:
+  GET /productos?tiendaId=ID_DE_TIENDA
+*/
 router.get("/", async (req, res) => {
-    try{
-        const filtro = {};
-        if (req.query.tiendaId) {
-            filtro.tiendaId = req.query.tiendaId;
-        }
+  try {
+    const filtro = {};
 
-        const productos = await Productos.find(filtro);
+    if (req.query.tiendaId) {
+      if (
+        !mongoose.Types.ObjectId.isValid(
+          req.query.tiendaId
+        )
+      ) {
+        return res.status(400).json({
+          message:
+            "El identificador de la tienda no es válido"
+        });
+      }
 
-        res.json(productos);
+      filtro.tiendaId =
+        req.query.tiendaId;
     }
-    catch (error) {
-        res.status(500).json({
-            message: "Error al obtener productos",
-            error: error.message
-        })
-    }
+
+    const productos =
+      await Productos
+        .find(filtro)
+        .populate(
+          "tiendaId",
+          "nombre direccion ciudad telefono"
+        )
+        .sort({
+          nombre: 1
+        });
+
+    res.json(productos);
+  } catch (error) {
+    res.status(500).json({
+      message:
+        "Error al obtener productos",
+
+      error:
+        error.message
+    });
+  }
 });
 
+/*
+  POST /productos
+
+  Todos los productos deben incluir tiendaId.
+*/
 router.post("/", async (req, res) => {
-    try{
-        const productos = await Productos.create(req.body);
+  try {
+    const {
+      codigo,
+      nombre,
+      precio,
+      categoria,
+      stockMinimo,
+      tiendaId
+    } = req.body;
 
-        res.status(201).json(productos);
-    }
-    catch (error){
-        res.status(500).json({
-            message: "Error al registrar producto",
-            error: error.message
-        });
-    }
-})
-
-router.get("/:id", async (req, res) => {
-    try{
-        const productos = await Productos.findById(req.params.id);
-
-        if(!productos){
-            return res.status(404).json({
-                message: "Producto no encontrado"
-            });
-        }
-        res.json(productos)
+    if (!tiendaId) {
+      return res.status(400).json({
+        message:
+          "Debes asignar una tienda al producto"
+      });
     }
 
-    catch(error){
-        res.status(500).json({
-            message: "Error al obtener el producto",
-            error: error.message
-        });
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        tiendaId
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "El identificador de la tienda no es válido"
+      });
     }
-});
 
-router.put("/:id", async (req, res) => {
-    try{
-        const productos = await Productos.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
+    const tiendaExiste =
+      await Tiendas.exists({
+        _id: tiendaId
+      });
+
+    if (!tiendaExiste) {
+      return res.status(404).json({
+        message:
+          "La tienda seleccionada no existe"
+      });
+    }
+
+    const productoDuplicado =
+      await Productos.findOne({
+        codigo: Number(codigo),
+        tiendaId
+      });
+
+    if (productoDuplicado) {
+      return res.status(409).json({
+        message:
+          "Ya existe un producto con ese código en la tienda seleccionada"
+      });
+    }
+
+    const producto =
+      await Productos.create({
+        codigo:
+          Number(codigo),
+
+        nombre:
+          String(nombre).trim(),
+
+        precio:
+          Number(precio),
+
+        categoria:
+          String(categoria).trim(),
+
+        stockMinimo:
+          stockMinimo === undefined
+            ? 5
+            : Number(stockMinimo),
+
+        tiendaId
+      });
+
+    const productoCompleto =
+      await Productos
+        .findById(producto._id)
+        .populate(
+          "tiendaId",
+          "nombre direccion ciudad telefono"
         );
 
-        if(!productos) {
-            return res.status(404).json({
-                message: "Producto no encontrado"
-            })
-        }
-
-        res.json(productos);
+    res.status(201).json(
+      productoCompleto
+    );
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message:
+          "Ya existe un producto con ese código en la tienda seleccionada"
+      });
     }
 
-    catch(error){
-        res.status(500).json({
-            message: "Error al actualizar producto",
-            error: error.message
-        });
-    }
+    res.status(500).json({
+      message:
+        "Error al registrar producto",
+
+      error:
+        error.message
+    });
+  }
 });
 
-router.delete("/:id", async (req, res) =>{
-    try{
-        const productos = await Productos.findByIdAndDelete(req.params.id);
-
-        if(!productos){
-            return res.status(404).json({
-                message: "Producto no encontrado"
-            })
-        }
-
-        res.json({
-            message: "Producto eliminada correctamente"
-        });
+/*
+  GET /productos/:id
+*/
+router.get("/:id", async (req, res) => {
+  try {
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        req.params.id
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "El identificador del producto no es válido"
+      });
     }
 
-    catch (error){
-        res.status(500).json({
-            message: "Error al eliminar producto",
-            error: error.message
-        });
+    const producto =
+      await Productos
+        .findById(req.params.id)
+        .populate(
+          "tiendaId",
+          "nombre direccion ciudad telefono"
+        );
+
+    if (!producto) {
+      return res.status(404).json({
+        message:
+          "Producto no encontrado"
+      });
     }
+
+    res.json(producto);
+  } catch (error) {
+    res.status(500).json({
+      message:
+        "Error al obtener el producto",
+
+      error:
+        error.message
+    });
+  }
+});
+
+/*
+  PUT /productos/:id
+*/
+router.put("/:id", async (req, res) => {
+  try {
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        req.params.id
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "El identificador del producto no es válido"
+      });
+    }
+
+    const productoActual =
+      await Productos.findById(
+        req.params.id
+      );
+
+    if (!productoActual) {
+      return res.status(404).json({
+        message:
+          "Producto no encontrado"
+      });
+    }
+
+    const tiendaId =
+      req.body.tiendaId ||
+      productoActual.tiendaId.toString();
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        tiendaId
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "El identificador de la tienda no es válido"
+      });
+    }
+
+    const tiendaExiste =
+      await Tiendas.exists({
+        _id: tiendaId
+      });
+
+    if (!tiendaExiste) {
+      return res.status(404).json({
+        message:
+          "La tienda seleccionada no existe"
+      });
+    }
+
+    const codigo =
+      req.body.codigo !== undefined
+        ? Number(req.body.codigo)
+        : productoActual.codigo;
+
+    const productoDuplicado =
+      await Productos.findOne({
+        _id: {
+          $ne: req.params.id
+        },
+        codigo,
+        tiendaId
+      });
+
+    if (productoDuplicado) {
+      return res.status(409).json({
+        message:
+          "Ya existe otro producto con ese código en la tienda seleccionada"
+      });
+    }
+
+    const datosActualizados = {
+      ...req.body,
+      codigo,
+      tiendaId
+    };
+
+    const producto =
+      await Productos
+        .findByIdAndUpdate(
+          req.params.id,
+          datosActualizados,
+          {
+            new: true,
+            runValidators: true
+          }
+        )
+        .populate(
+          "tiendaId",
+          "nombre direccion ciudad telefono"
+        );
+
+    res.json(producto);
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message:
+          "Ya existe otro producto con ese código en la tienda seleccionada"
+      });
+    }
+
+    res.status(500).json({
+      message:
+        "Error al actualizar producto",
+
+      error:
+        error.message
+    });
+  }
+});
+
+/*
+  DELETE /productos/:id
+*/
+router.delete("/:id", async (req, res) => {
+  try {
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        req.params.id
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "El identificador del producto no es válido"
+      });
+    }
+
+    const producto =
+      await Productos.findByIdAndDelete(
+        req.params.id
+      );
+
+    if (!producto) {
+      return res.status(404).json({
+        message:
+          "Producto no encontrado"
+      });
+    }
+
+    res.json({
+      message:
+        "Producto eliminado correctamente"
+    });
+  } catch (error) {
+    res.status(500).json({
+      message:
+        "Error al eliminar producto",
+
+      error:
+        error.message
+    });
+  }
 });
 
 export default router;
-
-
-
