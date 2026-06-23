@@ -23,7 +23,7 @@ interface ProductoBackend {
 
 interface VentaBackend {
   _id: string;
-  tiendaId: TiendaBackend | string;
+  tiendaId: TiendaBackend | string | null;
   productos: {
     productoId: ProductoBackend;
     cantidad: number;
@@ -38,8 +38,8 @@ interface VentaBackend {
 
 interface AlertaBackend {
   _id: string;
-  tiendaId: TiendaBackend | string;
-  productoId: ProductoBackend;
+  tiendaId: TiendaBackend | string | null;
+  productoId: ProductoBackend | null;
   ventaId?: string;
   tipo: string;
   mensaje: string;
@@ -93,8 +93,9 @@ export class DashboardGerente implements OnInit {
       '';
 
     this.sucursal =
-      usuario.tiendaId?.nombre ||
-      'Tienda no asignada';
+      usuario.tiendaId?.ciudad
+        ? `${usuario.tiendaId.nombre} - ${usuario.tiendaId.ciudad}`
+        : usuario.tiendaId?.nombre || 'Tienda no asignada';
 
     if (!this.tiendaId) {
       this.cargarResumen();
@@ -139,15 +140,15 @@ export class DashboardGerente implements OnInit {
         next: alertas => {
           this.alertas = alertas
             .filter(alerta => {
-              const alertaTiendaId =
-                typeof alerta.tiendaId === 'string'
-                  ? alerta.tiendaId
-                  : alerta.tiendaId._id;
+              const alertaTiendaId = this.obtenerTiendaId(alerta.tiendaId);
 
               return (
                 alerta.estado !== 'RESUELTA' &&
                 alertaTiendaId === this.tiendaId
               );
+            })
+            .sort((a, b) => {
+              return new Date(b.fecha).getTime() - new Date(a.fecha).getTime();
             })
             .slice(0, 3);
 
@@ -166,12 +167,12 @@ export class DashboardGerente implements OnInit {
         next: ventas => {
           this.ventas = ventas
             .filter(venta => {
-              const ventaTiendaId =
-                typeof venta.tiendaId === 'string'
-                  ? venta.tiendaId
-                  : venta.tiendaId._id;
+              const ventaTiendaId = this.obtenerTiendaId(venta.tiendaId);
 
               return ventaTiendaId === this.tiendaId;
+            })
+            .sort((a, b) => {
+              return new Date(b.fecha).getTime() - new Date(a.fecha).getTime();
             })
             .slice(0, 4);
 
@@ -200,6 +201,10 @@ export class DashboardGerente implements OnInit {
       (total, producto) => total + producto.cantidad,
       0
     );
+  }
+
+  obtenerNombreProductoAlerta(alerta: AlertaBackend): string {
+    return alerta.productoId?.nombre || 'Producto no disponible';
   }
 
   cargarResumen(): void {
@@ -243,5 +248,19 @@ export class DashboardGerente implements OnInit {
         textoEnlace: 'Ver historial'
       }
     ];
+  }
+
+  private obtenerTiendaId(
+    tienda: TiendaBackend | string | null
+  ): string {
+    if (!tienda) {
+      return '';
+    }
+
+    if (typeof tienda === 'string') {
+      return tienda;
+    }
+
+    return tienda._id || '';
   }
 }

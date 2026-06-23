@@ -1,13 +1,15 @@
 <main class="page-content">
-  <section class="turno-alert">
+  <section class="turno-alert" [class.turno-inactivo]="!turnoActivo">
     <div class="turno-status">
-      <span class="status-dot active"></span>
+      <span class="status-dot" [class.active]="turnoActivo"></span>
 
       <div>
-        <strong>Registrar venta</strong>
+        <strong>
+          {{ turnoActivo ? 'Punto de venta activo' : 'Punto de venta inactivo' }}
+        </strong>
 
         <p>
-          Selecciona una tienda y agrega productos desde el inventario.
+          {{ tiendaNombre }}
         </p>
       </div>
     </div>
@@ -17,34 +19,36 @@
     <section class="catalog-section">
       <div class="section-heading">
         <div>
-          <h2>Productos disponibles</h2>
+          <h2>Punto de venta</h2>
 
-          <p>
-            Catálogo tipo tienda de conveniencia conectado al backend.
-          </p>
+          <p>Ingresa el código del producto o selecciónalo desde el catálogo.</p>
         </div>
 
-        <span class="product-count">
-          {{ productosFiltrados.length }} productos
-        </span>
+        <span class="product-count"> {{ productosFiltrados.length }} productos </span>
       </div>
 
       <div class="catalog-filters">
-        <select
-          [(ngModel)]="tiendaId"
-          (ngModelChange)="cargarProductosPorTienda()"
-        >
-          <option value="">
-            Selecciona una tienda
-          </option>
+        <div class="search-control">
+          <span>🏷️</span>
 
-          <option
-            *ngFor="let tienda of tiendas"
-            [value]="tienda._id"
-          >
-            {{ tienda.nombre }} - {{ tienda.ciudad }}
-          </option>
-        </select>
+          <input
+            type="number"
+            min="1"
+            placeholder="Código del producto"
+            [(ngModel)]="codigoBusqueda"
+            [disabled]="!turnoActivo"
+            (keyup.enter)="agregarPorCodigo()"
+          />
+        </div>
+
+        <button
+          type="button"
+          class="register-sale-button"
+          [disabled]="!turnoActivo"
+          (click)="agregarPorCodigo()"
+        >
+          Agregar por código
+        </button>
       </div>
 
       <div class="catalog-filters">
@@ -53,58 +57,38 @@
 
           <input
             type="search"
-            placeholder="Buscar por nombre o categoría"
+            placeholder="Buscar por código, nombre o categoría"
             [(ngModel)]="busquedaProducto"
+            [disabled]="!turnoActivo"
           />
         </div>
 
-        <select [(ngModel)]="categoriaSeleccionada">
-          <option
-            *ngFor="let categoria of categorias"
-            [value]="categoria"
-          >
-            {{
-              categoria === 'todas'
-                ? 'Todas las categorías'
-                : categoria
-            }}
+        <select [(ngModel)]="categoriaSeleccionada" [disabled]="!turnoActivo">
+          <option *ngFor="let categoria of categorias" [value]="categoria">
+            {{ categoria === 'todas' ? 'Todas las categorías' : categoria }}
           </option>
         </select>
       </div>
 
-      <div
-        class="empty-state"
-        *ngIf="!tiendaId"
-      >
-        <span>🏪</span>
+      <div class="empty-state" *ngIf="!turnoActivo">
+        <span>🕐</span>
 
-        <h3>Selecciona una tienda</h3>
+        <h3>No hay turno abierto</h3>
 
-        <p>
-          El inventario se cargará según la tienda elegida.
-        </p>
+        <p>Abre un turno para comenzar a registrar ventas.</p>
       </div>
 
-      <div
-        class="empty-state"
-        *ngIf="tiendaId && cargandoProductos"
-      >
+      <div class="empty-state" *ngIf="turnoActivo && cargandoProductos">
         <span>⏳</span>
 
         <h3>Cargando productos</h3>
 
-        <p>
-          Consultando inventario disponible.
-        </p>
+        <p>Consultando inventario disponible.</p>
       </div>
 
       <div
         class="products-grid"
-        *ngIf="
-          tiendaId &&
-          !cargandoProductos &&
-          productosFiltrados.length > 0
-        "
+        *ngIf="turnoActivo && !cargandoProductos && productosFiltrados.length > 0"
       >
         <article
           class="product-card"
@@ -112,30 +96,19 @@
           [class.out-of-stock]="producto.stock === 0"
         >
           <div class="product-top">
-            <div class="product-icon">
-              🛒
-            </div>
+            <div class="product-icon">🛒</div>
 
             <span
               class="stock-badge"
-              [class.low-stock]="
-                producto.stock > 0 &&
-                producto.stock <= 5
-              "
+              [class.low-stock]="producto.stock > 0 && producto.stock <= 5"
               [class.no-stock]="producto.stock === 0"
             >
-              {{
-                producto.stock === 0
-                  ? 'Sin stock'
-                  : 'Stock: ' + producto.stock
-              }}
+              {{ producto.stock === 0 ? 'Sin stock' : 'Stock: ' + producto.stock }}
             </span>
           </div>
 
           <div class="product-information">
-            <h3>
-              {{ producto.nombre }}
-            </h3>
+            <h3>{{ producto.codigo }} - {{ producto.nombre }}</h3>
 
             <p>
               {{ producto.categoria }}
@@ -144,10 +117,7 @@
 
           <div class="product-footer">
             <strong>
-              {{
-                producto.precio
-                  | currency:'MXN':'symbol':'1.2-2'
-              }}
+              {{ producto.precio | currency: 'MXN' : 'symbol' : '1.2-2' }}
             </strong>
 
             <button
@@ -163,19 +133,13 @@
 
       <div
         class="empty-state"
-        *ngIf="
-          tiendaId &&
-          !cargandoProductos &&
-          productosFiltrados.length === 0
-        "
+        *ngIf="turnoActivo && !cargandoProductos && productosFiltrados.length === 0"
       >
         <span>🔍</span>
 
         <h3>No hay productos disponibles</h3>
 
-        <p>
-          Esta tienda no tiene inventario registrado o no coincide la búsqueda.
-        </p>
+        <p>Esta tienda no tiene inventario registrado o no coincide la búsqueda.</p>
       </div>
     </section>
 
@@ -184,9 +148,7 @@
         <div>
           <h2>Venta actual</h2>
 
-          <p>
-            {{ cantidadArticulos }} artículo(s) agregado(s)
-          </p>
+          <p>{{ cantidadArticulos }} artículo(s)</p>
         </div>
 
         <button
@@ -199,66 +161,35 @@
         </button>
       </div>
 
-      <div
-        class="cart-products"
-        *ngIf="carrito.length > 0; else carritoVacio"
-      >
-        <article
-          class="cart-item"
-          *ngFor="let producto of carrito"
-        >
-          <div class="cart-item-icon">
-            🛒
-          </div>
+      <div class="cart-products" *ngIf="carrito.length > 0; else carritoVacio">
+        <article class="cart-item" *ngFor="let producto of carrito">
+          <div class="cart-item-icon">🛒</div>
 
           <div class="cart-item-information">
-            <strong>
-              {{ producto.nombre }}
-            </strong>
+            <strong> {{ producto.codigo }} - {{ producto.nombre }} </strong>
 
             <span>
-              {{
-                producto.precio
-                  | currency:'MXN':'symbol':'1.2-2'
-              }}
+              {{ producto.precio | currency: 'MXN' : 'symbol' : '1.2-2' }}
               por pieza
             </span>
 
             <div class="quantity-control">
-              <button
-                type="button"
-                (click)="disminuirCantidad(producto)"
-              >
-                −
-              </button>
+              <button type="button" (click)="disminuirCantidad(producto)">−</button>
 
               <span>
                 {{ producto.cantidad }}
               </span>
 
-              <button
-                type="button"
-                (click)="aumentarCantidad(producto)"
-              >
-                +
-              </button>
+              <button type="button" (click)="aumentarCantidad(producto)">+</button>
             </div>
           </div>
 
           <div class="cart-item-total">
             <strong>
-              {{
-                producto.subtotal
-                  | currency:'MXN':'symbol':'1.2-2'
-              }}
+              {{ producto.subtotal | currency: 'MXN' : 'symbol' : '1.2-2' }}
             </strong>
 
-            <button
-              type="button"
-              (click)="eliminarProducto(producto.productoId)"
-            >
-              ×
-            </button>
+            <button type="button" (click)="eliminarProducto(producto.productoId)">×</button>
           </div>
         </article>
       </div>
@@ -267,11 +198,9 @@
         <div class="empty-state compact">
           <span>🛒</span>
 
-          <h3>La venta está vacía</h3>
+          <h3>Venta vacía</h3>
 
-          <p>
-            Agrega productos desde el catálogo para comenzar.
-          </p>
+          <p>Agrega productos para comenzar el cobro.</p>
         </div>
       </ng-template>
 
@@ -285,46 +214,136 @@
         </div>
 
         <div class="total-row">
-          <span>Total</span>
+          <span>Total a cobrar</span>
 
           <strong>
-            {{
-              totalVenta
-                | currency:'MXN':'symbol':'1.2-2'
-            }}
+            {{ totalVenta | currency: 'MXN' : 'symbol' : '1.2-2' }}
           </strong>
         </div>
       </div>
 
-      <p
-        class="message error"
-        *ngIf="mensajeErrorVenta"
-      >
+      <p class="message error" *ngIf="mensajeErrorVenta">
         {{ mensajeErrorVenta }}
       </p>
 
-      <p
-        class="message success"
-        *ngIf="mensajeExitoVenta"
-      >
+      <p class="message success" *ngIf="mensajeExitoVenta">
         {{ mensajeExitoVenta }}
       </p>
 
       <button
         class="register-sale-button"
         type="button"
-        [disabled]="
-          carrito.length === 0 ||
-          registrandoVenta
-        "
+        [disabled]="!turnoActivo || carrito.length === 0 || registrandoVenta"
+        (click)="abrirResumenVenta()"
+      >
+        {{ registrandoVenta ? 'Cobrando...' : 'Cobrar venta' }}
+      </button>
+    </aside>
+  </section>
+
+  <div
+  class="modal-backdrop"
+  *ngIf="mostrarResumenVenta"
+>
+  <section class="sale-modal">
+    <div class="modal-header">
+      <div>
+        <span class="modal-kicker">Resumen de cobro</span>
+        <h2>Confirmar venta</h2>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        (click)="cerrarResumenVenta()"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="ticket-data">
+      <div>
+        <span>Tienda</span>
+        <strong>{{ tiendaNombre }}</strong>
+      </div>
+
+      <div>
+        <span>Caja</span>
+        <strong>Caja {{ numeroCaja || '-' }}</strong>
+      </div>
+
+      <div>
+        <span>Cajero</span>
+        <strong>{{ cajeroNombre }}</strong>
+        <small *ngIf="cajeroUsuario">{{ cajeroUsuario }}</small>
+      </div>
+
+      <div>
+        <span>Cliente</span>
+        <strong>Público general</strong>
+      </div>
+
+      <div>
+        <span>Fecha</span>
+        <strong>{{ fechaActual | date:'dd/MM/yyyy HH:mm' }}</strong>
+      </div>
+
+      <div>
+        <span>Turno</span>
+        <strong>{{ turnoId }}</strong>
+      </div>
+    </div>
+
+    <div class="ticket-products">
+      <article
+        class="ticket-product"
+        *ngFor="let producto of carrito"
+      >
+        <div>
+          <strong>{{ producto.nombre }}</strong>
+          <span>
+            Código {{ producto.codigo }} ·
+            {{ producto.cantidad }} x
+            {{ producto.precio | currency:'MXN':'symbol':'1.2-2' }}
+          </span>
+        </div>
+
+        <strong>
+          {{ producto.subtotal | currency:'MXN':'symbol':'1.2-2' }}
+        </strong>
+      </article>
+    </div>
+
+    <div class="ticket-total-box">
+      <span>Total a pagar</span>
+
+      <strong>
+        {{ totalVenta | currency:'MXN':'symbol':'1.2-2' }}
+      </strong>
+    </div>
+
+    <div class="modal-actions">
+      <button
+        type="button"
+        class="clear-cart"
+        (click)="cerrarResumenVenta()"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="register-sale-button"
+        [disabled]="registrandoVenta"
         (click)="registrarVenta()"
       >
         {{
           registrandoVenta
             ? 'Registrando...'
-            : 'Registrar venta'
+            : 'Confirmar cobro'
         }}
       </button>
-    </aside>
+    </div>
   </section>
+</div>
 </main>

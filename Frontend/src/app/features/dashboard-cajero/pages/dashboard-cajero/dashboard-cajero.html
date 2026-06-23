@@ -1,48 +1,33 @@
 <main class="dashboard-content">
   <!-- Acciones principales del cajero -->
   <section class="quick-actions">
-    <a
-      class="action-card primary"
-      routerLink="/nueva-venta"
-    >
+    <a class="action-card primary" routerLink="/nueva-venta">
       <div class="action-icon">🛒</div>
 
       <div>
         <h3>Nueva venta</h3>
 
-        <p>
-          Registrar una venta nueva para el cliente.
-        </p>
+        <p>Registrar una venta nueva para el cliente.</p>
       </div>
     </a>
 
-    <a
-      class="action-card"
-      routerLink="/historial-ventas"
-    >
+    <a class="action-card" routerLink="/historial-ventas">
       <div class="action-icon">↩️</div>
 
       <div>
         <h3>Devoluciones</h3>
 
-        <p>
-          Buscar una venta y gestionar una devolución.
-        </p>
+        <p>Buscar una venta y gestionar una devolución.</p>
       </div>
     </a>
 
-    <a
-      class="action-card"
-      routerLink="/lista-inventario"
-    >
+    <a class="action-card" routerLink="/lista-inventario">
       <div class="action-icon">📦</div>
 
       <div>
         <h3>Ver inventario</h3>
 
-        <p>
-          Consultar productos disponibles sin editar datos.
-        </p>
+        <p>Consultar productos disponibles sin editar datos.</p>
       </div>
     </a>
   </section>
@@ -53,17 +38,10 @@
       <div>
         <h2>Últimas ventas</h2>
 
-        <p>
-          Movimientos recientes registrados durante el turno
-        </p>
+        <p>Movimientos recientes registrados durante el turno</p>
       </div>
 
-      <a
-        class="history-link"
-        routerLink="/historial-ventas"
-      >
-        Ver historial
-      </a>
+      <a class="history-link" routerLink="/historial-ventas"> Ver historial </a>
     </div>
 
     <div class="table-container">
@@ -79,52 +57,33 @@
         </thead>
 
         <tbody>
-          <tr>
-            <td>#V-0018</td>
-            <td>14:35</td>
-            <td>5 productos</td>
-            <td>$345.00</td>
+          <tr *ngFor="let venta of ventasRecientes">
+            <td>{{ obtenerFolio(venta) }}</td>
+
+            <td>{{ obtenerHoraVenta(venta) }}</td>
+
             <td>
-              <span class="status-badge success">
-                Completada
+              {{ obtenerCantidadProductos(venta) }}
+              producto(s)
+            </td>
+
+            <td>
+              {{ obtenerTotalVenta(venta) | currency: 'MXN' : 'symbol' : '1.2-2' }}
+            </td>
+
+            <td>
+              <span
+                class="status-badge"
+                [class.success]="obtenerEstadoVenta(venta) !== 'DEVUELTA'"
+                [class.danger]="obtenerEstadoVenta(venta) === 'DEVUELTA'"
+              >
+                {{ obtenerEstadoVenta(venta) === 'DEVUELTA' ? 'Devuelta' : 'Completada' }}
               </span>
             </td>
           </tr>
 
-          <tr>
-            <td>#V-0017</td>
-            <td>14:12</td>
-            <td>2 productos</td>
-            <td>$128.00</td>
-            <td>
-              <span class="status-badge success">
-                Completada
-              </span>
-            </td>
-          </tr>
-
-          <tr>
-            <td>#V-0016</td>
-            <td>13:58</td>
-            <td>1 producto</td>
-            <td>$79.00</td>
-            <td>
-              <span class="status-badge danger">
-                Devuelta
-              </span>
-            </td>
-          </tr>
-
-          <tr>
-            <td>#V-0015</td>
-            <td>13:41</td>
-            <td>4 productos</td>
-            <td>$286.00</td>
-            <td>
-              <span class="status-badge success">
-                Completada
-              </span>
-            </td>
+          <tr *ngIf="ventasRecientes.length === 0">
+            <td colspan="5">No hay ventas recientes registradas.</td>
           </tr>
         </tbody>
       </table>
@@ -138,4 +97,3 @@
     [items]="resumenFinal"
   ></app-card-resumen>
 </main>
-

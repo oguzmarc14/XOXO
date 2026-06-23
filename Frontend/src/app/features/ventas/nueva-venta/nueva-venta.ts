@@ -1,31 +1,50 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
 interface TiendaBackend {
   _id: string;
   nombre: string;
-  ciudad: string;
+  ciudad?: string;
+}
+
+interface UsuarioTurno {
+  _id: string;
+  nombre: string;
+  usuario?: string;
+  rol?: string;
+}
+
+interface TurnoBackend {
+  _id: string;
+  tiendaId: string | TiendaBackend;
+  usuarioId: string | UsuarioTurno;
+  numeroCaja: number;
+  montoInicial: number;
+  estado: 'ABIERTO' | 'CERRADO';
+  fechaApertura: string;
 }
 
 interface ProductoBackend {
   _id: string;
+  codigo: number;
   nombre: string;
   precio: number;
   categoria: string;
+  stockMinimo?: number;
 }
 
 interface InventarioBackend {
   _id: string;
-  tiendaId: string;
-  productoId: string;
+  tiendaId: string | TiendaBackend;
+  productoId: string | ProductoBackend;
   piezas: number;
 }
 
 interface ProductoVenta {
   productoId: string;
+  codigo: number;
   nombre: string;
   precio: number;
   categoria: string;
@@ -40,18 +59,27 @@ interface ProductoCarrito extends ProductoVenta {
 @Component({
   selector: 'app-nueva-venta',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './nueva-venta.html',
-  styleUrl: './nueva-venta.css'
+  styleUrl: './nueva-venta.css',
 })
 export class NuevaVenta implements OnInit {
   tiendaId = '';
+  tiendaNombre = 'Tienda no asignada';
+
+  turnoActivo = false;
+  turnoId = '';
+  numeroCaja: number | null = null;
+  cajeroNombre = 'Cajero no asignado';
+  cajeroUsuario = '';
+  fechaAperturaTurno = '';
+
+  mostrarResumenVenta = false;
+  fechaActual = new Date();
+
   busquedaProducto = '';
   categoriaSeleccionada = 'todas';
+  codigoBusqueda: number | null = null;
 
   productos: ProductoVenta[] = [];
   carrito: ProductoCarrito[] = [];
@@ -59,30 +87,23 @@ export class NuevaVenta implements OnInit {
   mensajeErrorVenta = '';
   mensajeExitoVenta = '';
 
-  tiendas: TiendaBackend[] = [];
-
   cargandoProductos = false;
   registrandoVenta = false;
 
-  private readonly tiendasApi = 'http://localhost:3000/tiendas';
-  private readonly productosApi = 'http://localhost:3000/productos';
   private readonly inventarioApi = 'http://localhost:3000/inventario';
   private readonly ventasApi = 'http://localhost:3000/ventas';
+  private readonly turnosApi = 'http://localhost:3000/turnos';
 
-  constructor(
-    private http: HttpClient
-  ) {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.cargarTiendas();
+    this.cargarTurnosAbiertosBackend();
   }
 
   get categorias(): string[] {
     return [
       'todas',
-      ...new Set(
-        this.productos.map(producto => producto.categoria)
-      )
+      ...new Set(this.productos.map(producto => producto.categoria)),
     ];
   }
 
@@ -92,6 +113,7 @@ export class NuevaVenta implements OnInit {
     return this.productos.filter(producto => {
       const coincideBusqueda =
         !texto ||
+        producto.codigo.toString().includes(texto) ||
         this.normalizarTexto(producto.nombre).includes(texto) ||
         this.normalizarTexto(producto.categoria).includes(texto);
 
@@ -117,88 +139,124 @@ export class NuevaVenta implements OnInit {
     );
   }
 
-  cargarTiendas(): void {
-    this.http.get<TiendaBackend[]>(this.tiendasApi)
-      .subscribe({
-        next: tiendas => {
-          this.tiendas = tiendas;
-        },
-        error: error => {
-          console.error('Error al cargar tiendas:', error);
-          this.mensajeErrorVenta = 'No fue posible cargar las tiendas.';
+  cargarTurnosAbiertosBackend(): void {
+    this.http.get<TurnoBackend[]>(`${this.turnosApi}/abiertos`).subscribe({
+      next: turnos => {
+        if (!turnos.length) {
+          this.turnoActivo = false;
+          this.mensajeErrorVenta =
+            'No hay turnos abiertos. Debes abrir turno antes de vender.';
+          return;
         }
-      });
+
+        const turno = turnos[0];
+
+        this.turnoActivo = true;
+        this.turnoId = turno._id;
+        this.numeroCaja = turno.numeroCaja;
+        this.fechaAperturaTurno = turno.fechaApertura;
+
+        this.tiendaId =
+          typeof turno.tiendaId === 'string'
+            ? turno.tiendaId
+            : turno.tiendaId._id;
+
+        this.tiendaNombre =
+          typeof turno.tiendaId === 'string'
+            ? 'Tienda asignada'
+            : turno.tiendaId.ciudad
+              ? `${turno.tiendaId.nombre} - ${turno.tiendaId.ciudad}`
+              : turno.tiendaId.nombre;
+
+        if (typeof turno.usuarioId === 'object') {
+          this.cajeroNombre = turno.usuarioId.nombre || 'Cajero';
+          this.cajeroUsuario = turno.usuarioId.usuario || '';
+        }
+
+        this.cargarProductosPorTienda();
+      },
+      error: error => {
+        console.error('Error al obtener turnos abiertos:', error);
+        this.mensajeErrorVenta =
+          'No fue posible consultar los turnos abiertos.';
+      },
+    });
   }
 
   cargarProductosPorTienda(): void {
-    this.limpiarVenta();
+    this.cargandoProductos = true;
+    this.mensajeErrorVenta = '';
+    this.productos = [];
 
-    if (!this.tiendaId) {
-      this.productos = [];
+    this.http
+      .get<InventarioBackend[]>(`${this.inventarioApi}/tienda/${this.tiendaId}`)
+      .subscribe({
+        next: inventario => {
+          this.productos = inventario
+            .map(item => this.mapearProductoInventario(item))
+            .filter((producto): producto is ProductoVenta => producto !== null);
+
+          this.cargandoProductos = false;
+        },
+        error: error => {
+          console.error('Error al cargar inventario:', error);
+          this.mensajeErrorVenta = 'No fue posible cargar el inventario.';
+          this.cargandoProductos = false;
+        },
+      });
+  }
+
+  abrirResumenVenta(): void {
+    this.mensajeErrorVenta = '';
+    this.mensajeExitoVenta = '';
+    this.fechaActual = new Date();
+
+    if (!this.turnoActivo) {
+      this.mensajeErrorVenta = 'No hay turno abierto para cobrar.';
       return;
     }
 
-    this.cargandoProductos = true;
+    if (this.carrito.length === 0) {
+      this.mensajeErrorVenta = 'Agrega al menos un producto.';
+      return;
+    }
 
-    this.http.get<ProductoBackend[]>(this.productosApi)
-      .subscribe({
-        next: productosBackend => {
-          this.http.get<InventarioBackend[]>(this.inventarioApi)
-            .subscribe({
-              next: inventarioBackend => {
-                const inventarioTienda =
-                  inventarioBackend.filter(
-                    item => item.tiendaId === this.tiendaId
-                  );
+    this.mostrarResumenVenta = true;
+  }
 
-                this.productos =
-                  inventarioTienda
-                    .map(item => {
-                      const producto =
-                        productosBackend.find(
-                          prod => prod._id === item.productoId
-                        );
+  cerrarResumenVenta(): void {
+    this.mostrarResumenVenta = false;
+  }
 
-                      if (!producto) {
-                        return null;
-                      }
+  agregarPorCodigo(): void {
+    this.mensajeErrorVenta = '';
+    this.mensajeExitoVenta = '';
 
-                      return {
-                        productoId: producto._id,
-                        nombre: producto.nombre,
-                        precio: producto.precio,
-                        categoria: producto.categoria,
-                        stock: item.piezas
-                      };
-                    })
-                    .filter(
-                      (producto): producto is ProductoVenta =>
-                        producto !== null
-                    );
+    if (!this.codigoBusqueda || this.codigoBusqueda <= 0) {
+      this.mensajeErrorVenta = 'Ingresa un código válido.';
+      return;
+    }
 
-                this.cargandoProductos = false;
-              },
-              error: error => {
-                console.error('Error al cargar inventario:', error);
-                this.mensajeErrorVenta = 'No fue posible cargar el inventario.';
-                this.cargandoProductos = false;
-              }
-            });
-        },
-        error: error => {
-          console.error('Error al cargar productos:', error);
-          this.mensajeErrorVenta = 'No fue posible cargar los productos.';
-          this.cargandoProductos = false;
-        }
-      });
+    const producto = this.productos.find(
+      item => item.codigo === Number(this.codigoBusqueda)
+    );
+
+    if (!producto) {
+      this.mensajeErrorVenta =
+        'No se encontró un producto con ese código en esta tienda.';
+      return;
+    }
+
+    this.agregarProducto(producto);
+    this.codigoBusqueda = null;
   }
 
   agregarProducto(producto: ProductoVenta): void {
     this.mensajeErrorVenta = '';
     this.mensajeExitoVenta = '';
 
-    if (!this.tiendaId) {
-      this.mensajeErrorVenta = 'Selecciona una tienda.';
+    if (!this.turnoActivo) {
+      this.mensajeErrorVenta = 'Debes abrir turno antes de vender.';
       return;
     }
 
@@ -207,10 +265,9 @@ export class NuevaVenta implements OnInit {
       return;
     }
 
-    const productoExistente =
-      this.carrito.find(
-        item => item.productoId === producto.productoId
-      );
+    const productoExistente = this.carrito.find(
+      item => item.productoId === producto.productoId
+    );
 
     if (productoExistente) {
       if (productoExistente.cantidad >= producto.stock) {
@@ -229,7 +286,7 @@ export class NuevaVenta implements OnInit {
     this.carrito.push({
       ...producto,
       cantidad: 1,
-      subtotal: producto.precio
+      subtotal: producto.precio,
     });
   }
 
@@ -255,10 +312,9 @@ export class NuevaVenta implements OnInit {
   }
 
   eliminarProducto(productoId: string): void {
-    this.carrito =
-      this.carrito.filter(
-        producto => producto.productoId !== productoId
-      );
+    this.carrito = this.carrito.filter(
+      producto => producto.productoId !== productoId
+    );
   }
 
   vaciarCarrito(): void {
@@ -271,8 +327,13 @@ export class NuevaVenta implements OnInit {
     this.mensajeErrorVenta = '';
     this.mensajeExitoVenta = '';
 
+    if (!this.turnoActivo) {
+      this.mensajeErrorVenta = 'No hay turno abierto para registrar venta.';
+      return;
+    }
+
     if (!this.tiendaId) {
-      this.mensajeErrorVenta = 'Selecciona una tienda.';
+      this.mensajeErrorVenta = 'No se encontró la tienda.';
       return;
     }
 
@@ -283,44 +344,52 @@ export class NuevaVenta implements OnInit {
 
     const venta = {
       tiendaId: this.tiendaId,
+      turnoId: this.turnoId,
       productos: this.carrito.map(producto => ({
         productoId: producto.productoId,
-        cantidad: producto.cantidad
-      }))
+        cantidad: producto.cantidad,
+      })),
     };
 
     this.registrandoVenta = true;
 
-    this.http.post(this.ventasApi, venta)
-      .subscribe({
-        next: () => {
-          this.mensajeExitoVenta = 'Venta registrada correctamente.';
-          this.carrito = [];
-          this.cargarProductosPorTienda();
-        },
-        error: error => {
-          console.error('Error al registrar venta:', error);
-          this.mensajeErrorVenta =
-            error.error?.message ||
-            'No fue posible registrar la venta.';
-        },
-        complete: () => {
-          this.registrandoVenta = false;
-        }
-      });
+    this.http.post(this.ventasApi, venta).subscribe({
+      next: () => {
+        this.mostrarResumenVenta = false;
+        this.mensajeExitoVenta = 'Venta registrada correctamente.';
+        this.carrito = [];
+        this.cargarProductosPorTienda();
+      },
+      error: error => {
+        console.error('Error al registrar venta:', error);
+        this.mensajeErrorVenta =
+          error.error?.message || 'No fue posible registrar la venta.';
+      },
+      complete: () => {
+        this.registrandoVenta = false;
+      },
+    });
   }
 
-  private limpiarVenta(): void {
-    this.carrito = [];
-    this.productos = [];
-    this.busquedaProducto = '';
-    this.categoriaSeleccionada = 'todas';
-    this.mensajeErrorVenta = '';
-    this.mensajeExitoVenta = '';
+  private mapearProductoInventario(item: InventarioBackend): ProductoVenta | null {
+    if (!item.productoId || typeof item.productoId === 'string') {
+      return null;
+    }
+
+    const producto = item.productoId;
+
+    return {
+      productoId: producto._id,
+      codigo: producto.codigo,
+      nombre: producto.nombre,
+      precio: producto.precio,
+      categoria: producto.categoria,
+      stock: Number(item.piezas || 0),
+    };
   }
 
   private normalizarTexto(texto: string): string {
-    return texto
+    return (texto || '')
       .trim()
       .toLowerCase()
       .normalize('NFD')
