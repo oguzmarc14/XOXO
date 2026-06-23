@@ -50,23 +50,15 @@ interface CategoriaProducto {
   templateUrl: './crear-producto.html',
   styleUrl: './crear-producto.css'
 })
-export class CrearProducto
-  implements OnInit {
-
+export class CrearProducto implements OnInit {
   codigo: number | null = null;
   nombre = '';
   categoria = '';
   precio: number | null = null;
   stockMinimo: number | null = 5;
-
-  /*
-    Es pública porque se utilizará
-    directamente desde el HTML.
-  */
   tiendaId = '';
 
   tiendas: TiendaProducto[] = [];
-
   usuarioActual!: Usuario;
 
   cargandoTiendas = false;
@@ -78,52 +70,43 @@ export class CrearProducto
   private readonly tiendasUrl =
     'http://localhost:3000/tiendas';
 
-  readonly categorias:
-    CategoriaProducto[] = [
-      {
-        nombre: 'Playeras',
-        icono: '👕'
-      },
-      {
-        nombre: 'Sudaderas',
-        icono: '🧥'
-      },
-      {
-        nombre: 'Accesorios',
-        icono: '👜'
-      },
-      {
-        nombre: 'Coleccionables',
-        icono: '🎁'
-      },
-      {
-        nombre: 'Gorras',
-        icono: '🧢'
-      },
-      {
-        nombre: 'Otros',
-        icono: '📦'
-      }
-    ];
+  readonly categorias: CategoriaProducto[] = [
+    {
+      nombre: 'Playeras',
+      icono: '👕'
+    },
+    {
+      nombre: 'Sudaderas',
+      icono: '🧥'
+    },
+    {
+      nombre: 'Accesorios',
+      icono: '👜'
+    },
+    {
+      nombre: 'Coleccionables',
+      icono: '🎁'
+    },
+    {
+      nombre: 'Gorras',
+      icono: '🧢'
+    },
+    {
+      nombre: 'Otros',
+      icono: '📦'
+    }
+  ];
 
   constructor(
-    private productosService:
-      ProductosService,
-
-    private usuarioActualService:
-      UsuarioActualService,
-
-    private http:
-      HttpClient,
-
-    private router:
-      Router
+    private productosService: ProductosService,
+    private usuarioActualService: UsuarioActualService,
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.usuarioActual =
-      this.usuarioActualService
-        .obtenerUsuario();
+      this.usuarioActualService.obtenerUsuario();
 
     if (
       !this.usuarioActual ||
@@ -135,19 +118,11 @@ export class CrearProducto
       return;
     }
 
-    /*
-      El administrador puede elegir
-      cualquiera de las tiendas.
-    */
     if (this.esAdministrador) {
       this.cargarTiendas();
       return;
     }
 
-    /*
-      Gerente y cajero utilizan
-      automáticamente su tienda.
-    */
     this.tiendaId =
       this.usuarioActual.tiendaId || '';
 
@@ -158,45 +133,15 @@ export class CrearProducto
   }
 
   get esAdministrador(): boolean {
-    return (
-      this.usuarioActual?.rol ===
-      'admin'
-    );
+    return this.usuarioActual?.rol === 'admin';
   }
 
   get esGerente(): boolean {
-    return (
-      this.usuarioActual?.rol ===
-      'gerente'
-    );
+    return this.usuarioActual?.rol === 'gerente';
   }
 
   get esCajero(): boolean {
-    return (
-      this.usuarioActual?.rol ===
-      'cajero'
-    );
-  }
-
-  get esAdministrador(): boolean {
-    return (
-      this.usuarioActual?.rol ===
-      'admin'
-    );
-  }
-
-  get esGerente(): boolean {
-    return (
-      this.usuarioActual?.rol ===
-      'gerente'
-    );
-  }
-
-  get esCajero(): boolean {
-    return (
-      this.usuarioActual?.rol ===
-      'cajero'
-    );
+    return this.usuarioActual?.rol === 'cajero';
   }
 
   get nombreVistaPrevia(): string {
@@ -221,16 +166,9 @@ export class CrearProducto
     return (
       this.categorias.find(
         item =>
-          item.nombre ===
-          this.categoria
+          item.nombre === this.categoria
       )?.icono ?? '📦'
     );
-  }
-
-  get tiendaVistaPrevia(): string {
-    if (!this.esAdmin) return '';
-    const tienda = this.tiendas.find(t => t._id === this.tiendaSeleccionada);
-    return tienda ? `${tienda.nombre} — ${tienda.ciudad}` : 'Sin tienda asignada';
   }
 
   get nombreTiendaSeleccionada(): string {
@@ -252,10 +190,6 @@ export class CrearProducto
         : tienda.nombre;
     }
 
-    /*
-      Para gerente y cajero utilizamos el nombre
-      de sucursal almacenado en la sesión.
-    */
     return (
       this.usuarioActual?.sucursal ||
       'Tienda asignada'
@@ -263,8 +197,7 @@ export class CrearProducto
   }
 
   seleccionarCategoria(
-    categoria:
-      CategoriaProducto
+    categoria: CategoriaProducto
   ): void {
     this.categoria =
       categoria.nombre;
@@ -289,9 +222,7 @@ export class CrearProducto
 
           this.cargandoTiendas = false;
 
-          if (
-            this.tiendas.length === 0
-          ) {
+          if (this.tiendas.length === 0) {
             this.mensajeError =
               'No existen tiendas disponibles para asignar el producto.';
           }
@@ -331,9 +262,7 @@ export class CrearProducto
       return;
     }
 
-    if (
-      this.nombre.trim().length < 3
-    ) {
+    if (this.nombre.trim().length < 3) {
       this.mensajeError =
         'El nombre debe contener al menos 3 caracteres.';
 
@@ -367,10 +296,6 @@ export class CrearProducto
       return;
     }
 
-    /*
-      Todos los productos deben pertenecer
-      obligatoriamente a una tienda.
-    */
     if (!this.tiendaId) {
       this.mensajeError =
         this.esAdministrador
@@ -380,32 +305,16 @@ export class CrearProducto
       return;
     }
 
-    if (this.esAdmin && !this.tiendaSeleccionada) {
-      this.mensajeError = 'Selecciona la tienda a la que pertenece el producto.';
-      return;
-    }
-
     this.guardando = true;
 
     this.productosService
       .create({
-        codigo:
-          Number(this.codigo),
-
-        nombre:
-          this.nombre.trim(),
-
-        categoria:
-          this.categoria,
-
-        precio:
-          Number(this.precio),
-
-        stockMinimo:
-          Number(this.stockMinimo),
-
-        tiendaId:
-          this.tiendaId
+        codigo: Number(this.codigo),
+        nombre: this.nombre.trim(),
+        categoria: this.categoria,
+        precio: Number(this.precio),
+        stockMinimo: Number(this.stockMinimo),
+        tiendaId: this.tiendaId
       })
       .subscribe({
         next: () => {
@@ -445,10 +354,6 @@ export class CrearProducto
     this.precio = null;
     this.stockMinimo = 5;
 
-    /*
-      Solo el administrador debe volver
-      a seleccionar la tienda.
-    */
     if (this.esAdministrador) {
       this.tiendaId = '';
     } else {
