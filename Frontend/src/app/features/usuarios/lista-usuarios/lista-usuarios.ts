@@ -1,42 +1,81 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import {
+  Component,
+  OnInit
+} from '@angular/core';
+import {
+  FormsModule
+} from '@angular/forms';
+import {
+  HttpClient
+} from '@angular/common/http';
+import {
+  Router
+} from '@angular/router';
 
-type UserRole = 'admin' | 'gerente' | 'cajero';
-type EstadoUsuario = 'activo' | 'inactivo';
+type RolUsuario =
+  | 'admin'
+  | 'gerente'
+  | 'cajero';
 
-interface TiendaBackend {
+type SexoUsuario =
+  | 'hombre'
+  | 'mujer';
+
+interface TiendaUsuario {
   _id: string;
   nombre: string;
-  direccion?: string;
   ciudad?: string;
-  telefono?: string;
+  direccion?: string;
 }
 
 interface UsuarioBackend {
   _id: string;
   nombre: string;
   usuario: string;
-  password?: string;
-  rol: 'ADMIN' | 'GERENTE' | 'CAJERO';
-  tiendaId?: TiendaBackend | string | null;
-  activo: boolean;
-  fechaCreacion: string;
+
+  rol:
+    | 'ADMIN'
+    | 'GERENTE'
+    | 'CAJERO'
+    | 'admin'
+    | 'gerente'
+    | 'cajero';
+
+  sexo?:
+    | 'HOMBRE'
+    | 'MUJER'
+    | 'hombre'
+    | 'mujer';
+
+  tiendaId?:
+    | string
+    | TiendaUsuario
+    | null;
+
+  activo?: boolean;
+
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-interface UsuarioListado {
-  id: string;
+interface UsuarioVista {
+  _id: string;
   nombre: string;
   usuario: string;
-  rol: UserRole;
-  cargo: string;
-  tienda: string;
+
+  rol: RolUsuario;
+  rolTexto: string;
+
+  sexo: SexoUsuario;
+
   tiendaId: string;
-  estado: EstadoUsuario;
-  fechaRegistro: string;
+  tiendaTexto: string;
+
   avatar: string;
+
+  activo: boolean;
+  fechaRegistro: string;
 }
 
 @Component({
@@ -50,26 +89,31 @@ interface UsuarioListado {
   styleUrl: './lista-usuarios.css'
 })
 export class ListaUsuarios implements OnInit {
-  busqueda = '';
+  usuarios: UsuarioVista[] = [];
+  usuariosFiltrados: UsuarioVista[] = [];
 
+  busqueda = '';
   rolSeleccionado = 'todos';
   estadoSeleccionado = 'todos';
   tiendaSeleccionada = 'todas';
 
-  usuarios: UsuarioListado[] = [];
-  usuariosFiltrados: UsuarioListado[] = [];
+  cargando = false;
 
-  mensajeExito = '';
   mensajeError = '';
+  mensajeExito = '';
+
+  usuarioSeleccionado:
+    UsuarioVista | null = null;
 
   modalEliminarAbierto = false;
-  usuarioSeleccionado: UsuarioListado | null = null;
+  modalEstadoAbierto = false;
 
-  private readonly apiUrl = 'http://localhost:3000/usuarios';
+  private readonly usuariosApi =
+    'http://localhost:3000/usuarios';
 
   constructor(
-    private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -80,64 +124,157 @@ export class ListaUsuarios implements OnInit {
     return this.usuarios.length;
   }
 
-  get usuariosActivos(): number {
-    return this.usuarios.filter(usuario => usuario.estado === 'activo').length;
-  }
-
-  get usuariosInactivos(): number {
-    return this.usuarios.filter(usuario => usuario.estado === 'inactivo').length;
-  }
-
-  get totalCajeros(): number {
-    return this.usuarios.filter(usuario => usuario.rol === 'cajero').length;
+  get totalAdministradores(): number {
+    return this.usuarios.filter(
+      usuario =>
+        usuario.rol === 'admin'
+    ).length;
   }
 
   get totalGerentes(): number {
-    return this.usuarios.filter(usuario => usuario.rol === 'gerente').length;
+    return this.usuarios.filter(
+      usuario =>
+        usuario.rol === 'gerente'
+    ).length;
   }
 
-  get totalAdministradores(): number {
-    return this.usuarios.filter(usuario => usuario.rol === 'admin').length;
+  get totalCajeros(): number {
+    return this.usuarios.filter(
+      usuario =>
+        usuario.rol === 'cajero'
+    ).length;
   }
 
-  get tiendas(): string[] {
+  get tiendasDisponibles(): string[] {
     return [
       ...new Set(
-        this.usuarios.map(usuario => usuario.tienda)
+        this.usuarios
+          .map(
+            usuario =>
+              usuario.tiendaTexto
+          )
+          .filter(
+            tienda =>
+              tienda !==
+              'No requiere tienda'
+          )
       )
-    ].sort();
+    ].sort(
+      (
+        tiendaA,
+        tiendaB
+      ) =>
+        tiendaA.localeCompare(
+          tiendaB,
+          'es'
+        )
+    );
+  }
+
+  cargarUsuarios(): void {
+    this.cargando = true;
+    this.mensajeError = '';
+
+    this.http
+      .get<UsuarioBackend[]>(
+        this.usuariosApi
+      )
+      .subscribe({
+        next: respuesta => {
+          const usuarios =
+            Array.isArray(respuesta)
+              ? respuesta
+              : [];
+
+          this.usuarios =
+            usuarios.map(
+              usuario =>
+                this.convertirUsuario(
+                  usuario
+                )
+            );
+
+          this.aplicarFiltros();
+
+          this.cargando = false;
+        },
+
+        error: error => {
+          console.error(
+            'Error al cargar usuarios:',
+            error
+          );
+
+          this.usuarios = [];
+          this.usuariosFiltrados = [];
+
+          this.mensajeError =
+            error.error?.message ||
+            'No fue posible cargar los usuarios.';
+
+          this.cargando = false;
+        }
+      });
   }
 
   aplicarFiltros(): void {
-    const texto = this.normalizarTexto(this.busqueda);
-
-    this.usuariosFiltrados = this.usuarios.filter(usuario => {
-      const coincideBusqueda =
-        !texto ||
-        this.normalizarTexto(usuario.nombre).includes(texto) ||
-        this.normalizarTexto(usuario.usuario).includes(texto) ||
-        this.normalizarTexto(usuario.cargo).includes(texto) ||
-        this.normalizarTexto(usuario.tienda).includes(texto);
-
-      const coincideRol =
-        this.rolSeleccionado === 'todos' ||
-        usuario.rol === this.rolSeleccionado;
-
-      const coincideEstado =
-        this.estadoSeleccionado === 'todos' ||
-        usuario.estado === this.estadoSeleccionado;
-
-      const coincideTienda =
-        this.tiendaSeleccionada === 'todas' ||
-        usuario.tienda === this.tiendaSeleccionada;
-
-      return (
-        coincideBusqueda &&
-        coincideRol &&
-        coincideEstado &&
-        coincideTienda
+    const texto =
+      this.normalizarTexto(
+        this.busqueda
       );
-    });
+
+    this.usuariosFiltrados =
+      this.usuarios.filter(
+        usuario => {
+          const coincideBusqueda =
+            !texto ||
+            this.normalizarTexto(
+              usuario.nombre
+            ).includes(texto) ||
+            this.normalizarTexto(
+              usuario.usuario
+            ).includes(texto) ||
+            this.normalizarTexto(
+              usuario.rolTexto
+            ).includes(texto) ||
+            this.normalizarTexto(
+              usuario.tiendaTexto
+            ).includes(texto);
+
+          const coincideRol =
+            this.rolSeleccionado ===
+              'todos' ||
+            usuario.rol ===
+              this.rolSeleccionado;
+
+          const coincideEstado =
+            this.estadoSeleccionado ===
+              'todos' ||
+            (
+              this.estadoSeleccionado ===
+                'activos' &&
+              usuario.activo
+            ) ||
+            (
+              this.estadoSeleccionado ===
+                'inactivos' &&
+              !usuario.activo
+            );
+
+          const coincideTienda =
+            this.tiendaSeleccionada ===
+              'todas' ||
+            usuario.tiendaTexto ===
+              this.tiendaSeleccionada;
+
+          return (
+            coincideBusqueda &&
+            coincideRol &&
+            coincideEstado &&
+            coincideTienda
+          );
+        }
+      );
   }
 
   limpiarFiltros(): void {
@@ -150,37 +287,102 @@ export class ListaUsuarios implements OnInit {
   }
 
   crearUsuario(): void {
-    this.router.navigate(['/crear-usuario']);
+    this.router.navigate([
+      '/crear-usuario'
+    ]);
   }
 
-  editarUsuario(usuario: UsuarioListado): void {
-    this.router.navigate(['/editar-usuario', usuario.id]);
+  editarUsuario(
+    usuario: UsuarioVista
+  ): void {
+    this.router.navigate([
+      '/editar-usuario',
+      usuario._id
+    ]);
   }
 
-  cambiarEstado(usuario: UsuarioListado): void {
-    usuario.estado =
-      usuario.estado === 'activo'
-        ? 'inactivo'
-        : 'activo';
+  abrirCambioEstado(
+    usuario: UsuarioVista
+  ): void {
+    this.usuarioSeleccionado =
+      usuario;
 
-    this.aplicarFiltros();
-
-    this.mensajeExito =
-      usuario.estado === 'activo'
-        ? 'El usuario fue activado correctamente.'
-        : 'El usuario fue desactivado correctamente.';
-
-    this.ocultarMensaje();
+    this.modalEstadoAbierto = true;
   }
 
-  abrirEliminar(usuario: UsuarioListado): void {
-    this.usuarioSeleccionado = usuario;
-    this.modalEliminarAbierto = true;
+  cerrarCambioEstado(): void {
+    this.modalEstadoAbierto = false;
+    this.usuarioSeleccionado = null;
+  }
+
+  confirmarCambioEstado(): void {
+    if (!this.usuarioSeleccionado) {
+      return;
+    }
+
+    const usuario =
+      this.usuarioSeleccionado;
+
+    const nuevoEstado =
+      !usuario.activo;
+
+    this.http
+      .put<UsuarioBackend>(
+        `${this.usuariosApi}/${usuario._id}`,
+        {
+          activo:
+            nuevoEstado
+        }
+      )
+      .subscribe({
+        next: () => {
+          usuario.activo =
+            nuevoEstado;
+
+          this.aplicarFiltros();
+          this.cerrarCambioEstado();
+
+          this.mensajeExito =
+            nuevoEstado
+              ? 'El usuario fue activado correctamente.'
+              : 'El usuario fue desactivado correctamente.';
+
+          this.ocultarMensajes();
+        },
+
+        error: error => {
+          console.error(
+            'Error al cambiar estado:',
+            error
+          );
+
+          this.cerrarCambioEstado();
+
+          this.mensajeError =
+            error.error?.message ||
+            'No fue posible cambiar el estado del usuario.';
+
+          this.ocultarMensajes();
+        }
+      });
+  }
+
+  abrirEliminar(
+    usuario: UsuarioVista
+  ): void {
+    this.usuarioSeleccionado =
+      usuario;
+
+    this.modalEliminarAbierto =
+      true;
   }
 
   cerrarEliminar(): void {
-    this.modalEliminarAbierto = false;
-    this.usuarioSeleccionado = null;
+    this.modalEliminarAbierto =
+      false;
+
+    this.usuarioSeleccionado =
+      null;
   }
 
   confirmarEliminar(): void {
@@ -188,150 +390,285 @@ export class ListaUsuarios implements OnInit {
       return;
     }
 
-    this.usuarios = this.usuarios.filter(
-      usuario => usuario.id !== this.usuarioSeleccionado?.id
-    );
+    const usuario =
+      this.usuarioSeleccionado;
 
-    this.aplicarFiltros();
-
-    this.mensajeExito = 'El usuario fue eliminado correctamente.';
-
-    this.cerrarEliminar();
-    this.ocultarMensaje();
-  }
-
-  obtenerTextoRol(usuario: UsuarioListado): string {
-    if (usuario.rol === 'admin') {
-      return 'Administrador';
-    }
-
-    if (usuario.rol === 'gerente') {
-      return 'Gerente';
-    }
-
-    return 'Cajero';
-  }
-
-  obtenerClaseRol(rol: UserRole): string {
-    return rol;
-  }
-
-  manejarErrorImagen(
-    event: Event,
-    usuario: UsuarioListado
-  ): void {
-    const imagen = event.target as HTMLImageElement;
-    imagen.src = usuario.avatar;
-  }
-
-  private cargarUsuarios(): void {
-    this.http.get<UsuarioBackend[]>(this.apiUrl)
+    this.http
+      .delete<{
+        message?: string;
+      }>(
+        `${this.usuariosApi}/${usuario._id}`
+      )
       .subscribe({
-        next: usuariosBackend => {
-          this.usuarios = usuariosBackend.map(usuario =>
-            this.mapearUsuarioBackend(usuario)
-          );
+        next: () => {
+          this.usuarios =
+            this.usuarios.filter(
+              item =>
+                item._id !==
+                usuario._id
+            );
 
           this.aplicarFiltros();
+          this.cerrarEliminar();
+
+          this.mensajeExito =
+            'El usuario fue eliminado correctamente.';
+
+          this.ocultarMensajes();
         },
+
         error: error => {
-          console.error('Error al cargar usuarios:', error);
+          console.error(
+            'Error al eliminar usuario:',
+            error
+          );
+
+          this.cerrarEliminar();
 
           this.mensajeError =
             error.error?.message ||
-            'No fue posible cargar los usuarios.';
+            'No fue posible eliminar el usuario.';
 
-          this.usuarios = [];
-          this.aplicarFiltros();
+          this.ocultarMensajes();
         }
       });
   }
 
-  private mapearUsuarioBackend(
-    usuario: UsuarioBackend
-  ): UsuarioListado {
-    const rol = usuario.rol.toLowerCase() as UserRole;
+  private convertirUsuario(
+    usuario:
+      UsuarioBackend
+  ): UsuarioVista {
+    const rol =
+      this.convertirRol(
+        usuario.rol
+      );
+
+    const sexo =
+      this.convertirSexo(
+        usuario.sexo
+      );
 
     return {
-      id: usuario._id,
-      nombre: usuario.nombre,
-      usuario: usuario.usuario,
+      _id:
+        usuario._id,
+
+      nombre:
+        usuario.nombre ||
+        'Usuario sin nombre',
+
+      usuario:
+        usuario.usuario ||
+        'Sin usuario',
+
       rol,
-      cargo: this.obtenerCargoDesdeRol(rol),
-      tienda: this.obtenerNombreTienda(usuario.tiendaId),
-      tiendaId: this.obtenerIdTienda(usuario.tiendaId),
-      estado: usuario.activo ? 'activo' : 'inactivo',
-      fechaRegistro: usuario.fechaCreacion,
-      avatar: this.obtenerAvatar(rol)
+
+      rolTexto:
+        this.obtenerRolTexto(
+          rol,
+          sexo
+        ),
+
+      sexo,
+
+      tiendaId:
+        this.obtenerTiendaId(
+          usuario.tiendaId
+        ),
+
+      tiendaTexto:
+        this.obtenerTiendaTexto(
+          rol,
+          usuario.tiendaId
+        ),
+
+      avatar:
+        this.obtenerAvatar(
+          rol,
+          sexo
+        ),
+
+      activo:
+        usuario.activo !== false,
+
+      fechaRegistro:
+        this.formatearFecha(
+          usuario.createdAt
+        )
     };
   }
 
-  private obtenerNombreTienda(
-    tienda: TiendaBackend | string | null | undefined
-  ): string {
-    if (!tienda) {
-      return 'Sin tienda';
+  private convertirRol(
+    rol:
+      UsuarioBackend['rol']
+  ): RolUsuario {
+    const rolNormalizado =
+      String(rol)
+        .toLowerCase();
+
+    if (
+      rolNormalizado === 'admin'
+    ) {
+      return 'admin';
     }
 
-    if (typeof tienda === 'string') {
-      return tienda;
+    if (
+      rolNormalizado === 'gerente'
+    ) {
+      return 'gerente';
     }
 
-    return tienda.ciudad
-      ? `${tienda.nombre} - ${tienda.ciudad}`
-      : tienda.nombre;
+    return 'cajero';
   }
 
-  private obtenerIdTienda(
-    tienda: TiendaBackend | string | null | undefined
-  ): string {
-    if (!tienda) {
-      return '';
-    }
-
-    if (typeof tienda === 'string') {
-      return tienda;
-    }
-
-    return tienda._id;
+  private convertirSexo(
+    sexo:
+      UsuarioBackend['sexo']
+  ): SexoUsuario {
+    return String(sexo)
+      .toLowerCase() === 'mujer'
+        ? 'mujer'
+        : 'hombre';
   }
 
-  private obtenerCargoDesdeRol(rol: UserRole): string {
+  private obtenerRolTexto(
+    rol: RolUsuario,
+    sexo: SexoUsuario
+  ): string {
     if (rol === 'admin') {
-      return 'Administrador';
+      return sexo === 'mujer'
+        ? 'Administradora'
+        : 'Administrador';
     }
 
     if (rol === 'gerente') {
       return 'Gerente';
     }
 
-    return 'Cajero';
+    return sexo === 'mujer'
+      ? 'Cajera'
+      : 'Cajero';
   }
 
-  private obtenerAvatar(rol: UserRole): string {
+  private obtenerAvatar(
+    rol: RolUsuario,
+    sexo: SexoUsuario
+  ): string {
     if (rol === 'admin') {
-      return '/Administrador.png';
+      return sexo === 'mujer'
+        ? '/Administradora.png'
+        : '/Administrador.png';
     }
 
     if (rol === 'gerente') {
-      return '/GerenteM.png';
+      return sexo === 'mujer'
+        ? '/GerenteF.png'
+        : '/GerenteM.png';
     }
 
-    return '/Cajero.png';
+    return sexo === 'mujer'
+      ? '/Cajera.png'
+      : '/Cajero.png';
   }
 
-  private normalizarTexto(texto: string): string {
-    return texto
+  private obtenerTiendaId(
+    tienda:
+      UsuarioBackend['tiendaId']
+  ): string {
+    if (
+      typeof tienda === 'string'
+    ) {
+      return tienda;
+    }
+
+    return tienda?._id || '';
+  }
+
+  private obtenerTiendaTexto(
+    rol: RolUsuario,
+    tienda:
+      UsuarioBackend['tiendaId']
+  ): string {
+    if (rol === 'admin') {
+      return 'No requiere tienda';
+    }
+
+    if (
+      tienda &&
+      typeof tienda === 'object'
+    ) {
+      if (
+        tienda.nombre &&
+        tienda.ciudad
+      ) {
+        return (
+          `${tienda.nombre} - ` +
+          `${tienda.ciudad}`
+        );
+      }
+
+      return (
+        tienda.nombre ||
+        'Tienda asignada'
+      );
+    }
+
+    if (
+      typeof tienda === 'string' &&
+      tienda
+    ) {
+      return 'Tienda asignada';
+    }
+
+    return 'Sin tienda asignada';
+  }
+
+  private formatearFecha(
+    fecha?: string
+  ): string {
+    if (!fecha) {
+      return 'Sin fecha';
+    }
+
+    const fechaConvertida =
+      new Date(fecha);
+
+    if (
+      Number.isNaN(
+        fechaConvertida.getTime()
+      )
+    ) {
+      return 'Sin fecha';
+    }
+
+    return new Intl.DateTimeFormat(
+      'es-MX',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }
+    ).format(
+      fechaConvertida
+    );
+  }
+
+  private normalizarTexto(
+    texto: string
+  ): string {
+    return String(texto || '')
       .trim()
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+      .replace(
+        /[\u0300-\u036f]/g,
+        ''
+      );
   }
 
-  private ocultarMensaje(): void {
+  private ocultarMensajes(): void {
     setTimeout(() => {
-      this.mensajeExito = '';
       this.mensajeError = '';
+      this.mensajeExito = '';
     }, 2500);
   }
 }
