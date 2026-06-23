@@ -19,9 +19,15 @@ const usuarioSchema = new mongoose.Schema({
     enum: ["ADMIN", "GERENTE", "CAJERO"],
     required: true,
   },
+  sexo: {
+    type: String,
+    enum: ["HOMBRE", "MUJER"],
+    default: "HOMBRE",
+  },
   tiendaId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Tiendas",
+    default: null,
   },
   activo: {
     type: Boolean,
