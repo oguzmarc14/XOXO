@@ -14,7 +14,6 @@ import {
 } from '@angular/common/http';
 
 import {
-  Router,
   RouterLink
 } from '@angular/router';
 
@@ -26,18 +25,18 @@ import {
   Usuario
 } from '../../../core/models/usuario.model';
 
-interface UsuarioPopulado {
-  _id: string;
-  nombre: string;
-  usuario: string;
-  rol: string;
-}
-
 interface TiendaPopulada {
   _id: string;
   nombre: string;
   ciudad?: string;
   direccion?: string;
+}
+
+interface UsuarioPopulado {
+  _id: string;
+  nombre: string;
+  usuario?: string;
+  rol?: string;
 }
 
 interface TurnoBackend {
@@ -48,11 +47,11 @@ interface TurnoBackend {
     | TiendaPopulada;
 
   usuarioId:
-    UsuarioPopulado;
+    | string
+    | UsuarioPopulado;
 
   numeroCaja: number;
   montoInicial: number;
-
   montoFinal?: number;
 
   estado:
@@ -61,6 +60,13 @@ interface TurnoBackend {
 
   fechaApertura: string;
   fechaCierre?: string;
+}
+
+interface TurnoVista extends TurnoBackend {
+  montoFinalCapturado: number | null;
+  confirmacion: boolean;
+  cerrando: boolean;
+  mensajeError: string;
 }
 
 @Component({
@@ -75,30 +81,24 @@ interface TurnoBackend {
   styleUrl: './cerrar-turno.css'
 })
 export class CerrarTurno implements OnInit {
+  usuarioActual!: Usuario;
+
   tiendaId = '';
+
   nombreTiendaActual =
     'Tienda no asignada';
 
-  turnoSeleccionado:
-    TurnoBackend | null = null;
+  turnosAbiertos: TurnoVista[] = [];
 
-  montoFinal: number | null = null;
-  confirmacion = false;
+  cargandoTurnos = false;
 
-  usuarioActual!: Usuario;
-
-  mensajeError = '';
+  mensajeErrorGeneral = '';
   mensajeExito = '';
-
-  cargandoTurno = false;
-  enviando = false;
 
   private readonly turnosApi =
     'http://localhost:3000/turnos';
 
   constructor(
-    private router: Router,
-
     private http: HttpClient,
 
     private usuarioActualService:
@@ -114,7 +114,7 @@ export class CerrarTurno implements OnInit {
       !this.usuarioActual ||
       this.usuarioActual.id === 0
     ) {
-      this.mensajeError =
+      this.mensajeErrorGeneral =
         'No se encontró una sesión activa.';
 
       return;
@@ -124,7 +124,7 @@ export class CerrarTurno implements OnInit {
       this.usuarioActual.rol !==
       'gerente'
     ) {
-      this.mensajeError =
+      this.mensajeErrorGeneral =
         'Solo un gerente puede cerrar turnos.';
 
       return;
@@ -138,77 +138,40 @@ export class CerrarTurno implements OnInit {
       'Tienda asignada';
 
     if (!this.tiendaId) {
-      this.mensajeError =
+      this.mensajeErrorGeneral =
         'El gerente no tiene una tienda asignada.';
 
       return;
     }
 
-    this.cargarTurnoAbierto();
+    this.cargarTurnosAbiertos();
   }
 
   get dashboardRuta(): string {
-    if (
-      this.usuarioActual?.rol ===
-      'admin'
-    ) {
-      return '/dashboard-admin';
-    }
-
-    if (
-      this.usuarioActual?.rol ===
-      'gerente'
-    ) {
-      return '/dashboard-gerente';
-    }
-
-    return '/dashboard-cajero';
+    return '/dashboard-gerente';
   }
 
-  get nombreCajero(): string {
-    return (
-      this.turnoSeleccionado
-        ?.usuarioId
-        ?.nombre ||
-      'Cajero no disponible'
-    );
+  get totalTurnosAbiertos(): number {
+    return this.turnosAbiertos.length;
   }
 
-  get usuarioCajero(): string {
-    return (
-      this.turnoSeleccionado
-        ?.usuarioId
-        ?.usuario ||
-      'Sin usuario'
-    );
-  }
-
-  cargarTurnoAbierto(): void {
-    this.limpiarMensajes();
-
-    this.turnoSeleccionado = null;
-
-    if (!this.tiendaId) {
-      this.mensajeError =
-        'El gerente no tiene una tienda asignada.';
-
-      return;
-    }
-
-    this.cargandoTurno = true;
+  cargarTurnosAbiertos(): void {
+    this.cargandoTurnos = true;
+    this.mensajeErrorGeneral = '';
 
     this.http
       .get<TurnoBackend[]>(
         `${this.turnosApi}/abiertos/${this.tiendaId}`
       )
       .subscribe({
-        next: turnos => {
-          const turnosAbiertos =
-            (
-              Array.isArray(turnos)
-                ? turnos
-                : []
-            )
+        next: respuesta => {
+          const turnos =
+            Array.isArray(respuesta)
+              ? respuesta
+              : [];
+
+          this.turnosAbiertos =
+            turnos
               .filter(
                 turno =>
                   turno.estado ===
@@ -225,74 +188,75 @@ export class CerrarTurno implements OnInit {
                   new Date(
                     turnoA.fechaApertura
                   ).getTime()
+              )
+              .map(
+                turno => ({
+                  ...turno,
+
+                  montoFinalCapturado:
+                    null,
+
+                  confirmacion:
+                    false,
+
+                  cerrando:
+                    false,
+
+                  mensajeError:
+                    ''
+                })
               );
 
-          /*
-            Se selecciona automáticamente
-            el turno abierto más reciente
-            de la tienda del gerente.
-          */
-          this.turnoSeleccionado =
-            turnosAbiertos[0] || null;
-
-          this.cargandoTurno = false;
-
-          if (
-            !this.turnoSeleccionado
-          ) {
-            this.mensajeError =
-              'No hay ningún turno abierto en la tienda del gerente.';
-          }
+          this.cargandoTurnos = false;
         },
 
         error: error => {
           console.error(
-            'Error al cargar el turno abierto:',
+            'Error al cargar turnos abiertos:',
             error
           );
 
-          this.turnoSeleccionado = null;
+          this.turnosAbiertos = [];
 
-          this.mensajeError =
+          this.mensajeErrorGeneral =
             error.error?.message ||
-            'No fue posible cargar el turno abierto.';
+            'No fue posible consultar los turnos abiertos.';
 
-          this.cargandoTurno = false;
+          this.cargandoTurnos = false;
         }
       });
   }
 
-  cerrarTurno(): void {
-    this.limpiarMensajes();
+  cerrarTurno(
+    turno: TurnoVista
+  ): void {
+    turno.mensajeError = '';
+    this.mensajeExito = '';
+    this.mensajeErrorGeneral = '';
 
-    if (!this.tiendaId) {
-      this.mensajeError =
-        'El gerente no tiene una tienda asignada.';
-
-      return;
-    }
-
-    if (!this.turnoSeleccionado) {
-      this.mensajeError =
-        'No existe un turno abierto para cerrar.';
+    if (
+      this.usuarioActual?.rol !==
+      'gerente'
+    ) {
+      turno.mensajeError =
+        'Solo un gerente puede cerrar turnos.';
 
       return;
     }
 
     if (
-      this.turnoSeleccionado.estado !==
+      turno.estado !==
       'ABIERTO'
     ) {
-      this.mensajeError =
-        'El turno seleccionado ya no se encuentra abierto.';
+      turno.mensajeError =
+        'Este turno ya no se encuentra abierto.';
 
       return;
     }
 
     const tiendaTurno =
       this.obtenerTiendaId(
-        this.turnoSeleccionado
-          .tiendaId
+        turno.tiendaId
       );
 
     if (
@@ -300,60 +264,74 @@ export class CerrarTurno implements OnInit {
       tiendaTurno !==
         this.tiendaId
     ) {
-      this.mensajeError =
-        'El turno abierto no pertenece a la tienda del gerente.';
+      turno.mensajeError =
+        'Este turno no pertenece a la tienda del gerente.';
 
       return;
     }
 
     if (
-      this.montoFinal === null ||
-      this.montoFinal === undefined
+      turno.montoFinalCapturado ===
+        null ||
+      turno.montoFinalCapturado ===
+        undefined
     ) {
-      this.mensajeError =
-        'Ingresa el efectivo final de caja.';
+      turno.mensajeError =
+        'Ingresa el efectivo final de la caja.';
 
       return;
     }
 
+    const montoFinal =
+      Number(
+        turno.montoFinalCapturado
+      );
+
     if (
-      Number(this.montoFinal) < 0
+      Number.isNaN(montoFinal) ||
+      montoFinal < 0
     ) {
-      this.mensajeError =
+      turno.mensajeError =
         'El efectivo final no puede ser negativo.';
 
       return;
     }
 
-    if (!this.confirmacion) {
-      this.mensajeError =
-        'Debes confirmar que revisaste el efectivo y la información del turno.';
+    if (!turno.confirmacion) {
+      turno.mensajeError =
+        'Confirma que revisaste el efectivo antes de cerrar el turno.';
 
       return;
     }
 
-    this.enviando = true;
-
-    const cierreTurno = {
-      montoFinal:
-        Number(this.montoFinal)
-    };
+    turno.cerrando = true;
 
     this.http
-      .put(
-        `${this.turnosApi}/cerrar/${this.turnoSeleccionado._id}`,
-        cierreTurno
+      .put<{
+        message?: string;
+        turno?: TurnoBackend;
+      }>(
+        `${this.turnosApi}/cerrar/${turno._id}`,
+        {
+          montoFinal
+        }
       )
       .subscribe({
-        next: () => {
+        next: respuesta => {
           this.mensajeExito =
-            'El turno se cerró correctamente.';
+            respuesta.message ||
+            `El turno de la caja ${turno.numeroCaja} se cerró correctamente.`;
 
-          setTimeout(() => {
-            this.router.navigate([
-              this.dashboardRuta
-            ]);
-          }, 900);
+          /*
+            Se elimina de la pantalla únicamente
+            el turno que acaba de cerrarse.
+          */
+          this.turnosAbiertos =
+            this.turnosAbiertos.filter(
+              turnoActual =>
+                turnoActual._id !==
+                turno._id
+            );
         },
 
         error: error => {
@@ -362,17 +340,51 @@ export class CerrarTurno implements OnInit {
             error
           );
 
-          this.mensajeError =
+          turno.mensajeError =
             error.error?.message ||
             'No fue posible cerrar el turno.';
 
-          this.enviando = false;
+          turno.cerrando = false;
         },
 
         complete: () => {
-          this.enviando = false;
+          turno.cerrando = false;
         }
       });
+  }
+
+  obtenerNombreCajero(
+    turno: TurnoVista
+  ): string {
+    if (
+      turno.usuarioId &&
+      typeof turno.usuarioId ===
+      'object'
+    ) {
+      return (
+        turno.usuarioId.nombre ||
+        'Cajero sin nombre'
+      );
+    }
+
+    return 'Cajero no disponible';
+  }
+
+  obtenerUsuarioCajero(
+    turno: TurnoVista
+  ): string {
+    if (
+      turno.usuarioId &&
+      typeof turno.usuarioId ===
+      'object'
+    ) {
+      return (
+        turno.usuarioId.usuario ||
+        ''
+      );
+    }
+
+    return '';
   }
 
   private obtenerTiendaId(
@@ -383,16 +395,12 @@ export class CerrarTurno implements OnInit {
       | undefined
   ): string {
     if (
-      typeof tienda === 'string'
+      typeof tienda ===
+      'string'
     ) {
       return tienda;
     }
 
     return tienda?._id || '';
-  }
-
-  private limpiarMensajes(): void {
-    this.mensajeError = '';
-    this.mensajeExito = '';
   }
 }

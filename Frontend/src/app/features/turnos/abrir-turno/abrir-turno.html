@@ -2,211 +2,201 @@
   <section class="turno-card">
     <div class="card-heading">
       <div class="heading-icon">
-        🕐
+        🔓
       </div>
 
-  <div>
-    <span class="eyebrow">
-      Inicio de operaciones
-    </span>
+      <div>
+        <span class="eyebrow">
+          Inicio de operaciones
+        </span>
 
-    <h1>
-      Abrir turno
-    </h1>
+        <h1>
+          Abrir turno
+        </h1>
 
-    <p>
-      Selecciona un cajero de tu tienda y registra
-      el fondo inicial de caja.
-    </p>
-  </div>
-</div>
-
-<form
-  class="turno-form"
-  (ngSubmit)="abrirTurno()"
->
-  <!-- Fecha y hora -->
-  <div class="info-grid">
-    <div class="info-item">
-      <span>
-        Fecha
-      </span>
-
-      <strong>
-        {{
-          fechaActual
-            | date: 'dd/MM/yyyy'
-        }}
-      </strong>
+        <p>
+          Asigna un cajero y una caja para comenzar
+          un nuevo turno en la tienda.
+        </p>
+      </div>
     </div>
 
-    <div class="info-item">
-      <span>
-        Hora
-      </span>
-
-      <strong>
-        {{
-          fechaActual
-            | date: 'HH:mm'
-        }}
-      </strong>
-    </div>
-  </div>
-
-  <!-- Cajero -->
-  <div class="form-group">
-    <label for="usuarioId">
-      Cajero *
-    </label>
-
-    <select
-      id="usuarioId"
-      name="usuarioId"
-      [(ngModel)]="usuarioId"
-      [disabled]="
-        enviando ||
-        cargandoUsuarios ||
-        usuarios.length === 0
-      "
-      required
+    <form
+      class="turno-form"
+      (ngSubmit)="abrirTurno()"
     >
-      <option value="">
-        {{
-          cargandoUsuarios
-            ? 'Cargando cajeros...'
-            : usuarios.length === 0
-              ? 'No hay cajeros disponibles'
-              : 'Selecciona un cajero'
-        }}
-      </option>
+      <div class="info-grid">
+        <div class="info-item">
+          <span>Fecha</span>
 
-      <option
-        *ngFor="let usuario of usuarios"
-        [value]="usuario._id"
+          <strong>
+            {{ fechaActual | date:'dd/MM/yyyy' }}
+          </strong>
+        </div>
+
+        <div class="info-item">
+          <span>Hora</span>
+
+          <strong>
+            {{ fechaActual | date:'HH:mm' }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="tiendaActual">
+          Tienda asignada
+        </label>
+
+        <input
+          id="tiendaActual"
+          name="tiendaActual"
+          type="text"
+          [value]="nombreTiendaActual"
+          disabled
+        />
+
+        <small>
+          La tienda se obtiene automáticamente
+          de la sesión del gerente.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="usuarioId">
+          Cajero responsable *
+        </label>
+
+        <select
+          id="usuarioId"
+          name="usuarioId"
+          [(ngModel)]="usuarioId"
+          [disabled]="
+            enviando ||
+            cargandoUsuarios ||
+            cargandoTurnos ||
+            usuarios.length === 0
+          "
+          required
+        >
+          <option value="">
+            {{
+              cargandoUsuarios
+                ? 'Cargando cajeros...'
+                : usuarios.length === 0
+                  ? 'No hay cajeros disponibles'
+                  : 'Selecciona un cajero'
+            }}
+          </option>
+
+          <option
+            *ngFor="let usuario of usuarios"
+            [value]="usuario._id"
+          >
+            {{ usuario.nombre }}
+            - {{ usuario.usuario }}
+          </option>
+        </select>
+
+        <small>
+          Solo aparecen cajeros activos de esta tienda
+          que no tienen otro turno abierto.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="numeroCaja">
+          Número de caja *
+        </label>
+
+        <input
+          id="numeroCaja"
+          name="numeroCaja"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="Ejemplo: 1"
+          [(ngModel)]="numeroCaja"
+          [disabled]="enviando"
+          required
+        />
+
+        <small *ngIf="cajasOcupadas.length === 0">
+          Actualmente no hay cajas ocupadas.
+        </small>
+
+        <small *ngIf="cajasOcupadas.length > 0">
+          Cajas ocupadas:
+          {{ cajasOcupadas.join(', ') }}
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="montoInicial">
+          Fondo inicial de caja *
+        </label>
+
+        <div class="money-input">
+          <span>$</span>
+
+          <input
+            id="montoInicial"
+            name="montoInicial"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+            [(ngModel)]="montoInicial"
+            [disabled]="enviando"
+            required
+          />
+        </div>
+
+        <small>
+          Registra el efectivo con el que comienza
+          el cajero su turno.
+        </small>
+      </div>
+
+      <p
+        class="error-message"
+        *ngIf="mensajeError"
       >
-        {{ usuario.nombre }} -
-        {{ usuario.usuario }}
-      </option>
-    </select>
+        {{ mensajeError }}
+      </p>
 
-    <small>
-      Solo aparecen cajeros activos que pertenecen
-      a la misma tienda del gerente.
-    </small>
-  </div>
+      <p
+        class="success-message"
+        *ngIf="mensajeExito"
+      >
+        {{ mensajeExito }}
+      </p>
 
-  <!-- Tienda automática -->
-  <div class="form-group">
-    <label for="tiendaActual">
-      Tienda asignada
-    </label>
+      <div class="form-actions">
+        <a
+          class="secondary-button"
+          [routerLink]="dashboardRuta"
+        >
+          Cancelar
+        </a>
 
-    <input
-      id="tiendaActual"
-      name="tiendaActual"
-      type="text"
-      [value]="nombreTiendaActual"
-      disabled
-    />
-
-    <small>
-      La tienda se obtiene automáticamente de la sesión
-      del gerente y no puede modificarse.
-    </small>
-  </div>
-
-  <!-- Número de caja -->
-  <div class="form-group">
-    <label for="numeroCaja">
-      Número de caja *
-    </label>
-
-    <input
-      id="numeroCaja"
-      name="numeroCaja"
-      type="number"
-      min="1"
-      step="1"
-      placeholder="Ej. 1"
-      [(ngModel)]="numeroCaja"
-      [disabled]="enviando"
-      required
-    />
-  </div>
-
-  <!-- Monto inicial -->
-  <div class="form-group">
-    <label for="montoInicial">
-      Fondo inicial de caja *
-    </label>
-
-    <div class="money-input">
-      <span>
-        $
-      </span>
-
-      <input
-        id="montoInicial"
-        name="montoInicial"
-        type="number"
-        min="0"
-        step="0.01"
-        placeholder="0.00"
-        [(ngModel)]="montoInicial"
-        [disabled]="enviando"
-        required
-      />
-    </div>
-
-    <small>
-      Ingresa el efectivo disponible al iniciar el turno.
-    </small>
-  </div>
-
-  <!-- Error -->
-  <p
-    class="error-message"
-    *ngIf="mensajeError"
-  >
-    {{ mensajeError }}
-  </p>
-
-  <!-- Éxito -->
-  <p
-    class="success-message"
-    *ngIf="mensajeExito"
-  >
-    {{ mensajeExito }}
-  </p>
-
-  <!-- Acciones -->
-  <div class="form-actions">
-    <a
-      class="secondary-button"
-      [routerLink]="dashboardRuta"
-    >
-      Cancelar
-    </a>
-
-    <button
-      class="primary-button"
-      type="submit"
-      [disabled]="
-        enviando ||
-        cargandoUsuarios ||
-        usuarios.length === 0 ||
-        !tiendaId
-      "
-    >
-      {{
-        enviando
-          ? 'Abriendo...'
-          : 'Abrir turno'
-      }}
-    </button>
-  </div>
-</form>
-
+        <button
+          class="primary-button"
+          type="submit"
+          [disabled]="
+            enviando ||
+            cargandoUsuarios ||
+            cargandoTurnos ||
+            !hayCajerosDisponibles
+          "
+        >
+          {{
+            enviando
+              ? 'Abriendo turno...'
+              : 'Abrir turno'
+          }}
+        </button>
+      </div>
+    </form>
   </section>
 </main>
