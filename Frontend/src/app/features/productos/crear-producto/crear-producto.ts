@@ -1,79 +1,216 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { Router, RouterLink } from '@angular/router';
-import { ProductosService } from '../../../core/services/productos';
-import { UsuarioActualService } from '../../../core/services/usuario-actual';
+import {
+  Component,
+  OnInit
+} from '@angular/core';
+import {
+  FormsModule
+} from '@angular/forms';
+import {
+  HttpClient
+} from '@angular/common/http';
+import {
+  Router,
+  RouterLink
+} from '@angular/router';
 
-interface TiendaOpcion {
+import {
+  ProductosService
+} from '../../../core/services/productos';
+
+import {
+  UsuarioActualService
+} from '../../../core/services/usuario-actual';
+
+import {
+  Usuario
+} from '../../../core/models/usuario.model';
+
+interface TiendaProducto {
   _id: string;
   nombre: string;
-  ciudad: string;
+  direccion?: string;
+  ciudad?: string;
+  telefono?: string;
+}
+
+interface CategoriaProducto {
+  nombre: string;
+  icono: string;
 }
 
 @Component({
   selector: 'app-crear-producto',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink
+  ],
   templateUrl: './crear-producto.html',
   styleUrl: './crear-producto.css'
 })
-export class CrearProducto implements OnInit {
+export class CrearProducto
+  implements OnInit {
+
   codigo: number | null = null;
   nombre = '';
   categoria = '';
   precio: number | null = null;
   stockMinimo: number | null = 5;
 
+  /*
+    Es pública porque se utilizará
+    directamente desde el HTML.
+  */
+  tiendaId = '';
+
+  tiendas: TiendaProducto[] = [];
+
+  usuarioActual!: Usuario;
+
+  cargandoTiendas = false;
   guardando = false;
+
   mensajeError = '';
   mensajeExito = '';
 
-  esAdmin = false;
-  tiendas: TiendaOpcion[] = [];
-  tiendaSeleccionada = '';
+  private readonly tiendasUrl =
+    'http://localhost:3000/tiendas';
 
-  private tiendaIdGerente: string | undefined;
-
-  categorias = [
-    { nombre: 'Playeras',       icono: '👕' },
-    { nombre: 'Sudaderas',      icono: '🧥' },
-    { nombre: 'Accesorios',     icono: '👜' },
-    { nombre: 'Coleccionables', icono: '🎁' },
-    { nombre: 'Gorras',         icono: '🧢' },
-    { nombre: 'Otros',          icono: '📦' }
-  ];
+  readonly categorias:
+    CategoriaProducto[] = [
+      {
+        nombre: 'Playeras',
+        icono: '👕'
+      },
+      {
+        nombre: 'Sudaderas',
+        icono: '🧥'
+      },
+      {
+        nombre: 'Accesorios',
+        icono: '👜'
+      },
+      {
+        nombre: 'Coleccionables',
+        icono: '🎁'
+      },
+      {
+        nombre: 'Gorras',
+        icono: '🧢'
+      },
+      {
+        nombre: 'Otros',
+        icono: '📦'
+      }
+    ];
 
   constructor(
-    private productosService: ProductosService,
-    private usuarioActualService: UsuarioActualService,
-    private http: HttpClient,
-    private router: Router
+    private productosService:
+      ProductosService,
+
+    private usuarioActualService:
+      UsuarioActualService,
+
+    private http:
+      HttpClient,
+
+    private router:
+      Router
   ) {}
 
   ngOnInit(): void {
-    const usuario = this.usuarioActualService.obtenerUsuario();
+    this.usuarioActual =
+      this.usuarioActualService
+        .obtenerUsuario();
 
-    if (usuario.rol === 'admin') {
-      this.esAdmin = true;
-      this.http
-        .get<TiendaOpcion[]>('http://localhost:3000/tiendas')
-        .subscribe({
-          next: (tiendas) => { this.tiendas = tiendas; },
-          error: () => { this.mensajeError = 'No se pudieron cargar las tiendas.'; }
-        });
-    } else if (usuario.rol === 'gerente') {
-      this.tiendaIdGerente = usuario.tiendaId;
+    if (
+      !this.usuarioActual ||
+      this.usuarioActual.id === 0
+    ) {
+      this.mensajeError =
+        'No se encontró una sesión activa.';
+
+      return;
+    }
+
+    /*
+      El administrador puede elegir
+      cualquiera de las tiendas.
+    */
+    if (this.esAdministrador) {
+      this.cargarTiendas();
+      return;
+    }
+
+    /*
+      Gerente y cajero utilizan
+      automáticamente su tienda.
+    */
+    this.tiendaId =
+      this.usuarioActual.tiendaId || '';
+
+    if (!this.tiendaId) {
+      this.mensajeError =
+        'El usuario no tiene una tienda asignada. No es posible registrar productos.';
     }
   }
 
+  get esAdministrador(): boolean {
+    return (
+      this.usuarioActual?.rol ===
+      'admin'
+    );
+  }
+
+  get esGerente(): boolean {
+    return (
+      this.usuarioActual?.rol ===
+      'gerente'
+    );
+  }
+
+  get esCajero(): boolean {
+    return (
+      this.usuarioActual?.rol ===
+      'cajero'
+    );
+  }
+
+  get esAdministrador(): boolean {
+    return (
+      this.usuarioActual?.rol ===
+      'admin'
+    );
+  }
+
+  get esGerente(): boolean {
+    return (
+      this.usuarioActual?.rol ===
+      'gerente'
+    );
+  }
+
+  get esCajero(): boolean {
+    return (
+      this.usuarioActual?.rol ===
+      'cajero'
+    );
+  }
+
   get nombreVistaPrevia(): string {
-    return this.nombre.trim() || 'Nombre del producto';
+    return (
+      this.nombre.trim() ||
+      'Nombre del producto'
+    );
   }
 
   get categoriaVistaPrevia(): string {
-    return this.categoria || 'Categoría sin seleccionar';
+    return (
+      this.categoria ||
+      'Categoría sin seleccionar'
+    );
   }
 
   get precioVistaPrevia(): number {
@@ -81,7 +218,13 @@ export class CrearProducto implements OnInit {
   }
 
   get iconoCategoria(): string {
-    return this.categorias.find(c => c.nombre === this.categoria)?.icono ?? '📦';
+    return (
+      this.categorias.find(
+        item =>
+          item.nombre ===
+          this.categoria
+      )?.icono ?? '📦'
+    );
   }
 
   get tiendaVistaPrevia(): string {
@@ -90,43 +233,150 @@ export class CrearProducto implements OnInit {
     return tienda ? `${tienda.nombre} — ${tienda.ciudad}` : 'Sin tienda asignada';
   }
 
-  seleccionarCategoria(categoria: { nombre: string; icono: string }): void {
-    this.categoria = categoria.nombre;
+  get nombreTiendaSeleccionada(): string {
+    if (!this.tiendaId) {
+      return this.esAdministrador
+        ? 'Tienda sin seleccionar'
+        : 'Tienda no asignada';
+    }
+
+    const tienda =
+      this.tiendas.find(
+        item =>
+          item._id === this.tiendaId
+      );
+
+    if (tienda) {
+      return tienda.ciudad
+        ? `${tienda.nombre} - ${tienda.ciudad}`
+        : tienda.nombre;
+    }
+
+    /*
+      Para gerente y cajero utilizamos el nombre
+      de sucursal almacenado en la sesión.
+    */
+    return (
+      this.usuarioActual?.sucursal ||
+      'Tienda asignada'
+    );
+  }
+
+  seleccionarCategoria(
+    categoria:
+      CategoriaProducto
+  ): void {
+    this.categoria =
+      categoria.nombre;
+
+    this.limpiarMensajes();
+  }
+
+  cargarTiendas(): void {
+    this.cargandoTiendas = true;
     this.mensajeError = '';
-    this.mensajeExito = '';
+
+    this.http
+      .get<TiendaProducto[]>(
+        this.tiendasUrl
+      )
+      .subscribe({
+        next: tiendas => {
+          this.tiendas =
+            Array.isArray(tiendas)
+              ? tiendas
+              : [];
+
+          this.cargandoTiendas = false;
+
+          if (
+            this.tiendas.length === 0
+          ) {
+            this.mensajeError =
+              'No existen tiendas disponibles para asignar el producto.';
+          }
+        },
+
+        error: error => {
+          console.error(
+            'Error al cargar tiendas:',
+            error
+          );
+
+          this.mensajeError =
+            'No fue posible cargar las tiendas.';
+
+          this.cargandoTiendas = false;
+        }
+      });
   }
 
   guardarProducto(): void {
-    this.mensajeError = '';
-    this.mensajeExito = '';
+    this.limpiarMensajes();
 
-    if (this.codigo === null || Number(this.codigo) <= 0) {
-      this.mensajeError = 'El código del producto es obligatorio y debe ser mayor a cero.';
+    if (
+      this.codigo === null ||
+      Number(this.codigo) <= 0
+    ) {
+      this.mensajeError =
+        'El código del producto es obligatorio y debe ser mayor a cero.';
+
       return;
     }
 
     if (!this.nombre.trim()) {
-      this.mensajeError = 'El nombre del producto es obligatorio.';
+      this.mensajeError =
+        'El nombre del producto es obligatorio.';
+
       return;
     }
 
-    if (this.nombre.trim().length < 3) {
-      this.mensajeError = 'El nombre debe contener al menos 3 caracteres.';
+    if (
+      this.nombre.trim().length < 3
+    ) {
+      this.mensajeError =
+        'El nombre debe contener al menos 3 caracteres.';
+
       return;
     }
 
     if (!this.categoria) {
-      this.mensajeError = 'Selecciona una categoría.';
+      this.mensajeError =
+        'Selecciona una categoría.';
+
       return;
     }
 
-    if (this.precio === null || Number(this.precio) <= 0) {
-      this.mensajeError = 'El precio debe ser mayor a cero.';
+    if (
+      this.precio === null ||
+      Number(this.precio) <= 0
+    ) {
+      this.mensajeError =
+        'El precio debe ser mayor a cero.';
+
       return;
     }
 
-    if (this.stockMinimo === null || Number(this.stockMinimo) < 0) {
-      this.mensajeError = 'El stock mínimo no puede ser negativo.';
+    if (
+      this.stockMinimo === null ||
+      Number(this.stockMinimo) < 0
+    ) {
+      this.mensajeError =
+        'El stock mínimo no puede ser negativo.';
+
+      return;
+    }
+
+    /*
+      Todos los productos deben pertenecer
+      obligatoriamente a una tienda.
+    */
+    if (!this.tiendaId) {
+      this.mensajeError =
+        this.esAdministrador
+          ? 'Selecciona la tienda a la que pertenecerá el producto.'
+          : 'Tu usuario no tiene una tienda asignada.';
+
       return;
     }
 
@@ -137,27 +387,55 @@ export class CrearProducto implements OnInit {
 
     this.guardando = true;
 
-    const tiendaId = this.esAdmin
-      ? this.tiendaSeleccionada
-      : this.tiendaIdGerente;
+    this.productosService
+      .create({
+        codigo:
+          Number(this.codigo),
 
-    this.productosService.create({
-      codigo: Number(this.codigo),
-      nombre: this.nombre.trim(),
-      categoria: this.categoria,
-      precio: Number(this.precio),
-      stockMinimo: Number(this.stockMinimo),
-      tiendaId
-    }).subscribe({
-      next: () => {
-        this.mensajeExito = 'El producto se registró correctamente.';
-        setTimeout(() => this.router.navigate(['/lista-productos']), 900);
-      },
-      error: () => {
-        this.mensajeError = 'No fue posible guardar el producto. Verifica que el código no esté duplicado.';
-        this.guardando = false;
-      }
-    });
+        nombre:
+          this.nombre.trim(),
+
+        categoria:
+          this.categoria,
+
+        precio:
+          Number(this.precio),
+
+        stockMinimo:
+          Number(this.stockMinimo),
+
+        tiendaId:
+          this.tiendaId
+      })
+      .subscribe({
+        next: () => {
+          this.mensajeExito =
+            'El producto se registró correctamente.';
+
+          setTimeout(() => {
+            this.router.navigate([
+              '/lista-productos'
+            ]);
+          }, 900);
+        },
+
+        error: error => {
+          console.error(
+            'Error al guardar producto:',
+            error
+          );
+
+          this.mensajeError =
+            error.error?.message ||
+            'No fue posible guardar el producto. Verifica que el código no esté duplicado en esa tienda.';
+
+          this.guardando = false;
+        },
+
+        complete: () => {
+          this.guardando = false;
+        }
+      });
   }
 
   limpiarFormulario(): void {
@@ -166,7 +444,23 @@ export class CrearProducto implements OnInit {
     this.categoria = '';
     this.precio = null;
     this.stockMinimo = 5;
-    this.tiendaSeleccionada = '';
+
+    /*
+      Solo el administrador debe volver
+      a seleccionar la tienda.
+    */
+    if (this.esAdministrador) {
+      this.tiendaId = '';
+    } else {
+      this.tiendaId =
+        this.usuarioActual?.tiendaId ||
+        '';
+    }
+
+    this.limpiarMensajes();
+  }
+
+  private limpiarMensajes(): void {
     this.mensajeError = '';
     this.mensajeExito = '';
   }
