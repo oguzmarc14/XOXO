@@ -11,21 +11,18 @@
         </span>
 
         <h1>
-          Cerrar turno
+          Cerrar turnos
         </h1>
 
         <p>
-          Revisa la información del turno abierto
-          y registra el efectivo final de caja.
+          Consulta los turnos abiertos de la tienda
+          y registra el efectivo final de cada caja.
         </p>
       </div>
     </div>
 
-    <form
-      class="turno-form"
-      (ngSubmit)="cerrarTurno()"
-    >
-      <!-- Tienda automática -->
+    <div class="turno-form">
+      <!-- Tienda asignada automáticamente -->
       <div class="form-group">
         <label for="tiendaActual">
           Tienda asignada
@@ -40,15 +37,32 @@
         />
 
         <small>
-          La tienda se obtiene automáticamente
-          de la sesión del gerente.
+          Solo se muestran los turnos abiertos
+          pertenecientes a esta tienda.
         </small>
       </div>
 
-      <!-- Cargando turno -->
+      <!-- Resumen -->
+      <div class="turnos-summary">
+        <div>
+          <span>
+            Operaciones activas
+          </span>
+
+          <strong>
+            Turnos abiertos
+          </strong>
+        </div>
+
+        <span class="turnos-count">
+          {{ totalTurnosAbiertos }}
+        </span>
+      </div>
+
+      <!-- Estado de carga -->
       <div
         class="loading-turno"
-        *ngIf="cargandoTurno"
+        *ngIf="cargandoTurnos"
       >
         <span>
           ⏳
@@ -56,155 +70,227 @@
 
         <div>
           <strong>
-            Cargando turno abierto
+            Cargando turnos abiertos
           </strong>
 
           <p>
-            Consultando las operaciones activas
+            Consultando las cajas activas
             de la tienda.
           </p>
         </div>
       </div>
 
-      <!-- Datos del turno -->
-      <ng-container
+      <!-- Sin turnos abiertos -->
+      <div
+        class="empty-turnos"
         *ngIf="
-          !cargandoTurno &&
-          turnoSeleccionado
+          !cargandoTurnos &&
+          turnosAbiertos.length === 0
         "
       >
-        <section class="turno-responsable">
-          <div class="responsable-icon">
-            👤
+        <div class="empty-turnos-icon">
+          📭
+        </div>
+
+        <strong>
+          No hay turnos abiertos actualmente
+        </strong>
+      </div>
+
+      <!-- Lista de turnos -->
+      <div
+        class="turnos-list"
+        *ngIf="
+          !cargandoTurnos &&
+          turnosAbiertos.length > 0
+        "
+      >
+        <article
+          class="turno-item"
+          *ngFor="let turno of turnosAbiertos"
+        >
+          <!-- Encabezado -->
+          <div class="turno-item-heading">
+            <div class="cajero-info">
+              <div class="cajero-icon">
+                👤
+              </div>
+
+              <div>
+                <span>
+                  Cajero responsable
+                </span>
+
+                <strong>
+                  {{
+                    obtenerNombreCajero(
+                      turno
+                    )
+                  }}
+                </strong>
+
+                <small
+                  *ngIf="
+                    obtenerUsuarioCajero(
+                      turno
+                    )
+                  "
+                >
+                  Usuario:
+                  {{
+                    obtenerUsuarioCajero(
+                      turno
+                    )
+                  }}
+                </small>
+              </div>
+            </div>
+
+            <span class="turno-status">
+              Turno abierto
+            </span>
           </div>
 
-          <div class="responsable-info">
-            <span>
-              Cajero responsable
-            </span>
+          <!-- Información del turno -->
+          <div class="turno-details">
+            <div class="detail-item">
+              <span>
+                Número de caja
+              </span>
 
-            <strong>
-              {{ nombreCajero }}
-            </strong>
+              <strong>
+                Caja {{ turno.numeroCaja }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span>
+                Fondo inicial
+              </span>
+
+              <strong>
+                ${{
+                  turno.montoInicial
+                    | number:'1.2-2'
+                }}
+              </strong>
+            </div>
+
+            <div class="detail-item full-width">
+              <span>
+                Fecha de apertura
+              </span>
+
+              <strong>
+                {{
+                  turno.fechaApertura
+                    | date:'dd/MM/yyyy HH:mm'
+                }}
+              </strong>
+            </div>
+          </div>
+
+          <!-- Efectivo final -->
+          <div class="form-group turno-money-group">
+            <label
+              [for]="
+                'montoFinal-' +
+                turno._id
+              "
+            >
+              Efectivo final de la caja *
+            </label>
+
+            <div class="money-input">
+              <span>
+                $
+              </span>
+
+              <input
+                [id]="
+                  'montoFinal-' +
+                  turno._id
+                "
+                [name]="
+                  'montoFinal-' +
+                  turno._id
+                "
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                [(ngModel)]="
+                  turno.montoFinalCapturado
+                "
+                [disabled]="turno.cerrando"
+              />
+            </div>
 
             <small>
-              Usuario:
-              {{ usuarioCajero }}
+              Registra el efectivo contado
+              al finalizar esta caja.
             </small>
           </div>
 
-          <span class="turno-status">
-            Turno abierto
-          </span>
-        </section>
-
-        <div class="info-grid">
-          <div class="info-item">
-            <span>
-              Número de caja
-            </span>
-
-            <strong>
-              Caja
-              {{ turnoSeleccionado.numeroCaja }}
-            </strong>
-          </div>
-
-          <div class="info-item">
-            <span>
-              Fondo inicial
-            </span>
-
-            <strong>
-              ${{
-                turnoSeleccionado.montoInicial
-                  | number: '1.2-2'
-              }}
-            </strong>
-          </div>
-
-          <div class="info-item full-width">
-            <span>
-              Fecha y hora de apertura
-            </span>
-
-            <strong>
-              {{
-                turnoSeleccionado.fechaApertura
-                  | date: 'dd/MM/yyyy HH:mm'
-              }}
-            </strong>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Efectivo final -->
-      <div class="form-group">
-        <label for="montoFinal">
-          Efectivo final en caja *
-        </label>
-
-        <div class="money-input">
-          <span>
-            $
-          </span>
-
-          <input
-            id="montoFinal"
-            name="montoFinal"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="0.00"
-            [(ngModel)]="montoFinal"
-            [disabled]="
-              enviando ||
-              cargandoTurno ||
-              !turnoSeleccionado
+          <!-- Confirmación -->
+          <label
+            class="confirmation"
+            [class.disabled]="
+              turno.cerrando
             "
-            required
-          />
-        </div>
+          >
+            <input
+              type="checkbox"
+              [name]="
+                'confirmacion-' +
+                turno._id
+              "
+              [(ngModel)]="
+                turno.confirmacion
+              "
+              [disabled]="turno.cerrando"
+            />
 
-        <small>
-          Registra el efectivo contado
-          al finalizar el turno.
-        </small>
+            <span>
+              Confirmo que revisé el efectivo
+              y la información de este turno.
+            </span>
+          </label>
+
+          <!-- Error específico -->
+          <p
+            class="error-message"
+            *ngIf="turno.mensajeError"
+          >
+            {{ turno.mensajeError }}
+          </p>
+
+          <!-- Botón individual -->
+          <div class="turno-item-actions">
+            <button
+              class="danger-button"
+              type="button"
+              [disabled]="turno.cerrando"
+              (click)="cerrarTurno(turno)"
+            >
+              {{
+                turno.cerrando
+                  ? 'Cerrando...'
+                  : 'Cerrar caja'
+              }}
+            </button>
+          </div>
+        </article>
       </div>
 
-      <!-- Confirmación -->
-      <label
-        class="confirmation"
-        [class.disabled]="
-          !turnoSeleccionado
-        "
-      >
-        <input
-          type="checkbox"
-          name="confirmacion"
-          [(ngModel)]="confirmacion"
-          [disabled]="
-            enviando ||
-            cargandoTurno ||
-            !turnoSeleccionado
-          "
-        />
-
-        <span>
-          Confirmo que revisé el efectivo y la
-          información correspondiente al turno.
-        </span>
-      </label>
-
-      <!-- Error -->
+      <!-- Mensajes generales -->
       <p
         class="error-message"
-        *ngIf="mensajeError"
+        *ngIf="mensajeErrorGeneral"
       >
-        {{ mensajeError }}
+        {{ mensajeErrorGeneral }}
       </p>
 
-      <!-- Éxito -->
       <p
         class="success-message"
         *ngIf="mensajeExito"
@@ -212,31 +298,15 @@
         {{ mensajeExito }}
       </p>
 
-      <!-- Acciones -->
+      <!-- Regresar -->
       <div class="form-actions">
         <a
           class="secondary-button"
           [routerLink]="dashboardRuta"
         >
-          Cancelar
+          Regresar al inicio
         </a>
-
-        <button
-          class="danger-button"
-          type="submit"
-          [disabled]="
-            enviando ||
-            cargandoTurno ||
-            !turnoSeleccionado
-          "
-        >
-          {{
-            enviando
-              ? 'Cerrando...'
-              : 'Cerrar turno'
-          }}
-        </button>
       </div>
-    </form>
+    </div>
   </section>
 </main>
