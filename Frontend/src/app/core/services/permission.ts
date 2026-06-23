@@ -48,10 +48,6 @@ export class PermissionService {
         'VENTAS_DEVOLVER',
         'VENTAS_CANCELAR',
 
-        'INVENTARIO_VER',
-        'INVENTARIO_EDITAR',
-        'INVENTARIO_MOVIMIENTOS_VER',
-
         'PRODUCTOS_VER',
         'PRODUCTOS_GESTIONAR',
 

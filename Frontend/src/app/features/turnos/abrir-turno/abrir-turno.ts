@@ -55,6 +55,34 @@ interface UsuarioBackend {
   activo?: boolean;
 }
 
+interface UsuarioTurno {
+  _id: string;
+  nombre: string;
+  usuario?: string;
+  rol?: string;
+}
+
+interface TurnoAbierto {
+  _id: string;
+
+  tiendaId:
+    | string
+    | TiendaBackend;
+
+  usuarioId:
+    | string
+    | UsuarioTurno;
+
+  numeroCaja: number;
+  montoInicial: number;
+
+  estado:
+    | 'ABIERTO'
+    | 'CERRADO';
+
+  fechaApertura: string;
+}
+
 @Component({
   selector: 'app-abrir-turno',
   standalone: true,
@@ -73,7 +101,22 @@ export class AbrirTurno implements OnInit {
   numeroCaja: number | null = null;
   montoInicial: number | null = null;
 
+  /*
+    Todos los cajeros activos de la tienda.
+  */
+  cajerosTienda: UsuarioBackend[] = [];
+
+  /*
+    Solo los cajeros que todavía no tienen
+    un turno abierto.
+  */
   usuarios: UsuarioBackend[] = [];
+
+  /*
+    Turnos que permanecen abiertos
+    en la tienda del gerente.
+  */
+  turnosAbiertos: TurnoAbierto[] = [];
 
   usuarioActual!: Usuario;
 
@@ -84,6 +127,7 @@ export class AbrirTurno implements OnInit {
   mensajeExito = '';
 
   cargandoUsuarios = false;
+  cargandoTurnos = false;
   enviando = false;
 
   fechaActual = new Date();
@@ -118,6 +162,10 @@ export class AbrirTurno implements OnInit {
       return;
     }
 
+    /*
+      Esta pantalla es exclusiva
+      para el gerente.
+    */
     if (
       this.usuarioActual.rol !==
       'gerente'
@@ -128,10 +176,6 @@ export class AbrirTurno implements OnInit {
       return;
     }
 
-    /*
-      La tienda se obtiene directamente
-      del usuario guardado en la sesión.
-    */
     this.tiendaId =
       this.usuarioActual.tiendaId || '';
 
@@ -146,30 +190,87 @@ export class AbrirTurno implements OnInit {
       return;
     }
 
-    this.cargarCajeros();
+    /*
+      Primero se obtienen los turnos abiertos.
+      Después se cargan y filtran los cajeros.
+    */
+    this.cargarTurnosAbiertos();
   }
 
   get dashboardRuta(): string {
-    if (
-      this.usuarioActual?.rol ===
-      'admin'
-    ) {
-      return '/dashboard-admin';
-    }
+    return '/dashboard-gerente';
+  }
 
-    if (
-      this.usuarioActual?.rol ===
-      'gerente'
-    ) {
-      return '/dashboard-gerente';
-    }
+  get hayCajerosDisponibles(): boolean {
+    return this.usuarios.length > 0;
+  }
 
-    return '/dashboard-cajero';
+  get totalTurnosAbiertos(): number {
+    return this.turnosAbiertos.length;
+  }
+
+  get cajasOcupadas(): number[] {
+    return this.turnosAbiertos
+      .map(
+        turno =>
+          Number(turno.numeroCaja)
+      )
+      .filter(
+        numeroCaja =>
+          Number.isFinite(numeroCaja)
+      );
+  }
+
+  cargarTurnosAbiertos(): void {
+    this.cargandoTurnos = true;
+    this.mensajeError = '';
+
+    this.http
+      .get<TurnoAbierto[]>(
+        `${this.turnosApi}/abiertos/${this.tiendaId}`
+      )
+      .subscribe({
+        next: respuesta => {
+          this.turnosAbiertos =
+            (
+              Array.isArray(respuesta)
+                ? respuesta
+                : []
+            ).filter(
+              turno =>
+                turno.estado ===
+                'ABIERTO'
+            );
+
+          this.cargandoTurnos = false;
+
+          this.cargarCajeros();
+        },
+
+        error: error => {
+          console.error(
+            'Error al cargar turnos abiertos:',
+            error
+          );
+
+          this.turnosAbiertos = [];
+          this.cargandoTurnos = false;
+
+          this.mensajeError =
+            error.error?.message ||
+            'No fue posible consultar los turnos abiertos.';
+
+          /*
+            Aun si falla la consulta de turnos,
+            se intenta cargar la lista de cajeros.
+          */
+          this.cargarCajeros();
+        }
+      });
   }
 
   cargarCajeros(): void {
     this.cargandoUsuarios = true;
-    this.mensajeError = '';
 
     this.http
       .get<UsuarioBackend[]>(
@@ -177,43 +278,82 @@ export class AbrirTurno implements OnInit {
       )
       .subscribe({
         next: respuesta => {
-          const usuarios =
+          const usuariosBackend =
             Array.isArray(respuesta)
               ? respuesta
               : [];
 
-          this.usuarios =
-            usuarios.filter(
+          /*
+            Solo cajeros activos de la misma tienda.
+          */
+          this.cajerosTienda =
+            usuariosBackend.filter(
               usuario => {
                 const rol =
                   String(usuario.rol)
                     .toLowerCase();
 
-                const tiendaId =
+                const tiendaUsuario =
                   this.obtenerTiendaId(
                     usuario.tiendaId
                   );
 
-                const estaActivo =
+                const activo =
                   usuario.activo !== false;
 
                 return (
                   rol === 'cajero' &&
-                  estaActivo &&
-                  tiendaId ===
+                  activo &&
+                  tiendaUsuario ===
                     this.tiendaId
                 );
               }
             );
 
+          /*
+            Elimina del selector los cajeros
+            que ya tienen un turno abierto.
+          */
+          this.usuarios =
+            this.cajerosTienda.filter(
+              cajero =>
+                !this.turnosAbiertos
+                  .some(
+                    turno =>
+                      this.obtenerUsuarioIdTurno(
+                        turno.usuarioId
+                      ) === cajero._id
+                  )
+            );
+
+          /*
+            Si el cajero seleccionado dejó de estar
+            disponible, se limpia el selector.
+          */
+          const seleccionadoDisponible =
+            this.usuarios.some(
+              cajero =>
+                cajero._id ===
+                this.usuarioId
+            );
+
+          if (!seleccionadoDisponible) {
+            this.usuarioId = '';
+          }
+
           this.cargandoUsuarios =
             false;
 
           if (
+            this.cajerosTienda.length === 0
+          ) {
+            this.mensajeError =
+              'No hay cajeros activos asignados a esta tienda.';
+          } else if (
             this.usuarios.length === 0
           ) {
             this.mensajeError =
-              'No hay cajeros activos asignados a la tienda del gerente.';
+              'Todos los cajeros de esta tienda ya tienen un turno abierto.';
           }
         },
 
@@ -223,6 +363,7 @@ export class AbrirTurno implements OnInit {
             error
           );
 
+          this.cajerosTienda = [];
           this.usuarios = [];
 
           this.mensajeError =
@@ -238,6 +379,16 @@ export class AbrirTurno implements OnInit {
   abrirTurno(): void {
     this.limpiarMensajes();
 
+    if (
+      this.usuarioActual?.rol !==
+      'gerente'
+    ) {
+      this.mensajeError =
+        'Solo un gerente puede abrir turnos.';
+
+      return;
+    }
+
     if (!this.tiendaId) {
       this.mensajeError =
         'El gerente no tiene una tienda asignada.';
@@ -247,7 +398,7 @@ export class AbrirTurno implements OnInit {
 
     if (!this.usuarioId) {
       this.mensajeError =
-        'Selecciona un cajero.';
+        'Selecciona un cajero disponible.';
 
       return;
     }
@@ -261,7 +412,7 @@ export class AbrirTurno implements OnInit {
 
     if (!cajeroSeleccionado) {
       this.mensajeError =
-        'El cajero seleccionado no es válido.';
+        'El cajero seleccionado no está disponible.';
 
       return;
     }
@@ -281,18 +432,51 @@ export class AbrirTurno implements OnInit {
       return;
     }
 
-    if (
-      this.numeroCaja === null ||
-      Number(this.numeroCaja) <= 0
-    ) {
+    const cajeroConTurno =
+      this.turnosAbiertos.some(
+        turno =>
+          this.obtenerUsuarioIdTurno(
+            turno.usuarioId
+          ) === this.usuarioId
+      );
+
+    if (cajeroConTurno) {
       this.mensajeError =
-        'Ingresa un número de caja válido.';
+        'El cajero seleccionado ya tiene un turno abierto.';
 
       return;
     }
 
     if (
-      this.montoInicial === null
+      this.numeroCaja === null ||
+      !Number.isInteger(
+        Number(this.numeroCaja)
+      ) ||
+      Number(this.numeroCaja) <= 0
+    ) {
+      this.mensajeError =
+        'Ingresa un número de caja entero mayor a cero.';
+
+      return;
+    }
+
+    const cajaOcupada =
+      this.turnosAbiertos.some(
+        turno =>
+          Number(turno.numeroCaja) ===
+          Number(this.numeroCaja)
+      );
+
+    if (cajaOcupada) {
+      this.mensajeError =
+        `La caja ${this.numeroCaja} ya tiene un turno abierto.`;
+
+      return;
+    }
+
+    if (
+      this.montoInicial === null ||
+      this.montoInicial === undefined
     ) {
       this.mensajeError =
         'Ingresa el fondo inicial de caja.';
@@ -312,11 +496,11 @@ export class AbrirTurno implements OnInit {
     this.enviando = true;
 
     const nuevoTurno = {
-      usuarioId:
-        this.usuarioId,
-
       tiendaId:
         this.tiendaId,
+
+      usuarioId:
+        this.usuarioId,
 
       numeroCaja:
         Number(this.numeroCaja),
@@ -326,20 +510,32 @@ export class AbrirTurno implements OnInit {
     };
 
     this.http
-      .post(
+      .post<{
+        message?: string;
+        turno?: TurnoAbierto;
+      }>(
         `${this.turnosApi}/abrir`,
         nuevoTurno
       )
       .subscribe({
-        next: () => {
+        next: respuesta => {
           this.mensajeExito =
+            respuesta.message ||
             'El turno se abrió correctamente.';
 
-          setTimeout(() => {
-            this.router.navigate([
-              this.dashboardRuta
-            ]);
-          }, 900);
+          /*
+            Limpia solo los campos del nuevo turno.
+            La tienda permanece fija.
+          */
+          this.usuarioId = '';
+          this.numeroCaja = null;
+          this.montoInicial = null;
+
+          /*
+            Actualiza los turnos y los cajeros
+            disponibles sin abandonar la pantalla.
+          */
+          this.cargarTurnosAbiertos();
         },
 
         error: error => {
@@ -359,6 +555,57 @@ export class AbrirTurno implements OnInit {
           this.enviando = false;
         }
       });
+  }
+
+  obtenerNombreCajeroTurno(
+    turno: TurnoAbierto
+  ): string {
+    if (
+      turno.usuarioId &&
+      typeof turno.usuarioId ===
+      'object'
+    ) {
+      return (
+        turno.usuarioId.nombre ||
+        'Cajero'
+      );
+    }
+
+    return 'Cajero';
+  }
+
+  obtenerUsuarioCajeroTurno(
+    turno: TurnoAbierto
+  ): string {
+    if (
+      turno.usuarioId &&
+      typeof turno.usuarioId ===
+      'object'
+    ) {
+      return (
+        turno.usuarioId.usuario ||
+        ''
+      );
+    }
+
+    return '';
+  }
+
+  private obtenerUsuarioIdTurno(
+    usuario:
+      | string
+      | UsuarioTurno
+      | null
+      | undefined
+  ): string {
+    if (
+      typeof usuario ===
+      'string'
+    ) {
+      return usuario;
+    }
+
+    return usuario?._id || '';
   }
 
   private obtenerTiendaId(
