@@ -17,7 +17,7 @@ interface TiendaOpcion {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './crear-producto.html',
-  styleUrl: './crear-producto.css'
+  styleUrl: './crear-producto.css',
 })
 export class CrearProducto implements OnInit {
   codigo: number | null = null;
@@ -34,22 +34,22 @@ export class CrearProducto implements OnInit {
   tiendas: TiendaOpcion[] = [];
   tiendaSeleccionada = '';
 
-  private tiendaIdGerente: string | undefined;
+  private tiendaIdGerente = '';
 
   categorias = [
-    { nombre: 'Playeras',       icono: '👕' },
-    { nombre: 'Sudaderas',      icono: '🧥' },
-    { nombre: 'Accesorios',     icono: '👜' },
+    { nombre: 'Playeras', icono: '👕' },
+    { nombre: 'Sudaderas', icono: '🧥' },
+    { nombre: 'Accesorios', icono: '👜' },
     { nombre: 'Coleccionables', icono: '🎁' },
-    { nombre: 'Gorras',         icono: '🧢' },
-    { nombre: 'Otros',          icono: '📦' }
+    { nombre: 'Gorras', icono: '🧢' },
+    { nombre: 'Otros', icono: '📦' },
   ];
 
   constructor(
     private productosService: ProductosService,
     private usuarioActualService: UsuarioActualService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -57,14 +57,16 @@ export class CrearProducto implements OnInit {
 
     if (usuario.rol === 'admin') {
       this.esAdmin = true;
-      this.http
-        .get<TiendaOpcion[]>('http://localhost:3000/tiendas')
-        .subscribe({
-          next: (tiendas) => { this.tiendas = tiendas; },
-          error: () => { this.mensajeError = 'No se pudieron cargar las tiendas.'; }
-        });
+      this.http.get<TiendaOpcion[]>('http://localhost:3000/tiendas').subscribe({
+        next: (tiendas) => {
+          this.tiendas = tiendas;
+        },
+        error: () => {
+          this.mensajeError = 'No se pudieron cargar las tiendas.';
+        },
+      });
     } else if (usuario.rol === 'gerente') {
-      this.tiendaIdGerente = usuario.tiendaId;
+      this.tiendaIdGerente = usuario.tiendaId || '';
     }
   }
 
@@ -81,12 +83,12 @@ export class CrearProducto implements OnInit {
   }
 
   get iconoCategoria(): string {
-    return this.categorias.find(c => c.nombre === this.categoria)?.icono ?? '📦';
+    return this.categorias.find((c) => c.nombre === this.categoria)?.icono ?? '📦';
   }
 
   get tiendaVistaPrevia(): string {
     if (!this.esAdmin) return '';
-    const tienda = this.tiendas.find(t => t._id === this.tiendaSeleccionada);
+    const tienda = this.tiendas.find((t) => t._id === this.tiendaSeleccionada);
     return tienda ? `${tienda.nombre} — ${tienda.ciudad}` : 'Sin tienda asignada';
   }
 
@@ -137,27 +139,37 @@ export class CrearProducto implements OnInit {
 
     this.guardando = true;
 
-    const tiendaId = this.esAdmin
-      ? this.tiendaSeleccionada
-      : this.tiendaIdGerente;
+    const tiendaId = this.esAdmin ? this.tiendaSeleccionada : this.tiendaIdGerente || '';
 
-    this.productosService.create({
-      codigo: Number(this.codigo),
-      nombre: this.nombre.trim(),
-      categoria: this.categoria,
-      precio: Number(this.precio),
-      stockMinimo: Number(this.stockMinimo),
-      tiendaId
-    }).subscribe({
-      next: () => {
-        this.mensajeExito = 'El producto se registró correctamente.';
-        setTimeout(() => this.router.navigate(['/lista-productos']), 900);
-      },
-      error: () => {
-        this.mensajeError = 'No fue posible guardar el producto. Verifica que el código no esté duplicado.';
-        this.guardando = false;
-      }
-    });
+    if (!tiendaId) {
+      this.mensajeError = this.esAdmin
+        ? 'Selecciona la tienda a la que pertenece el producto.'
+        : 'Tu usuario no tiene una tienda asignada.';
+
+      this.guardando = false;
+      return;
+    }
+
+    this.productosService
+      .create({
+        codigo: Number(this.codigo),
+        nombre: this.nombre.trim(),
+        categoria: this.categoria,
+        precio: Number(this.precio),
+        stockMinimo: Number(this.stockMinimo),
+        tiendaId,
+      })
+      .subscribe({
+        next: () => {
+          this.mensajeExito = 'El producto se registró correctamente.';
+          setTimeout(() => this.router.navigate(['/lista-productos']), 900);
+        },
+        error: () => {
+          this.mensajeError =
+            'No fue posible guardar el producto. Verifica que el código no esté duplicado.';
+          this.guardando = false;
+        },
+      });
   }
 
   limpiarFormulario(): void {

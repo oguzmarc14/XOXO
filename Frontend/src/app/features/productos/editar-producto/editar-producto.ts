@@ -10,7 +10,7 @@ import { Producto } from '../../../core/models/producto.model';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './editar-producto.html',
-  styleUrl: './editar-producto.css'
+  styleUrl: './editar-producto.css',
 })
 export class EditarProducto implements OnInit {
   productoOriginal: Producto | null = null;
@@ -33,13 +33,13 @@ export class EditarProducto implements OnInit {
     { nombre: 'Panadería', icono: '🍞' },
     { nombre: 'Lácteos', icono: '🥛' },
     { nombre: 'Limpieza', icono: '🧼' },
-    { nombre: 'Otros', icono: '📦' }
+    { nombre: 'Otros', icono: '📦' },
   ];
 
   constructor(
     private productosService: ProductosService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -74,7 +74,7 @@ export class EditarProducto implements OnInit {
   }
 
   get iconoCategoria(): string {
-    return this.categorias.find(c => c.nombre === this.categoria)?.icono ?? '📦';
+    return this.categorias.find((c) => c.nombre === this.categoria)?.icono ?? '📦';
   }
 
   get hayCambios(): boolean {
@@ -144,29 +144,32 @@ export class EditarProducto implements OnInit {
 
     this.guardando = true;
 
-    this.productosService.update(this.productoOriginal._id, {
-      codigo: Number(this.codigo),
-      nombre: this.nombre.trim(),
-      categoria: this.categoria,
-      precio: Number(this.precio),
-      stockMinimo: Number(this.stockMinimo),
-      tiendaId: this.productoOriginal.tiendaId
-    }).subscribe({
-      next: () => {
-        this.mensajeExito = 'Los cambios del producto se guardaron correctamente.';
+    this.productosService
+      .update(this.productoOriginal._id, {
+        codigo: Number(this.codigo),
+        nombre: this.nombre.trim(),
+        categoria: this.categoria,
+        precio: Number(this.precio),
+        stockMinimo: Number(this.stockMinimo),
+        tiendaId:
+          typeof this.productoOriginal.tiendaId === 'string'
+            ? this.productoOriginal.tiendaId
+            : this.productoOriginal.tiendaId?._id || '',
+      })
+      .subscribe({
+        next: () => {
+          this.mensajeExito = 'Los cambios del producto se guardaron correctamente.';
 
-        setTimeout(() => {
-          this.router.navigate(['/lista-productos']);
-        }, 900);
-      },
-      error: error => {
-        console.error(error);
-        this.mensajeError =
-          error.error?.message ||
-          'No fue posible actualizar el producto.';
-        this.guardando = false;
-      }
-    });
+          setTimeout(() => {
+            this.router.navigate(['/lista-productos']);
+          }, 900);
+        },
+        error: (error) => {
+          console.error(error);
+          this.mensajeError = error.error?.message || 'No fue posible actualizar el producto.';
+          this.guardando = false;
+        },
+      });
   }
 
   restaurarDatos(): void {
@@ -185,7 +188,7 @@ export class EditarProducto implements OnInit {
 
   private cargarProducto(id: string): void {
     this.productosService.getById(id).subscribe({
-      next: producto => {
+      next: (producto) => {
         this.productoOriginal = producto;
         this.productoEncontrado = true;
         this.cargarFormulario(producto);
@@ -193,7 +196,7 @@ export class EditarProducto implements OnInit {
       error: () => {
         this.productoEncontrado = false;
         this.mensajeError = 'No fue posible cargar la información del producto.';
-      }
+      },
     });
   }
 
