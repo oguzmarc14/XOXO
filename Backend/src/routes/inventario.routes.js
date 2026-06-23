@@ -59,6 +59,24 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/tienda/:tiendaId", async (req, res) => {
+  try {
+    const inventario = await Inventario.find({
+      tiendaId: req.params.tiendaId,
+    })
+      .populate("tiendaId", "nombre direccion ciudad telefono")
+      .populate("productoId", "codigo nombre precio categoria stockMinimo")
+      .sort({ createdAt: -1 });
+
+    return res.json(inventario);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error al obtener inventario de la tienda",
+      error: error.message,
+    });
+  }
+});
+
 router.put("/:id", async (req, res) => {
   try {
     const { piezas } = req.body;

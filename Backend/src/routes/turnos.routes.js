@@ -8,22 +8,59 @@ import Tiendas from "../models/Tiendas.js";
 const router = express.Router();
 
 /*
+  Obtener todos los turnos abiertos.
+  IMPORTANTE: esta ruta va antes de /abiertos/:tiendaId
+*/
+router.get("/abiertos", async (req, res) => {
+  try {
+    const turnos = await Turnos.find({ estado: "ABIERTO" })
+      .populate("usuarioId", "nombre usuario rol activo")
+      .populate("tiendaId", "nombre ciudad direccion")
+      .sort({ fechaApertura: -1 });
+
+    return res.status(200).json(turnos);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error al obtener turnos abiertos",
+      error: error.message,
+    });
+  }
+});
+
+/*
+  Obtener todos los turnos abiertos de una tienda.
+*/
+router.get("/abiertos/:tiendaId", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.tiendaId)) {
+      return res.status(400).json({
+        message: "El identificador de la tienda no es válido",
+      });
+    }
+
+    const turnos = await Turnos.find({
+      tiendaId: req.params.tiendaId,
+      estado: "ABIERTO",
+    })
+      .populate("usuarioId", "nombre usuario rol activo")
+      .populate("tiendaId", "nombre ciudad direccion")
+      .sort({ fechaApertura: -1 });
+
+    return res.status(200).json(turnos);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error al obtener turnos abiertos",
+      error: error.message,
+    });
+  }
+});
+
+/*
   Abrir un turno.
-
-  Se permiten varios turnos abiertos en una misma tienda,
-  siempre que:
-
-  - el cajero no tenga otro turno abierto;
-  - la caja no tenga otro turno abierto en esa tienda.
 */
 router.post("/abrir", async (req, res) => {
   try {
-    const {
-      tiendaId,
-      usuarioId,
-      numeroCaja,
-      montoInicial
-    } = req.body;
+    const { tiendaId, usuarioId, numeroCaja, montoInicial } = req.body;
 
     if (
       !tiendaId ||
@@ -34,7 +71,7 @@ router.post("/abrir", async (req, res) => {
       montoInicial === null
     ) {
       return res.status(400).json({
-        message: "Datos incompletos"
+        message: "Datos incompletos",
       });
     }
 
@@ -43,24 +80,19 @@ router.post("/abrir", async (req, res) => {
       !mongoose.Types.ObjectId.isValid(usuarioId)
     ) {
       return res.status(400).json({
-        message:
-          "El identificador de la tienda o del usuario no es válido"
+        message: "El identificador de la tienda o del usuario no es válido",
       });
     }
 
-    const numeroCajaNormalizado =
-      Number(numeroCaja);
-
-    const montoInicialNormalizado =
-      Number(montoInicial);
+    const numeroCajaNormalizado = Number(numeroCaja);
+    const montoInicialNormalizado = Number(montoInicial);
 
     if (
       !Number.isInteger(numeroCajaNormalizado) ||
       numeroCajaNormalizado <= 0
     ) {
       return res.status(400).json({
-        message:
-          "El número de caja debe ser un entero mayor a cero"
+        message: "El número de caja debe ser un entero mayor a cero",
       });
     }
 
@@ -69,130 +101,88 @@ router.post("/abrir", async (req, res) => {
       montoInicialNormalizado < 0
     ) {
       return res.status(400).json({
-        message:
-          "El monto inicial no puede ser negativo"
+        message: "El monto inicial no puede ser negativo",
       });
     }
 
-    const tienda =
-      await Tiendas.findById(tiendaId);
+    const tienda = await Tiendas.findById(tiendaId);
 
     if (!tienda) {
       return res.status(404).json({
-        message: "La tienda no existe"
+        message: "La tienda no existe",
       });
     }
 
-    const cajero =
-      await Usuarios.findById(usuarioId);
+    const cajero = await Usuarios.findById(usuarioId);
 
     if (!cajero) {
       return res.status(404).json({
-        message: "El cajero no existe"
+        message: "El cajero no existe",
       });
     }
 
-    const rolCajero =
-      String(cajero.rol)
-        .toUpperCase();
-
-    if (rolCajero !== "CAJERO") {
+    if (String(cajero.rol).toUpperCase() !== "CAJERO") {
       return res.status(400).json({
-        message:
-          "El usuario seleccionado no tiene rol de cajero"
+        message: "El usuario seleccionado no tiene rol de cajero",
       });
     }
 
     if (cajero.activo === false) {
       return res.status(400).json({
-        message:
-          "El cajero seleccionado está inactivo"
+        message: "El cajero seleccionado está inactivo",
       });
     }
 
-    const tiendaCajero =
-      cajero.tiendaId?.toString();
+    const tiendaCajero = cajero.tiendaId?.toString();
 
-    if (
-      !tiendaCajero ||
-      tiendaCajero !== tiendaId
-    ) {
+    if (!tiendaCajero || tiendaCajero !== tiendaId) {
       return res.status(400).json({
-        message:
-          "El cajero no pertenece a la tienda seleccionada"
+        message: "El cajero no pertenece a la tienda seleccionada",
       });
     }
 
-    /*
-      Impide que el mismo cajero tenga
-      dos turnos abiertos simultáneamente.
-    */
-    const turnoAbiertoDelCajero =
-      await Turnos.findOne({
-        usuarioId,
-        estado: "ABIERTO"
-      });
+    const turnoAbiertoDelCajero = await Turnos.findOne({
+      usuarioId,
+      estado: "ABIERTO",
+    });
 
     if (turnoAbiertoDelCajero) {
       return res.status(409).json({
-        message:
-          "Este cajero ya tiene un turno abierto"
+        message: "Este cajero ya tiene un turno abierto",
       });
     }
 
-    /*
-      Impide que la misma caja tenga
-      dos turnos abiertos en la misma tienda.
-    */
-    const cajaOcupada =
-      await Turnos.findOne({
-        tiendaId,
-        numeroCaja:
-          numeroCajaNormalizado,
-        estado: "ABIERTO"
-      });
+    const cajaOcupada = await Turnos.findOne({
+      tiendaId,
+      numeroCaja: numeroCajaNormalizado,
+      estado: "ABIERTO",
+    });
 
     if (cajaOcupada) {
       return res.status(409).json({
-        message:
-          "Esta caja ya tiene un turno abierto"
+        message: "Esta caja ya tiene un turno abierto",
       });
     }
 
-    const turno =
-      await Turnos.create({
-        tiendaId,
-        usuarioId,
-        numeroCaja:
-          numeroCajaNormalizado,
-        montoInicial:
-          montoInicialNormalizado
-      });
+    const turno = await Turnos.create({
+      tiendaId,
+      usuarioId,
+      numeroCaja: numeroCajaNormalizado,
+      montoInicial: montoInicialNormalizado,
+    });
 
-    const turnoCompleto =
-      await Turnos
-        .findById(turno._id)
-        .populate(
-          "usuarioId",
-          "nombre usuario rol activo tiendaId"
-        )
-        .populate(
-          "tiendaId",
-          "nombre ciudad direccion"
-        );
+    const turnoCompleto = await Turnos.findById(turno._id)
+      .populate("usuarioId", "nombre usuario rol activo tiendaId")
+      .populate("tiendaId", "nombre ciudad direccion");
 
     return res.status(201).json({
-      message:
-        "Turno abierto correctamente",
-      turno:
-        turnoCompleto
+      message: "Turno abierto correctamente",
+      turno: turnoCompleto,
     });
   } catch (error) {
     return res.status(500).json({
-      message:
-        "Error al abrir turno",
-      error:
-        error.message
+      message: "Error al abrir turno",
+      error: error.message,
     });
   }
 });
@@ -202,157 +192,62 @@ router.post("/abrir", async (req, res) => {
 */
 router.put("/cerrar/:id", async (req, res) => {
   try {
-    const {
-      montoFinal
-    } = req.body;
+    const { montoFinal } = req.body;
 
-    if (
-      !mongoose.Types.ObjectId.isValid(
-        req.params.id
-      )
-    ) {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({
-        message:
-          "El identificador del turno no es válido"
+        message: "El identificador del turno no es válido",
       });
     }
 
-    if (
-      montoFinal === undefined ||
-      montoFinal === null
-    ) {
+    if (montoFinal === undefined || montoFinal === null) {
       return res.status(400).json({
-        message:
-          "El monto final es obligatorio"
+        message: "El monto final es obligatorio",
       });
     }
 
-    const montoFinalNormalizado =
-      Number(montoFinal);
+    const montoFinalNormalizado = Number(montoFinal);
 
-    if (
-      Number.isNaN(
-        montoFinalNormalizado
-      ) ||
-      montoFinalNormalizado < 0
-    ) {
+    if (Number.isNaN(montoFinalNormalizado) || montoFinalNormalizado < 0) {
       return res.status(400).json({
-        message:
-          "El monto final no puede ser negativo"
+        message: "El monto final no puede ser negativo",
       });
     }
 
-    const turno =
-      await Turnos.findById(
-        req.params.id
-      );
+    const turno = await Turnos.findById(req.params.id);
 
     if (!turno) {
       return res.status(404).json({
-        message:
-          "Turno no encontrado"
+        message: "Turno no encontrado",
       });
     }
 
-    if (
-      turno.estado === "CERRADO"
-    ) {
+    if (turno.estado === "CERRADO") {
       return res.status(400).json({
-        message:
-          "El turno ya está cerrado"
+        message: "El turno ya está cerrado",
       });
     }
 
-    turno.montoFinal =
-      montoFinalNormalizado;
-
-    turno.estado =
-      "CERRADO";
-
-    turno.fechaCierre =
-      new Date();
+    turno.montoFinal = montoFinalNormalizado;
+    turno.estado = "CERRADO";
+    turno.fechaCierre = new Date();
 
     await turno.save();
 
-    const turnoCompleto =
-      await Turnos
-        .findById(turno._id)
-        .populate(
-          "usuarioId",
-          "nombre usuario rol"
-        )
-        .populate(
-          "tiendaId",
-          "nombre ciudad direccion"
-        );
+    const turnoCompleto = await Turnos.findById(turno._id)
+      .populate("usuarioId", "nombre usuario rol")
+      .populate("tiendaId", "nombre ciudad direccion");
 
     return res.status(200).json({
-      message:
-        "Turno cerrado correctamente",
-      turno:
-        turnoCompleto
+      message: "Turno cerrado correctamente",
+      turno: turnoCompleto,
     });
   } catch (error) {
     return res.status(500).json({
-      message:
-        "Error al cerrar turno",
-      error:
-        error.message
+      message: "Error al cerrar turno",
+      error: error.message,
     });
   }
 });
-
-/*
-  Obtener todos los turnos abiertos
-  de una tienda.
-*/
-router.get(
-  "/abiertos/:tiendaId",
-  async (req, res) => {
-    try {
-      if (
-        !mongoose.Types.ObjectId.isValid(
-          req.params.tiendaId
-        )
-      ) {
-        return res.status(400).json({
-          message:
-            "El identificador de la tienda no es válido"
-        });
-      }
-
-      const turnos =
-        await Turnos
-          .find({
-            tiendaId:
-              req.params.tiendaId,
-            estado:
-              "ABIERTO"
-          })
-          .populate(
-            "usuarioId",
-            "nombre usuario rol activo"
-          )
-          .populate(
-            "tiendaId",
-            "nombre ciudad direccion"
-          )
-          .sort({
-            fechaApertura: -1
-          });
-
-      return res
-        .status(200)
-        .json(turnos);
-    } catch (error) {
-      return res.status(500).json({
-        message:
-          "Error al obtener turnos abiertos",
-        error:
-          error.message
-      });
-    }
-  }
-);
 
 export default router;

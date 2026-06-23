@@ -33,13 +33,16 @@ router.post("/", async (req, res) => {
       usuario,
       password,
       rol,
-      tiendaId,
-      sexo,
+      tiendaId: tiendaId || null,
+      sexo: sexo || "HOMBRE",
     });
+
+    const usuarioCompleto = await Usuarios.findById(nuevoUsuario._id)
+      .populate("tiendaId", "nombre ciudad direccion telefono");
 
     return res.status(201).json({
       message: "Usuario creado correctamente",
-      usuario: nuevoUsuario,
+      usuario: usuarioCompleto,
     });
   } catch (error) {
     return res.status(500).json({
@@ -51,7 +54,9 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const usuarios = await Usuarios.find().populate("tiendaId");
+    const usuarios = await Usuarios.find()
+      .populate("tiendaId", "nombre ciudad direccion telefono")
+      .sort({ fechaCreacion: -1 });
 
     return res.status(200).json(usuarios);
   } catch (error) {
@@ -64,7 +69,8 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const usuario = await Usuarios.findById(req.params.id).populate("tiendaId");
+    const usuario = await Usuarios.findById(req.params.id)
+      .populate("tiendaId", "nombre ciudad direccion telefono");
 
     if (!usuario) {
       return res.status(404).json({
@@ -90,15 +96,34 @@ router.put("/:id", async (req, res) => {
       rol,
       sexo,
       tiendaId,
+      activo,
     } = req.body;
 
-    const datosActualizados = {
-      nombre,
-      usuario,
-      rol,
-      sexo,
-      tiendaId,
-    };
+    const datosActualizados = {};
+
+    if (nombre !== undefined) {
+      datosActualizados.nombre = nombre;
+    }
+
+    if (usuario !== undefined) {
+      datosActualizados.usuario = usuario;
+    }
+
+    if (rol !== undefined) {
+      datosActualizados.rol = rol;
+    }
+
+    if (sexo !== undefined) {
+      datosActualizados.sexo = sexo;
+    }
+
+    if (tiendaId !== undefined) {
+      datosActualizados.tiendaId = tiendaId || null;
+    }
+
+    if (activo !== undefined) {
+      datosActualizados.activo = activo;
+    }
 
     if (password) {
       datosActualizados.password = password;
@@ -111,7 +136,7 @@ router.put("/:id", async (req, res) => {
         new: true,
         runValidators: true,
       }
-    ).populate("tiendaId");
+    ).populate("tiendaId", "nombre ciudad direccion telefono");
 
     if (!usuarioActualizado) {
       return res.status(404).json({
