@@ -33,6 +33,16 @@ app.get("/", (req, res) => {
     res.send("API funcionando")
 });
 
+app.get("/debug-routes", (req, res) => {
+  res.json({
+    auth: "/auth/login",
+    usuarios: "/usuarios",
+    turnos: "/turnos",
+    ventas: "/ventas",
+    message: "Rutas cargadas correctamente"
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
