@@ -1,42 +1,15 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit
-} from '@angular/core';
-import {
-  FormsModule
-} from '@angular/forms';
-import {
-  HttpClient
-} from '@angular/common/http';
-import {
-  Router,
-  RouterLink
-} from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { Router, RouterLink } from '@angular/router';
+import { ProductosService } from '../../../core/services/productos';
+import { UsuarioActualService } from '../../../core/services/usuario-actual';
 
-import {
-  ProductosService
-} from '../../../core/services/productos';
-
-import {
-  UsuarioActualService
-} from '../../../core/services/usuario-actual';
-
-import {
-  Usuario
-} from '../../../core/models/usuario.model';
-
-interface TiendaProducto {
+interface TiendaOpcion {
   _id: string;
   nombre: string;
-  direccion?: string;
-  ciudad?: string;
-  telefono?: string;
-}
-
-interface CategoriaProducto {
-  nombre: string;
-  icono: string;
+  ciudad: string;
 }
 
 @Component({
@@ -75,8 +48,11 @@ export class CrearProducto
   mensajeError = '';
   mensajeExito = '';
 
-  private readonly tiendasUrl =
-    'http://localhost:3000/tiendas';
+  esAdmin = false;
+  tiendas: TiendaOpcion[] = [];
+  tiendaSeleccionada = '';
+
+  private tiendaIdGerente: string | undefined;
 
   readonly categorias:
     CategoriaProducto[] = [
@@ -107,53 +83,25 @@ export class CrearProducto
     ];
 
   constructor(
-    private productosService:
-      ProductosService,
-
-    private usuarioActualService:
-      UsuarioActualService,
-
-    private http:
-      HttpClient,
-
-    private router:
-      Router
+    private productosService: ProductosService,
+    private usuarioActualService: UsuarioActualService,
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.usuarioActual =
-      this.usuarioActualService
-        .obtenerUsuario();
+    const usuario = this.usuarioActualService.obtenerUsuario();
 
-    if (
-      !this.usuarioActual ||
-      this.usuarioActual.id === 0
-    ) {
-      this.mensajeError =
-        'No se encontró una sesión activa.';
-
-      return;
-    }
-
-    /*
-      El administrador puede elegir
-      cualquiera de las tiendas.
-    */
-    if (this.esAdministrador) {
-      this.cargarTiendas();
-      return;
-    }
-
-    /*
-      Gerente y cajero utilizan
-      automáticamente su tienda.
-    */
-    this.tiendaId =
-      this.usuarioActual.tiendaId || '';
-
-    if (!this.tiendaId) {
-      this.mensajeError =
-        'El usuario no tiene una tienda asignada. No es posible registrar productos.';
+    if (usuario.rol === 'admin') {
+      this.esAdmin = true;
+      this.http
+        .get<TiendaOpcion[]>('http://localhost:3000/tiendas')
+        .subscribe({
+          next: (tiendas) => { this.tiendas = tiendas; },
+          error: () => { this.mensajeError = 'No se pudieron cargar las tiendas.'; }
+        });
+    } else if (usuario.rol === 'gerente') {
+      this.tiendaIdGerente = usuario.tiendaId;
     }
   }
 
@@ -206,47 +154,14 @@ export class CrearProducto
     );
   }
 
-  get nombreTiendaSeleccionada(): string {
-    if (!this.tiendaId) {
-      return this.esAdministrador
-        ? 'Tienda sin seleccionar'
-        : 'Tienda no asignada';
-    }
-
-    const tienda =
-      this.tiendas.find(
-        item =>
-          item._id === this.tiendaId
-      );
-
-    if (tienda) {
-      return tienda.ciudad
-        ? `${tienda.nombre} - ${tienda.ciudad}`
-        : tienda.nombre;
-    }
-
-    /*
-      Para gerente y cajero utilizamos el nombre
-      de sucursal almacenado en la sesión.
-    */
-    return (
-      this.usuarioActual?.sucursal ||
-      'Tienda asignada'
-    );
+  get tiendaVistaPrevia(): string {
+    if (!this.esAdmin) return '';
+    const tienda = this.tiendas.find(t => t._id === this.tiendaSeleccionada);
+    return tienda ? `${tienda.nombre} — ${tienda.ciudad}` : 'Sin tienda asignada';
   }
 
-  seleccionarCategoria(
-    categoria:
-      CategoriaProducto
-  ): void {
-    this.categoria =
-      categoria.nombre;
-
-    this.limpiarMensajes();
-  }
-
-  cargarTiendas(): void {
-    this.cargandoTiendas = true;
+  seleccionarCategoria(categoria: { nombre: string; icono: string }): void {
+    this.categoria = categoria.nombre;
     this.mensajeError = '';
 
     this.http
@@ -314,96 +229,48 @@ export class CrearProducto
     }
 
     if (!this.categoria) {
-      this.mensajeError =
-        'Selecciona una categoría.';
-
+      this.mensajeError = 'Selecciona una categoría.';
       return;
     }
 
-    if (
-      this.precio === null ||
-      Number(this.precio) <= 0
-    ) {
-      this.mensajeError =
-        'El precio debe ser mayor a cero.';
-
+    if (this.precio === null || Number(this.precio) <= 0) {
+      this.mensajeError = 'El precio debe ser mayor a cero.';
       return;
     }
 
-    if (
-      this.stockMinimo === null ||
-      Number(this.stockMinimo) < 0
-    ) {
-      this.mensajeError =
-        'El stock mínimo no puede ser negativo.';
-
+    if (this.stockMinimo === null || Number(this.stockMinimo) < 0) {
+      this.mensajeError = 'El stock mínimo no puede ser negativo.';
       return;
     }
 
-    /*
-      Todos los productos deben pertenecer
-      obligatoriamente a una tienda.
-    */
-    if (!this.tiendaId) {
-      this.mensajeError =
-        this.esAdministrador
-          ? 'Selecciona la tienda a la que pertenecerá el producto.'
-          : 'Tu usuario no tiene una tienda asignada.';
-
+    if (this.esAdmin && !this.tiendaSeleccionada) {
+      this.mensajeError = 'Selecciona la tienda a la que pertenece el producto.';
       return;
     }
 
     this.guardando = true;
 
-    this.productosService
-      .create({
-        codigo:
-          Number(this.codigo),
+    const tiendaId = this.esAdmin
+      ? this.tiendaSeleccionada
+      : this.tiendaIdGerente;
 
-        nombre:
-          this.nombre.trim(),
-
-        categoria:
-          this.categoria,
-
-        precio:
-          Number(this.precio),
-
-        stockMinimo:
-          Number(this.stockMinimo),
-
-        tiendaId:
-          this.tiendaId
-      })
-      .subscribe({
-        next: () => {
-          this.mensajeExito =
-            'El producto se registró correctamente.';
-
-          setTimeout(() => {
-            this.router.navigate([
-              '/lista-productos'
-            ]);
-          }, 900);
-        },
-
-        error: error => {
-          console.error(
-            'Error al guardar producto:',
-            error
-          );
-
-          this.mensajeError =
-            error.error?.message ||
-            'No fue posible guardar el producto. Verifica que el código no esté duplicado en esa tienda.';
-
-          this.guardando = false;
-        },
-
-        complete: () => {
-          this.guardando = false;
-        }
-      });
+    this.productosService.create({
+      codigo: Number(this.codigo),
+      nombre: this.nombre.trim(),
+      categoria: this.categoria,
+      precio: Number(this.precio),
+      stockMinimo: Number(this.stockMinimo),
+      tiendaId
+    }).subscribe({
+      next: () => {
+        this.mensajeExito = 'El producto se registró correctamente.';
+        setTimeout(() => this.router.navigate(['/lista-productos']), 900);
+      },
+      error: () => {
+        this.mensajeError = 'No fue posible guardar el producto. Verifica que el código no esté duplicado.';
+        this.guardando = false;
+      }
+    });
   }
 
   limpiarFormulario(): void {
@@ -412,23 +279,7 @@ export class CrearProducto
     this.categoria = '';
     this.precio = null;
     this.stockMinimo = 5;
-
-    /*
-      Solo el administrador debe volver
-      a seleccionar la tienda.
-    */
-    if (this.esAdministrador) {
-      this.tiendaId = '';
-    } else {
-      this.tiendaId =
-        this.usuarioActual?.tiendaId ||
-        '';
-    }
-
-    this.limpiarMensajes();
-  }
-
-  private limpiarMensajes(): void {
+    this.tiendaSeleccionada = '';
     this.mensajeError = '';
     this.mensajeExito = '';
   }
