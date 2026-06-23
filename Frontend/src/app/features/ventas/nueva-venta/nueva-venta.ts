@@ -90,9 +90,9 @@ export class NuevaVenta implements OnInit {
   cargandoProductos = false;
   registrandoVenta = false;
 
-  private readonly inventarioApi = 'http://localhost:3000/inventario';
-  private readonly ventasApi = 'http://localhost:3000/ventas';
-  private readonly turnosApi = 'http://localhost:3000/turnos';
+  private readonly inventarioApi = 'https://xoxo-backend-ewqr.onrender.com/inventario';
+  private readonly ventasApi = 'https://xoxo-backend-ewqr.onrender.com/ventas';
+  private readonly turnosApi = 'https://xoxo-backend-ewqr.onrender.com/turnos';
 
   constructor(private http: HttpClient) {}
 

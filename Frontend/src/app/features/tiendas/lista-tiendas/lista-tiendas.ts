@@ -32,7 +32,7 @@ export class ListaTiendas implements OnInit {
   modalEliminarAbierto = false;
   tiendaSeleccionada: TiendaBackend | null = null;
 
-  private readonly apiUrl = 'http://localhost:3000/tiendas';
+  private readonly apiUrl = 'https://xoxo-backend-ewqr.onrender.com/tiendas';
 
   constructor(
     private router: Router,

@@ -109,7 +109,7 @@ export class ListaUsuarios implements OnInit {
   modalEstadoAbierto = false;
 
   private readonly usuariosApi =
-    'http://localhost:3000/usuarios';
+    'https://xoxo-backend-ewqr.onrender.com/usuarios';
 
   constructor(
     private http: HttpClient,

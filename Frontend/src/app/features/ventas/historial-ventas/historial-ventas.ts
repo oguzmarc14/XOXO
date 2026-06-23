@@ -65,7 +65,7 @@ export class HistorialVentas implements OnInit {
   mensajeError = '';
   cargando = false;
 
-  private readonly ventasApi = 'http://localhost:3000/ventas';
+  private readonly ventasApi = 'https://xoxo-backend-ewqr.onrender.com/ventas';
 
   constructor(
     private http: HttpClient,

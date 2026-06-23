@@ -96,7 +96,7 @@ export class CerrarTurno implements OnInit {
   mensajeExito = '';
 
   private readonly turnosApi =
-    'http://localhost:3000/turnos';
+    'https://xoxo-backend-ewqr.onrender.com/turnos';
 
   constructor(
     private http: HttpClient,

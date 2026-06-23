@@ -123,7 +123,7 @@ export class CrearProducto implements OnInit {
   cargarTiendas(): void {
     this.cargandoTiendas = true;
 
-    this.http.get<TiendaOpcion[]>('http://localhost:3000/tiendas').subscribe({
+    this.http.get<TiendaOpcion[]>('https://xoxo-backend-ewqr.onrender.com/tiendas').subscribe({
       next: (tiendas) => {
         this.tiendas = Array.isArray(tiendas) ? tiendas : [];
         this.cargandoTiendas = false;

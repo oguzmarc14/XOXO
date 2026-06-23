@@ -67,9 +67,9 @@ export class MovimientosInventario implements OnInit {
   mensajeError = '';
   mensajeExito = '';
 
-  private readonly inventarioApi = 'http://localhost:3000/inventario';
-  private readonly productosApi = 'http://localhost:3000/productos';
-  private readonly tiendasApi = 'http://localhost:3000/tiendas';
+  private readonly inventarioApi = 'https://xoxo-backend-ewqr.onrender.com/inventario';
+  private readonly productosApi = 'https://xoxo-backend-ewqr.onrender.com/productos';
+  private readonly tiendasApi = 'https://xoxo-backend-ewqr.onrender.com/tiendas';
 
   constructor(private http: HttpClient) {}
 

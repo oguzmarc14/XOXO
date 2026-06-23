@@ -59,10 +59,10 @@ export class CrearUsuario implements OnInit {
   tiendas: TiendaBackend[] = [];
 
   private readonly usuariosApi =
-    'http://localhost:3000/usuarios';
+    'https://xoxo-backend-ewqr.onrender.com/usuarios';
 
   private readonly tiendasApi =
-    'http://localhost:3000/tiendas';
+    'https://xoxo-backend-ewqr.onrender.com/tiendas';
 
   readonly roles: OpcionRol[] = [
     {

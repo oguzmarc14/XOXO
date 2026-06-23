@@ -75,9 +75,9 @@ export class DashboardCajero implements OnInit {
 
   resumenFinal: CardResumenItem[] = [];
 
-  private readonly turnosApi = 'http://localhost:3000/turnos';
-  private readonly ventasApi = 'http://localhost:3000/ventas';
-  private readonly inventarioApi = 'http://localhost:3000/inventario';
+  private readonly turnosApi = 'https://xoxo-backend-ewqr.onrender.com/turnos';
+  private readonly ventasApi = 'https://xoxo-backend-ewqr.onrender.com/ventas';
+  private readonly inventarioApi = 'https://xoxo-backend-ewqr.onrender.com/inventario';
 
   constructor(private http: HttpClient) {}
 

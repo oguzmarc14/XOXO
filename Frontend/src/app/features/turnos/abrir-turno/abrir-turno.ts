@@ -133,10 +133,10 @@ export class AbrirTurno implements OnInit {
   fechaActual = new Date();
 
   private readonly usuariosApi =
-    'http://localhost:3000/usuarios';
+    'https://xoxo-backend-ewqr.onrender.com/usuarios';
 
   private readonly turnosApi =
-    'http://localhost:3000/turnos';
+    'https://xoxo-backend-ewqr.onrender.com/turnos';
 
   constructor(
     private router: Router,

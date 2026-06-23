@@ -129,7 +129,7 @@ export class ListaInventario implements OnInit {
   mensajeExito = '';
 
   private readonly inventarioApi =
-    'http://localhost:3000/inventario';
+    'https://xoxo-backend-ewqr.onrender.com/inventario';
 
   constructor(
     private http: HttpClient,

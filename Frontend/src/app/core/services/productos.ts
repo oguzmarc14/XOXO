@@ -21,7 +21,7 @@ import {
 })
 export class ProductosService {
   private readonly baseUrl =
-    'http://localhost:3000/productos';
+    'https://xoxo-backend-ewqr.onrender.com/productos';
 
   constructor(
     private http: HttpClient

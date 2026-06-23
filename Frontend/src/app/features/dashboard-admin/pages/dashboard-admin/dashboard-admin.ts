@@ -53,7 +53,7 @@ export class DashboardAdmin implements OnInit {
   alertas: AlertaBackend[] = [];
   resumenFinal: CardResumenItem[] = [];
 
-  private readonly alertasApi = 'http://localhost:3000/alertas';
+  private readonly alertasApi = 'https://xoxo-backend-ewqr.onrender.com/alertas';
 
   constructor(
     private http: HttpClient

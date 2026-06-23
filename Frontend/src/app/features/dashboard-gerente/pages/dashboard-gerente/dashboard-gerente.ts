@@ -74,9 +74,9 @@ export class DashboardGerente implements OnInit {
 
   resumenFinal: CardResumenItem[] = [];
 
-  private readonly turnosApi = 'http://localhost:3000/turnos';
-  private readonly alertasApi = 'http://localhost:3000/alertas';
-  private readonly ventasApi = 'http://localhost:3000/ventas';
+  private readonly turnosApi = 'https://xoxo-backend-ewqr.onrender.com/turnos';
+  private readonly alertasApi = 'https://xoxo-backend-ewqr.onrender.com/alertas';
+  private readonly ventasApi = 'https://xoxo-backend-ewqr.onrender.com/ventas';
 
   constructor(
     private http: HttpClient
